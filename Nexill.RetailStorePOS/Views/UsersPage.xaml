@@ -102,6 +102,7 @@
                               ItemsSource="{x:Bind ViewModel.Users, Mode=OneWay}"
                               SelectionMode="Single"
                               IsItemClickEnabled="True"
+                              ItemClick="UsersListView_ItemClick"
                               SelectionChanged="UsersListView_SelectionChanged"
                               Padding="0"
                               BorderThickness="0">
@@ -119,7 +120,8 @@
                                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
                                         CornerRadius="6"
-                                        Padding="12,11">
+                                        Padding="12,11"
+                                        Tapped="UserCard_Tapped">
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -190,7 +192,8 @@
                                     Background="Transparent"
                                     DefaultLabelPosition="Right"
                                     VerticalAlignment="Center">
-                            <AppBarButton Label="New user" CornerRadius="6"
+                            <AppBarButton x:Name="NewUserButton"
+                                          Label="New user" CornerRadius="6"
                                           Background="#fcfcfc"
                                           Command="{x:Bind ViewModel.NewUserCommand}"
                                           IsEnabled="{x:Bind ViewModel.CanManageUsers, Mode=OneWay}">
@@ -199,7 +202,7 @@
                                 </AppBarButton.Icon>
                             </AppBarButton>
 
-                            <AppBarButton
+                            <AppBarButton x:Name="UnlockUserButton"
                                            Label="Unlock"
                                            CornerRadius="3"
                                            Background="#fcfcfc"
@@ -491,7 +494,8 @@
                                                 <TextBlock Text="Cancel Changes" />
                                             </Button>
 
-                                            <Button Background="#6d998e" CornerRadius="3"
+                                            <Button x:Name="SaveUserChangesButton"
+                                                    Background="#6d998e" CornerRadius="3"
                                                     BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                                                     Foreground="White"
                                                     Command="{x:Bind ViewModel.SaveUserCommand}"
@@ -645,13 +649,20 @@
             </Border>
         </Grid>
         <TeachingTip x:Name="AdministratorAccessTip"
-                     Target="{x:Bind AdministratorAccessToggle, Mode=OneWay}"
-                     Title="Administrator access"
-                     Subtitle="Use this switch to define whether the selected user has full administrator permissions."
+                     Target="{x:Bind UsersListView, Mode=OneWay}"
+                     Title="Administrator profile"
+                     Subtitle="Click this administrator profile to continue the user-settings walkthrough."
                      PreferredPlacement="Right"
                      IsLightDismissEnabled="False"
                      CloseButtonContent="Skip"
                      CloseButtonClick="AdministratorAccessTip_CloseButtonClick" />
+        <TeachingTip x:Name="UserEditorActionsTip"
+                     Target="{x:Bind UsersListView, Mode=OneWay}"
+                     PreferredPlacement="Bottom"
+                     IsLightDismissEnabled="False"
+                     CloseButtonContent="Skip"
+                     ActionButtonClick="UserEditorActionsTip_ActionButtonClick"
+                     CloseButtonClick="UserEditorActionsTip_CloseButtonClick" />
     </Grid>
 </Page>
 
