@@ -1,0 +1,770 @@
+<UserControl x:Class="RetailStorePOS.App.UserManagementView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+             Background="Transparent"
+             FontFamily="Inter, Segoe UI Variable Text, Segoe UI">
+
+    <UserControl.Resources>
+        <Color x:Key="MacUsersPageTop">#F8F9FB</Color>
+        <Color x:Key="MacUsersPageBottom">#EEF2F6</Color>
+        <Color x:Key="MacUsersSurface">#F6F8FC</Color>
+        <Color x:Key="MacUsersCard">#FFFFFF</Color>
+        <Color x:Key="MacUsersBorder">#DCE4EF</Color>
+        <Color x:Key="MacUsersTextPrimary">#1C2431</Color>
+        <Color x:Key="MacUsersTextSecondary">#6A7486</Color>
+        <Color x:Key="MacUsersAccent">#3B82F6</Color>
+        <Color x:Key="MacUsersDanger">#EF4444</Color>
+        <Color x:Key="MacUsersSuccess">#17994E</Color>
+
+        <LinearGradientBrush x:Key="MacUsersPageBrush" StartPoint="0,0" EndPoint="0,1">
+            <GradientStop Color="{StaticResource MacUsersPageTop}" Offset="0" />
+            <GradientStop Color="{StaticResource MacUsersPageBottom}" Offset="1" />
+        </LinearGradientBrush>
+
+        <SolidColorBrush x:Key="MacUsersSurfaceBrush" Color="{StaticResource MacUsersSurface}" />
+        <SolidColorBrush x:Key="MacUsersCardBrush" Color="{StaticResource MacUsersCard}" />
+        <SolidColorBrush x:Key="MacUsersBorderBrush" Color="{StaticResource MacUsersBorder}" />
+        <SolidColorBrush x:Key="MacUsersTextPrimaryBrush" Color="{StaticResource MacUsersTextPrimary}" />
+        <SolidColorBrush x:Key="MacUsersTextSecondaryBrush" Color="{StaticResource MacUsersTextSecondary}" />
+        <SolidColorBrush x:Key="MacUsersAccentBrush" Color="{StaticResource MacUsersAccent}" />
+        <SolidColorBrush x:Key="MacUsersDangerBrush" Color="{StaticResource MacUsersDanger}" />
+        <SolidColorBrush x:Key="MacUsersSuccessBrush" Color="{StaticResource MacUsersSuccess}" />
+
+        <Style x:Key="UsersShellCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource MacUsersCardBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource MacUsersBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="18" />
+            <Setter Property="Padding" Value="16" />
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect Color="#0F1F33" BlurRadius="18" ShadowDepth="0" Opacity="0.05" />
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UsersSurfaceCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#FBFCFE" />
+            <Setter Property="BorderBrush" Value="#E3EAF5" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="15" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+
+        <Style x:Key="UsersTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="28" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextPrimaryBrush}" />
+        </Style>
+
+        <Style x:Key="UsersSubtitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="UsersSectionTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextPrimaryBrush}" />
+        </Style>
+
+        <Style x:Key="UsersLabelStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextSecondaryBrush}" />
+            <Setter Property="Margin" Value="0,0,0,5" />
+        </Style>
+
+        <Style x:Key="UsersBodyStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+
+        <Style x:Key="UsersMetricValueStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="20" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextPrimaryBrush}" />
+        </Style>
+
+        <Style x:Key="UsersTextBoxStyle" TargetType="TextBox">
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="11,7" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextPrimaryBrush}" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#DCE4EF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="InputBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <MultiTrigger>
+                                <MultiTrigger.Conditions>
+                                    <Condition Property="IsKeyboardFocused" Value="True" />
+                                    <Condition Property="IsReadOnly" Value="False" />
+                                </MultiTrigger.Conditions>
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource MacUsersAccentBrush}" />
+                                <Setter TargetName="InputBorder" Property="BorderThickness" Value="2" />
+                            </MultiTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="InputBorder" Property="Opacity" Value="0.65" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UsersPasswordBoxStyle" TargetType="PasswordBox">
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Padding" Value="11,7" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextPrimaryBrush}" />
+            <Setter Property="Background" Value="#FFFFFF" />
+            <Setter Property="BorderBrush" Value="#DCE4EF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="InputBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource MacUsersAccentBrush}" />
+                                <Setter TargetName="InputBorder" Property="BorderThickness" Value="2" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="InputBorder" Property="Opacity" Value="0.65" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UsersToggleStyle" TargetType="CheckBox">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextPrimaryBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Width="46" Height="28" VerticalAlignment="Center">
+                                <Border x:Name="Track" CornerRadius="14" Background="#CED5E1" />
+                                <Ellipse x:Name="Knob" Width="22" Height="22" Fill="White" Margin="3,3,21,3">
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect Color="#5E6C80" ShadowDepth="1" BlurRadius="3" Opacity="0.18" />
+                                    </Ellipse.Effect>
+                                </Ellipse>
+                            </Grid>
+
+                            <ContentPresenter Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center" RecognizesAccessKey="True" />
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{StaticResource MacUsersAccentBrush}" />
+                                <Setter TargetName="Knob" Property="Margin" Value="21,3,3,3" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Track" Property="Opacity" Value="0.6" />
+                                <Setter TargetName="Knob" Property="Opacity" Value="0.6" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UsersBaseButtonStyle" TargetType="Button">
+            <Style.Resources>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding Path=Foreground, RelativeSource={RelativeSource AncestorType={x:Type Button}}}" />
+                </Style>
+            </Style.Resources>
+            <Setter Property="MinHeight" Value="38" />
+            <Setter Property="Padding" Value="13,8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.92" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.84" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UsersPrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource UsersBaseButtonStyle}">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{StaticResource MacUsersAccentBrush}" />
+            <Setter Property="BorderBrush" Value="#2563EB" />
+        </Style>
+
+        <Style x:Key="UsersSecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource UsersBaseButtonStyle}">
+            <Setter Property="Foreground" Value="{StaticResource MacUsersTextPrimaryBrush}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderBrush" Value="#DCE4EF" />
+        </Style>
+
+        <Style x:Key="UsersDangerButtonStyle" TargetType="Button" BasedOn="{StaticResource UsersBaseButtonStyle}">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Background" Value="{StaticResource MacUsersDangerBrush}" />
+            <Setter Property="BorderBrush" Value="#D52E24" />
+        </Style>
+
+        <Style x:Key="UsersListStyle" TargetType="ListBox">
+            <Setter Property="Background" Value="#F7FAFF" />
+            <Setter Property="BorderBrush" Value="{StaticResource MacUsersBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}">
+                            <ScrollViewer Focusable="False">
+                                <ItemsPresenter />
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="UsersListItemStyle" TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="12,10" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#EDF3FD" />
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="#E2EEFF" />
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="#BFD7FA" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Background="{StaticResource MacUsersPageBrush}" SnapsToDevicePixels="True">
+        <Grid Margin="18" MinHeight="0" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="12" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Style="{StaticResource UsersShellCardStyle}" Padding="16,13">
+                <Grid VerticalAlignment="Center">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Border Background="#E8F0FF" BorderBrush="#D3E2FB" BorderThickness="1" CornerRadius="10" Padding="8">
+                                <iconPacks:PackIconMaterial Kind="AccountGroup" Width="20" Height="20" Foreground="{StaticResource MacUsersAccentBrush}" />
+                            </Border>
+                            <StackPanel Margin="10,0,0,0">
+                                <TextBlock Text="User Management" Style="{StaticResource UsersTitleStyle}" />
+                                <TextBlock Text="Manage staff access, login details, and register permissions." Style="{StaticResource UsersSubtitleStyle}" Margin="0,2,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Style="{StaticResource UsersSurfaceCardStyle}" Padding="12,8" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Active Users" Style="{StaticResource UsersLabelStyle}" Margin="0,0,0,1" />
+                                <TextBlock Text="{Binding TotalUsers}" Style="{StaticResource UsersMetricValueStyle}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource UsersSurfaceCardStyle}" Padding="12,8" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="Admins" Style="{StaticResource UsersLabelStyle}" Margin="0,0,0,1" />
+                                <TextBlock Text="{Binding AdminUsers}" Style="{StaticResource UsersMetricValueStyle}" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource UsersSurfaceCardStyle}" Padding="12,8">
+                            <StackPanel>
+                                <TextBlock Text="Staff" Style="{StaticResource UsersLabelStyle}" Margin="0,0,0,1" />
+                                <TextBlock Text="{Binding StandardUsers}" Style="{StaticResource UsersMetricValueStyle}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2" MinHeight="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="348" />
+                    <ColumnDefinition Width="12" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource UsersShellCardStyle}" Padding="14" MinHeight="0">
+                    <Grid MinHeight="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="10" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0">
+                            <TextBlock Text="Team roster" Style="{StaticResource UsersSectionTitleStyle}" />
+                            <TextBlock Text="Select a user to review access or create a new profile." Style="{StaticResource UsersSubtitleStyle}" Margin="0,4,0,0" />
+                        </StackPanel>
+
+                        <Border Grid.Row="1" Style="{StaticResource UsersSurfaceCardStyle}" Padding="12,10" Margin="0,12,0,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <iconPacks:PackIconMaterial Kind="ShieldAccount" Width="16" Height="16" Foreground="{StaticResource MacUsersAccentBrush}" Margin="0,0,8,0" />
+                                    <TextBlock Text="Editing stays locked by default" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MacUsersTextPrimaryBrush}" />
+                                </StackPanel>
+                                <TextBlock Text="Unlock a profile before changing login details or permissions. New users open in edit mode automatically." Style="{StaticResource UsersBodyStyle}" Margin="0,6,0,0" />
+                            </StackPanel>
+                        </Border>
+
+                        <ListBox Grid.Row="3"
+                                 ItemsSource="{Binding Users}"
+                                 SelectedItem="{Binding SelectedUser}"
+                                 MinHeight="0"
+                                 Style="{StaticResource UsersListStyle}"
+                                 ItemContainerStyle="{StaticResource UsersListItemStyle}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Width="44" Height="44" Background="#E8F0FF" CornerRadius="14" VerticalAlignment="Center">
+                                            <iconPacks:PackIconMaterial Kind="AccountCircle" Width="28" Height="28" Foreground="{StaticResource MacUsersAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        </Border>
+
+                                        <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="SemiBold" FontSize="14" Foreground="{StaticResource MacUsersTextPrimaryBrush}" />
+                                            <TextBlock Text="{Binding Username}" FontSize="12" Foreground="{StaticResource MacUsersTextSecondaryBrush}" Margin="0,3,0,0" />
+                                        </StackPanel>
+
+                                        <Border Grid.Column="2"
+                                                Background="#E3EEFF"
+                                                BorderBrush="#C8DBF9"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="10,4"
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibility}}">
+                                            <TextBlock Text="ADMIN" FontSize="11" FontWeight="Bold" Foreground="{StaticResource MacUsersAccentBrush}" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <Button Grid.Row="5" Style="{StaticResource UsersPrimaryButtonStyle}" Command="{Binding NewUserCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <iconPacks:PackIconMaterial Kind="AccountPlus" Width="16" Height="16" Margin="0,0,8,0" />
+                                <TextBlock Text="Add Team Member" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource UsersShellCardStyle}" Padding="16" MinHeight="0">
+                    <Grid MinHeight="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="12" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="{Binding EditorTitle}" Style="{StaticResource UsersTitleStyle}" FontSize="24" />
+                                <TextBlock Text="{Binding EditorSubtitle}" Style="{StaticResource UsersSubtitleStyle}" Margin="0,2,0,0" />
+                            </StackPanel>
+
+                            <Border Grid.Column="1"
+                                    Background="#F2F7FF"
+                                    BorderBrush="#D8E6FB"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="10,5"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding HasSelectedUser, Converter={StaticResource BoolToVisibility}}">
+                                <TextBlock Text="{Binding AccessLevelLabel}" FontSize="10" FontWeight="Bold" Foreground="{StaticResource MacUsersAccentBrush}" />
+                            </Border>
+
+                            <Button Grid.Column="3"
+                                    Command="{Binding UnlockEditCommand}"
+                                    Width="38"
+                                    Height="38"
+                                    Padding="0"
+                                    VerticalAlignment="Center"
+                                    ToolTip="Unlock selected user for editing">
+                                <Button.Style>
+                                    <Style TargetType="Button" BasedOn="{StaticResource UsersSecondaryButtonStyle}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsEditUnlocked}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsNewUserDraft}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding HasSelectedUser}" Value="False">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <iconPacks:PackIconMaterial Kind="LockOpenOutline" Width="15" Height="15" Foreground="{StaticResource MacUsersTextSecondaryBrush}" />
+                            </Button>
+                        </Grid>
+
+                        <Grid Grid.Row="2" MinHeight="0">
+                            <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          Padding="0,0,6,0"
+                                          MinHeight="0"
+                                          Focusable="False">
+                                <StackPanel Visibility="{Binding HasSelectedUser, Converter={StaticResource BoolToVisibility}}">
+                                    <Border Style="{StaticResource UsersSurfaceCardStyle}"
+                                            Margin="0,0,0,10"
+                                            Padding="14,12"
+                                            Background="#F5F9FF"
+                                            BorderBrush="#D9E6F7"
+                                            Visibility="{Binding IsUnlockRequired, Converter={StaticResource BoolToVisibility}}">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Grid.Column="0">
+                                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <Border Width="34" Height="34" Background="#E8F0FF" CornerRadius="11" Margin="0,0,10,0">
+                                                        <iconPacks:PackIconMaterial Kind="LockOutline" Width="16" Height="16" Foreground="{StaticResource MacUsersAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                                    </Border>
+                                                    <StackPanel>
+                                                        <TextBlock Text="Editing is locked" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource MacUsersTextPrimaryBrush}" />
+                                                        <TextBlock Text="Unlock this profile before changing login details or permissions." Style="{StaticResource UsersBodyStyle}" Margin="0,2,0,0" />
+                                                    </StackPanel>
+                                                </StackPanel>
+                                                <TextBlock Text="This helps prevent accidental permission changes on the register." Style="{StaticResource UsersBodyStyle}" Margin="0,10,0,0" />
+                                            </StackPanel>
+
+                                            <Button Grid.Column="1"
+                                                    Style="{StaticResource UsersPrimaryButtonStyle}"
+                                                    Command="{Binding UnlockEditCommand}"
+                                                    VerticalAlignment="Center"
+                                                    Margin="14,0,0,0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <iconPacks:PackIconMaterial Kind="LockOpenOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                                    <TextBlock Text="Unlock Editing" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+                                    </Border>
+
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="10" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Style="{StaticResource UsersSurfaceCardStyle}" Padding="14,13">
+                                            <StackPanel>
+                                                <TextBlock Text="Identity" Style="{StaticResource UsersSectionTitleStyle}" FontSize="16" />
+                                                <TextBlock Text="Basic profile details used for sign-in and daily store activity." Style="{StaticResource UsersBodyStyle}" Margin="0,3,0,0" />
+
+                                                <Grid Margin="0,14,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="10" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel Grid.Column="0">
+                                                        <TextBlock Text="Display Name" Style="{StaticResource UsersLabelStyle}" />
+                                                        <TextBox Style="{StaticResource UsersTextBoxStyle}" Text="{Binding EditDisplayName, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditUnlocked, Converter={StaticResource InverseBoolConverter}}" />
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="2">
+                                                        <TextBlock Text="Username / Employee ID" Style="{StaticResource UsersLabelStyle}" />
+                                                        <TextBox Style="{StaticResource UsersTextBoxStyle}" Text="{Binding EditUsername, UpdateSourceTrigger=PropertyChanged}" IsReadOnly="{Binding IsEditUnlocked, Converter={StaticResource InverseBoolConverter}}" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="2" Style="{StaticResource UsersSurfaceCardStyle}" Padding="14,13">
+                                            <StackPanel>
+                                                <TextBlock Text="Security" Style="{StaticResource UsersSectionTitleStyle}" FontSize="16" />
+                                                <TextBlock Text="Admins use a password or PIN. Cashiers need a dedicated 4-digit PIN." Style="{StaticResource UsersBodyStyle}" Margin="0,3,0,0" />
+
+                                                <Grid Margin="0,14,0,0">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="10" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+
+                                                    <StackPanel Grid.Column="0">
+                                                        <TextBlock Text="4-Digit PIN" Style="{StaticResource UsersLabelStyle}" />
+                                                        <TextBox Style="{StaticResource UsersTextBoxStyle}"
+                                                                 Text="{Binding EditPin, UpdateSourceTrigger=PropertyChanged}"
+                                                                 MaxLength="4"
+                                                                 FontFamily="Consolas"
+                                                                 IsReadOnly="{Binding IsEditUnlocked, Converter={StaticResource InverseBoolConverter}}" />
+                                                    </StackPanel>
+
+                                                    <StackPanel Grid.Column="2" Visibility="{Binding EditIsAdmin, Converter={StaticResource BoolToVisibility}}">
+                                                        <TextBlock Text="Admin Password" Style="{StaticResource UsersLabelStyle}" />
+                                                        <PasswordBox x:Name="PasswordBox" Style="{StaticResource UsersPasswordBoxStyle}" IsEnabled="{Binding IsEditUnlocked}" />
+                                                        <TextBlock Text="Leave blank to keep the current password." Style="{StaticResource UsersBodyStyle}" Margin="0,5,0,0" />
+                                                    </StackPanel>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <Border Style="{StaticResource UsersSurfaceCardStyle}" Padding="14,13" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <StackPanel Grid.Column="0">
+                                                    <TextBlock Text="Roles and permissions" Style="{StaticResource UsersSectionTitleStyle}" FontSize="17" />
+                                                    <TextBlock Text="These permissions control sensitive register actions and protected areas of the POS." Style="{StaticResource UsersBodyStyle}" Margin="0,3,0,0" />
+                                                </StackPanel>
+
+                                                <Border Grid.Column="1" Background="#F4F7FB" BorderBrush="#DCE5F0" BorderThickness="1" CornerRadius="10" Padding="10,5" VerticalAlignment="Top">
+                                                    <TextBlock Text="{Binding EditModeLabel, StringFormat=Edit Mode: {0}}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource MacUsersTextSecondaryBrush}" />
+                                                </Border>
+                                            </Grid>
+
+                                            <Grid Margin="0,16,0,0" IsEnabled="{Binding IsEditUnlocked}">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="10" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <Border Grid.Column="0" Style="{StaticResource UsersSurfaceCardStyle}" Padding="13,12">
+                                                    <StackPanel>
+                                                        <CheckBox Style="{StaticResource UsersToggleStyle}" Content="Administrator access" IsChecked="{Binding EditIsAdmin}" />
+                                                        <TextBlock Text="Grants full operational control across the store workspace." Style="{StaticResource UsersBodyStyle}" Margin="58,5,0,0" />
+
+                                                        <CheckBox Style="{StaticResource UsersToggleStyle}" Content="Process checkout" IsChecked="{Binding EditCanCheckout}" Margin="0,16,0,0" />
+                                                        <TextBlock Text="Allows starting sales, recording payment, and finalizing receipts." Style="{StaticResource UsersBodyStyle}" Margin="58,5,0,0" />
+
+                                                        <CheckBox Style="{StaticResource UsersToggleStyle}" Content="Override price" IsChecked="{Binding EditCanOverridePrice}" Margin="0,16,0,0" />
+                                                        <TextBlock Text="Allows manual price changes and supervisor-level selling exceptions." Style="{StaticResource UsersBodyStyle}" Margin="58,5,0,0" />
+
+                                                        <CheckBox Style="{StaticResource UsersToggleStyle}" Content="View reports" IsChecked="{Binding EditCanViewReports}" Margin="0,16,0,0" />
+                                                        <TextBlock Text="Allows access to daily summaries, receipt history, and sales review." Style="{StaticResource UsersBodyStyle}" Margin="58,5,0,0" />
+                                                    </StackPanel>
+                                                </Border>
+
+                                                <Border Grid.Column="2" Style="{StaticResource UsersSurfaceCardStyle}" Padding="13,12">
+                                                    <StackPanel>
+                                                        <CheckBox Style="{StaticResource UsersToggleStyle}" Content="Manage products" IsChecked="{Binding EditCanManageProducts}" />
+                                                        <TextBlock Text="Allows product updates, pricing changes, and inventory-related edits." Style="{StaticResource UsersBodyStyle}" Margin="58,5,0,0" />
+
+                                                        <CheckBox Style="{StaticResource UsersToggleStyle}" Content="Manage settings" IsChecked="{Binding EditCanManageSettings}" Margin="0,16,0,0" />
+                                                        <TextBlock Text="Allows changes to store details, tax defaults, and system preferences." Style="{StaticResource UsersBodyStyle}" Margin="58,5,0,0" />
+
+                                                    </StackPanel>
+                                                </Border>
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Style="{StaticResource UsersSurfaceCardStyle}" Padding="14,12" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Button Grid.Column="0" Style="{StaticResource UsersDangerButtonStyle}" Command="{Binding DeactivateUserCommand}" Visibility="{Binding CanDeactivate, Converter={StaticResource BoolToVisibility}}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <iconPacks:PackIconMaterial Kind="AccountOffOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                                    <TextBlock Text="Deactivate User" />
+                                                </StackPanel>
+                                            </Button>
+
+                                            <TextBlock Grid.Column="1"
+                                                       Text="Review changes carefully. Save applies your updates, while cancel returns to read-only view."
+                                                       Style="{StaticResource UsersBodyStyle}"
+                                                       VerticalAlignment="Center"
+                                                       Margin="14,0,14,0" />
+
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                <Button Style="{StaticResource UsersSecondaryButtonStyle}" Content="Cancel Changes" Command="{Binding CancelCommand}" Margin="0,0,8,0" />
+                                                <Button Style="{StaticResource UsersPrimaryButtonStyle}" Command="{Binding SaveUserCommand}" CommandParameter="{Binding ElementName=PasswordBox}" IsEnabled="{Binding IsEditUnlocked}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <iconPacks:PackIconMaterial Kind="ContentSaveOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                                        <TextBlock Text="Save Changes" />
+                                                    </StackPanel>
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+
+                                    <Border Background="#EEF9F0"
+                                            BorderBrush="#C6E9CF"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="12,9"
+                                            Visibility="{Binding HasStatus, Converter={StaticResource BoolToVisibility}}">
+                                        <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource MacUsersSuccessBrush}" FontWeight="SemiBold" TextWrapping="Wrap" FontSize="12" />
+                                    </Border>
+                                </StackPanel>
+                            </ScrollViewer>
+
+                            <Border Panel.ZIndex="2"
+                                    Background="#7818233A"
+                                    CornerRadius="16"
+                                    Visibility="{Binding ShowUnlockPrompt, Converter={StaticResource BoolToVisibility}}">
+                                <Border Width="420"
+                                        MaxWidth="420"
+                                        Padding="22"
+                                        Background="{StaticResource MacUsersCardBrush}"
+                                        BorderBrush="{StaticResource MacUsersBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="20"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center">
+                                    <StackPanel>
+                                        <Border Width="50" Height="50" Background="#E8F0FF" BorderBrush="#D6E5FB" BorderThickness="1" CornerRadius="15" HorizontalAlignment="Center">
+                                            <iconPacks:PackIconMaterial Kind="ShieldLockOutline" Width="22" Height="22" Foreground="{StaticResource MacUsersAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                        </Border>
+                                        <TextBlock Text="Unlock this profile?" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource MacUsersTextPrimaryBrush}" TextAlignment="Center" Margin="0,16,0,0" />
+                                        <TextBlock Text="You are about to edit credentials and permission settings for this team member. Continue only when you intend to update access." Style="{StaticResource UsersSubtitleStyle}" TextAlignment="Center" Margin="0,10,0,0" />
+
+                                        <Border Background="#F6F9FD" BorderBrush="#E0E8F4" BorderThickness="1" CornerRadius="14" Padding="14" Margin="0,16,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="What unlock does" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource MacUsersTextPrimaryBrush}" />
+                                                <TextBlock Text="It temporarily enables name, sign-in, password, PIN, and permission controls until you save or cancel." Style="{StaticResource UsersBodyStyle}" Margin="0,6,0,0" />
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Grid Margin="0,20,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="10" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <Button Grid.Column="0" Style="{StaticResource UsersSecondaryButtonStyle}" Command="{Binding DismissUnlockPromptCommand}" Content="Not Now" />
+                                            <Button Grid.Column="2" Style="{StaticResource UsersPrimaryButtonStyle}" Command="{Binding ConfirmUnlockEditCommand}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <iconPacks:PackIconMaterial Kind="LockOpenOutline" Width="14" Height="14" Margin="0,0,6,0" />
+                                                    <TextBlock Text="Unlock Profile" />
+                                                </StackPanel>
+                                            </Button>
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                            </Border>
+
+                            <Border Panel.ZIndex="1"
+                                    Style="{StaticResource UsersSurfaceCardStyle}"
+                                    Visibility="{Binding ShowEmptySelectionState, Converter={StaticResource BoolToVisibility}}"
+                                    VerticalAlignment="Stretch"
+                                    HorizontalAlignment="Stretch">
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <Border Width="68" Height="68" Background="#E8F0FF" CornerRadius="22" HorizontalAlignment="Center">
+                                        <iconPacks:PackIconMaterial Kind="AccountSearchOutline" Width="32" Height="32" Foreground="{StaticResource MacUsersAccentBrush}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                    </Border>
+                                    <TextBlock Text="No team member selected" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource MacUsersTextPrimaryBrush}" HorizontalAlignment="Center" Margin="0,16,0,0" />
+                                    <TextBlock Text="Choose a user from the roster or add a new team member to review access." Style="{StaticResource UsersSubtitleStyle}" TextAlignment="Center" Width="340" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
