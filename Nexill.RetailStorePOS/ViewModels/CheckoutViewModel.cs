@@ -972,6 +972,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                     Name = item.Name,
                     Barcode = item.Barcode,
                     Price = item.Price,
+                    ItemCost = item.CostPrice,
                     Quantity = item.Quantity,
                     TaxRatePercent = _taxEnabled ? item.TaxRatePercent : 0m,
                     TaxAmount = _taxEnabled ? item.TaxAmount : 0m,

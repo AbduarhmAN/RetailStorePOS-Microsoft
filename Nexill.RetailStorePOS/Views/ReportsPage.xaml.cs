@@ -4,6 +4,12 @@ using RetailStorePOS.WinUiLogin.ViewModels;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
+public class ProductVelocityItem
+{
+    public string ProductName { get; set; } = string.Empty;
+    public string VelocityText { get; set; } = string.Empty;
+}
+
 public sealed partial class ReportsPage : Page
 {
     public ReportsViewModel ViewModel { get; } = new();

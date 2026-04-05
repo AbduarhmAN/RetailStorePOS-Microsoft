@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using RetailStorePOS.Data.Models;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Models;
+using RetailStorePOS.WinUiLogin.Views;
 
 namespace RetailStorePOS.WinUiLogin.ViewModels;
 
@@ -19,6 +20,10 @@ public sealed class ReportsViewModel : ObservableObject
     private decimal _totalSales;
     private decimal _netSales;
     private decimal _taxCollected;
+    private decimal _grossProfit;
+    private decimal _profitMargin;
+    private decimal _cashTotal;
+    private decimal _cardTotal;
     private int _transactionsCount;
     private decimal _averageSale;
     private int _visibleTransactionsCount;
@@ -101,6 +106,9 @@ public sealed class ReportsViewModel : ObservableObject
         }
     }
 
+    public ObservableCollection<ProductVelocityItem> TopMovers { get; } = new();
+    public ObservableCollection<ProductVelocityItem> SlowMovers { get; } = new();
+
     public string RangeLabel
     {
         get => _rangeLabel;
@@ -110,7 +118,16 @@ public sealed class ReportsViewModel : ObservableObject
     public string TotalSalesText => _totalSales.ToString("C2", CultureInfo.CurrentCulture);
     public string NetSalesText => _netSales.ToString("C2", CultureInfo.CurrentCulture);
     public string TaxCollectedText => _taxCollected.ToString("C2", CultureInfo.CurrentCulture);
+    public string GrossProfitText => _grossProfit.ToString("C2", CultureInfo.CurrentCulture);
+    public string ProfitMarginText => _profitMargin.ToString("P1", CultureInfo.CurrentCulture);
+    public string CashTotalText => _cashTotal.ToString("C2", CultureInfo.CurrentCulture);
+    public string CardTotalText => _cardTotal.ToString("C2", CultureInfo.CurrentCulture);
+
     public string AverageSaleText => _averageSale.ToString("C2", CultureInfo.CurrentCulture);
+
+    public SolidColorBrush TodayPresetBackground => IsTodayPreset ? new SolidColorBrush(Microsoft.UI.Colors.LightGray) : new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+    public SolidColorBrush Last7PresetBackground => IsLast7DaysPreset ? new SolidColorBrush(Microsoft.UI.Colors.LightGray) : new SolidColorBrush(Microsoft.UI.Colors.Transparent);
+    public SolidColorBrush Last30PresetBackground => IsLast30DaysPreset ? new SolidColorBrush(Microsoft.UI.Colors.LightGray) : new SolidColorBrush(Microsoft.UI.Colors.Transparent);
 
     public int TransactionsCount
     {
@@ -329,10 +346,26 @@ public sealed class ReportsViewModel : ObservableObject
                 ? 0
                 : Math.Round(_totalSales / TransactionsCount, 2, MidpointRounding.AwayFromZero);
 
+            _cashTotal = _rangeSales.Where(s => s.PaymentType.Equals("Cash", StringComparison.OrdinalIgnoreCase)).Sum(s => s.Total);
+            _cardTotal = _rangeSales.Where(s => s.PaymentType.Equals("Card", StringComparison.OrdinalIgnoreCase) || s.PaymentType.Equals("Credit", StringComparison.OrdinalIgnoreCase) || s.PaymentType.Equals("Debit", StringComparison.OrdinalIgnoreCase)).Sum(s => s.Total);
+
+            var totalCogs = _rangeSales.SelectMany(s => s.Items).Sum(i => i.Quantity * i.ItemCost);
+            _grossProfit = _netSales - totalCogs;
+            _profitMargin = _netSales > 0 ? _grossProfit / _netSales : 0;
+
             OnPropertyChanged(nameof(TotalSalesText));
             OnPropertyChanged(nameof(TaxCollectedText));
             OnPropertyChanged(nameof(NetSalesText));
             OnPropertyChanged(nameof(AverageSaleText));
+            OnPropertyChanged(nameof(GrossProfitText));
+            OnPropertyChanged(nameof(ProfitMarginText));
+            OnPropertyChanged(nameof(CashTotalText));
+            OnPropertyChanged(nameof(CardTotalText));
+            OnPropertyChanged(nameof(TodayPresetBackground));
+            OnPropertyChanged(nameof(Last7PresetBackground));
+            OnPropertyChanged(nameof(Last30PresetBackground));
+
+            UpdateProductVelocity();
 
             UpdateCustomRangeLabel();
             ApplySearchFilter();
@@ -340,6 +373,39 @@ public sealed class ReportsViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = $"ERROR: {ex.Message}";
+        }
+    }
+
+    private void UpdateProductVelocity()
+    {
+        TopMovers.Clear();
+        SlowMovers.Clear();
+
+        var itemQuantities = new Dictionary<string, decimal>();
+        foreach (var sale in _rangeSales)
+        {
+            foreach (var item in sale.Items)
+            {
+                if (!itemQuantities.ContainsKey(item.Name))
+                {
+                    itemQuantities[item.Name] = 0;
+                }
+                itemQuantities[item.Name] += item.Quantity;
+            }
+        }
+
+        var sortedItems = itemQuantities.OrderByDescending(kvp => kvp.Value).ToList();
+
+        var top = sortedItems.Take(10);
+        foreach (var kvp in top)
+        {
+            TopMovers.Add(new ProductVelocityItem { ProductName = kvp.Key, VelocityText = $"{kvp.Value} sold" });
+        }
+
+        var slow = sortedItems.OrderBy(kvp => kvp.Value).Take(10);
+        foreach (var kvp in slow)
+        {
+            SlowMovers.Add(new ProductVelocityItem { ProductName = kvp.Key, VelocityText = $"{kvp.Value} sold" });
         }
     }
 
