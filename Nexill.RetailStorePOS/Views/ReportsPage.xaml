@@ -19,143 +19,198 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="6"
-                Padding="16"
-                Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-         
-                    <StackPanel>
-                        <TextBlock Text="Reports" Style="{StaticResource TitleTextBlockStyle}" FontSize="22" FontWeight="SemiBold"/>
-                        <TextBlock Text="Sales totals and transaction history" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                    <Button CornerRadius="3" Command="{x:Bind ViewModel.OpenReceiptFolderCommand}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <SymbolIcon Symbol="Folder" />
-                            <TextBlock Text="Receipts Folder" />
-                        </StackPanel>
-                    </Button>
-                    <Button  CornerRadius="3" Command="{x:Bind ViewModel.RefreshCommand}" Style="{StaticResource AccentButtonStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <SymbolIcon Symbol="Refresh" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" />
-                            <TextBlock Text="Refresh" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}"/>
-                        </StackPanel>
-                    </Button>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- Filters Layer -->
-        <Border Grid.Row="1"
-                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="6"
-                Padding="16"
-                Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
-            <Grid ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="Quick Range" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <ToggleButton Content="Today" IsChecked="{x:Bind ViewModel.IsTodayPreset, Mode=OneWay}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" CornerRadius="3"/>
-                        <ToggleButton Content="7 Days" IsChecked="{x:Bind ViewModel.IsLast7DaysPreset, Mode=OneWay}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" CornerRadius="3"/>
-                        <ToggleButton Content="30 Days" IsChecked="{x:Bind ViewModel.IsLast30DaysPreset, Mode=OneWay}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" CornerRadius="3"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="From" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
-                    <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="3" />
-                </StackPanel>
-
-                <StackPanel Grid.Column="2">
-                    <TextBlock Text="To" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
-                    <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="3"/>
-                </StackPanel>
-
-                <StackPanel Grid.Column="3">
-                    <TextBlock Text="Search (Receipt, Size, Cash, Time)" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,8" />
-                    <Grid ColumnSpacing="4">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <TextBox CornerRadius="3" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search transactions..." />
-                        <Button Grid.Column="1" CornerRadius="3" Command="{x:Bind ViewModel.ClearSearchCommand}" ToolTipService.ToolTip="Clear Search">
-                            <SymbolIcon Symbol="Clear" />
-                        </Button>
-                    </Grid>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <!-- KPI Metrics Layer -->
-        <Grid Grid.Row="2" ColumnSpacing="16" Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
+        <Grid Grid.Row="0" Margin="0,0,0,24" Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
+                <TextBlock Text="Reports &amp; Insights" Style="{StaticResource NotionPageTitleStyle}"/>
+                <TextBlock Text="Sales totals and transaction history" Style="{StaticResource NotionMetaTextStyle}"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+                <Button Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.OpenReceiptFolderCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <SymbolIcon Symbol="Folder" Foreground="{StaticResource MutedText}" />
+                        <TextBlock Text="Receipts" />
+                    </StackPanel>
+                </Button>
+                <Button Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.RefreshCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <SymbolIcon Symbol="Refresh" Foreground="{StaticResource MutedText}" />
+                        <TextBlock Text="Refresh" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Filters Layer -->
+        <Grid Grid.Row="1" ColumnSpacing="24" Margin="0,0,0,32" Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
-                 <StackPanel Spacing="4">
-                     <TextBlock Text="Total Sales" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                     <TextBlock Text="{x:Bind ViewModel.TotalSalesText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                 </StackPanel>
-            </Border>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="Quick Range" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Today" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
+                    <Button Content="7 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
+                    <Button Content="30 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
+                </StackPanel>
+            </StackPanel>
 
-            <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="06" Padding="16">
-                 <StackPanel Spacing="4">
-                     <TextBlock Text="Net Sales" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                     <TextBlock Text="{x:Bind ViewModel.NetSalesText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                 </StackPanel>
-            </Border>
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="From" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+            </StackPanel>
 
-            <Border Grid.Column="2" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="06" Padding="16">
-                 <StackPanel Spacing="4">
-                     <TextBlock Text="Tax Collected" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                     <TextBlock Text="{x:Bind ViewModel.TaxCollectedText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                 </StackPanel>
-            </Border>
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="To" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+            </StackPanel>
 
-            <Border Grid.Column="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
-                 <StackPanel Spacing="4">
-                     <TextBlock Text="Avg Sale" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                     <TextBlock Text="{x:Bind ViewModel.AverageSaleText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                 </StackPanel>
-            </Border>
-
-            <Border Grid.Column="4" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="16">
-                 <StackPanel Spacing="4">
-                     <TextBlock Text="Transactions" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                     <TextBlock Text="{x:Bind ViewModel.TransactionsCount, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
-                 </StackPanel>
-            </Border>
+            <StackPanel Grid.Column="3">
+                <TextBlock Text="Search" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                <Grid ColumnSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search transactions..." BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                    <Button Grid.Column="1" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}" ToolTipService.ToolTip="Clear Search">
+                        <SymbolIcon Symbol="Clear" Foreground="{StaticResource MutedText}" />
+                    </Button>
+                </Grid>
+            </StackPanel>
         </Grid>
 
+        <!-- KPI Metrics Layer (Tier 1 Cognitive Ease) -->
+        <StackPanel Grid.Row="2" Spacing="32" Margin="0,0,0,32" Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
+            <!-- Profitability Tier 1 -->
+            <StackPanel>
+                <TextBlock Text="Profitability Snapshot" Style="{StaticResource NotionSectionHeaderStyle}" />
+                <Grid ColumnSpacing="32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                         <TextBlock Text="Gross Profit" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.GrossProfitText, Mode=OneWay}" FontSize="32" FontWeight="Bold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                         <TextBlock Text="Total Net Revenue" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.NetSalesText, Mode=OneWay}" FontSize="32" FontWeight="Bold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                         <TextBlock Text="Profit Margin" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.ProfitMarginText, Mode=OneWay}" FontSize="32" FontWeight="Bold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- Daily X-Report Tier 1 -->
+            <StackPanel>
+                <TextBlock Text="Daily Operational Snapshot (X-Report)" Style="{StaticResource NotionSectionHeaderStyle}" />
+                <Grid ColumnSpacing="32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                         <TextBlock Text="Expected Drawer" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.TotalSalesText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                         <TextBlock Text="Cash Tendered" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.CashTotalText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                         <TextBlock Text="Card Tendered" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.CardTotalText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3">
+                         <TextBlock Text="Tax Collected" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.TaxCollectedText, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="4">
+                         <TextBlock Text="Transactions" Style="{StaticResource NotionMetaTextStyle}" />
+                         <TextBlock Text="{x:Bind ViewModel.TransactionsCount, Mode=OneWay}" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- Velocity Tier 1 -->
+            <StackPanel>
+                <TextBlock Text="Itemized Product Velocity" Style="{StaticResource NotionSectionHeaderStyle}" />
+                <Grid ColumnSpacing="32">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Top Movers" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.TopMovers, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="views:ProductVelocityItem">
+                                    <Grid Margin="0,0,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind ProductName}" Style="{StaticResource NotionBodyTextStyle}" />
+                                        <Border Grid.Column="1" Background="#E6F4EA" CornerRadius="4" Padding="6,2">
+                                            <TextBlock Text="{x:Bind VelocityText}" Foreground="#137333" FontSize="12" FontWeight="SemiBold" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Slow Movers" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                        <ItemsControl ItemsSource="{x:Bind ViewModel.SlowMovers, Mode=OneWay}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="views:ProductVelocityItem">
+                                    <Grid Margin="0,0,0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind ProductName}" Style="{StaticResource NotionBodyTextStyle}" />
+                                        <Border Grid.Column="1" Background="#FCE8E6" CornerRadius="4" Padding="6,2">
+                                            <TextBlock Text="{x:Bind VelocityText}" Foreground="#C5221F" FontSize="12" FontWeight="SemiBold" />
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </StackPanel>
+
         <!-- Transaction Grid -->
-        <Border Grid.Row="3" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="0">
+        <Border Grid.Row="3" Background="Transparent" BorderBrush="{StaticResource BorderDivider}" BorderThickness="0,1,0,0" Padding="0,16,0,0">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -163,35 +218,33 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" Padding="16,14,16,14" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                <Grid Grid.Row="0" Padding="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="2">
-                        <TextBlock Text="{x:Bind ViewModel.RangeLabel, Mode=OneWay}" FontWeight="SemiBold" FontSize="16" />
-                        <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock Text="{x:Bind ViewModel.RangeLabel, Mode=OneWay}" Style="{StaticResource NotionSectionHeaderStyle}" Margin="0" />
+                        <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" />
                     </StackPanel>
                     <TextBlock Grid.Column="1"
                                Text="{x:Bind ViewModel.VisibleTransactionsCount, Mode=OneWay}"
-                               Style="{StaticResource CaptionTextBlockStyle}"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Style="{StaticResource NotionMetaTextStyle}"
                                VerticalAlignment="Center"
                                Margin="0,0,12,0" />
-                    <AppBarButton Grid.Column="2"
-                                  Command="{x:Bind ViewModel.ToggleTransactionsViewCommand, Mode=OneWay}"
-                                  ToolTipService.ToolTip="{x:Bind ViewModel.TransactionToggleTooltip, Mode=OneWay}"
-                                  VerticalAlignment="Center">
-                        <AppBarButton.Icon>
-                            <SymbolIcon Symbol="{x:Bind ViewModel.TransactionToggleSymbol, Mode=OneWay}" />
-                        </AppBarButton.Icon>
-                    </AppBarButton>
+                    <Button Grid.Column="2"
+                            Style="{StaticResource NotionButtonStyle}"
+                            Command="{x:Bind ViewModel.ToggleTransactionsViewCommand, Mode=OneWay}"
+                            ToolTipService.ToolTip="{x:Bind ViewModel.TransactionToggleTooltip, Mode=OneWay}"
+                            VerticalAlignment="Center">
+                        <SymbolIcon Symbol="{x:Bind ViewModel.TransactionToggleSymbol, Mode=OneWay}" Foreground="{StaticResource MutedText}" />
+                    </Button>
                 </Grid>
 
-                <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Sales, Mode=OneWay}" SelectionMode="None" ShowsScrollingPlaceholders="False">
+                <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Sales, Mode=OneWay}" SelectionMode="None" ShowsScrollingPlaceholders="False" Background="Transparent" BorderThickness="0">
                     <ListView.Header>
-                        <Grid Padding="16,12" Background="{ThemeResource LayerFillColorAltBrush}" BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                        <Grid Padding="16,8" BorderBrush="{StaticResource BorderDivider}" BorderThickness="0,0,0,1">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="100" />
                                 <ColumnDefinition Width="120" />
@@ -202,19 +255,19 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="120" />
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="Receipt #" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="1" Text="Date" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="2" Text="Time" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="3" Text="Type" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="4" Text="Subtotal" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="5" Text="Tax" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
-                            <TextBlock Grid.Column="6" Text="Total" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Left" Padding="15,0,0,0" />
-                            <TextBlock Grid.Column="7" Text="Action" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="0" Text="Receipt #" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="Date" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="2" Text="Time" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="3" Text="Type" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="4" Text="Subtotal" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="5" Text="Tax" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                            <TextBlock Grid.Column="6" Text="Total" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Left" Padding="15,0,0,0" />
+                            <TextBlock Grid.Column="7" Text="Action" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
                         </Grid>
                     </ListView.Header>
                     <ListView.ItemTemplate>
                         <DataTemplate x:DataType="models:Sale">
-                            <Grid Padding="16,12">
+                            <Grid Padding="16,12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="0,0,0,1">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="100" />
                                     <ColumnDefinition Width="120" />
@@ -225,18 +278,18 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="120" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="{x:Bind ReceiptNumber}" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="{x:Bind views:ReportsPage.FormatDate(CreatedAt)}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="{x:Bind views:ReportsPage.FormatTime(CreatedAt)}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="3" Text="{x:Bind PaymentType}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="4" Text="{x:Bind views:ReportsPage.FormatCurrency(Subtotal)}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="5" Text="{x:Bind views:ReportsPage.FormatCurrency(Tax)}" VerticalAlignment="Center" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="6" Text="{x:Bind views:ReportsPage.FormatCurrency(Total)}" FontWeight="SemiBold" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="15,0,0,0" />
-                                <Button Grid.Column="7" HorizontalAlignment="Center" CornerRadius="3"
+                                <TextBlock Grid.Column="0" Text="{x:Bind ReceiptNumber}" Foreground="{StaticResource MutedText}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind views:ReportsPage.FormatDate(CreatedAt)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="{x:Bind views:ReportsPage.FormatTime(CreatedAt)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="3" Text="{x:Bind PaymentType}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="4" Text="{x:Bind views:ReportsPage.FormatCurrency(Subtotal)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="5" Text="{x:Bind views:ReportsPage.FormatCurrency(Tax)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="6" Text="{x:Bind views:ReportsPage.FormatCurrency(Total)}" FontWeight="SemiBold" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="15,0,0,0" />
+                                <Button Grid.Column="7" HorizontalAlignment="Center" Style="{StaticResource NotionButtonStyle}"
                                         Command="{Binding ElementName=ReportsPageRoot, Path=ViewModel.ReprintReceiptCommand}" 
                                         CommandParameter="{x:Bind}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
-                                        <SymbolIcon Symbol="Print" />
+                                        <SymbolIcon Symbol="Print" Foreground="{StaticResource MutedText}" />
                                         <TextBlock Text="Reprint" />
                                     </StackPanel>
                                 </Button>
@@ -246,9 +299,9 @@
                 </ListView>
 
                 <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" Visibility="{x:Bind ViewModel.EmptyStateVisibility, Mode=OneWay}" Spacing="8">
-                    <SymbolIcon Symbol="Find" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <TextBlock Text="No transactions found" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                    <TextBlock Text="Try a different date range or search term." Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <SymbolIcon Symbol="Find" Foreground="{StaticResource MutedText}" />
+                    <TextBlock Text="No transactions found" Style="{StaticResource NotionBodyTextStyle}" FontWeight="SemiBold" />
+                    <TextBlock Text="Try a different date range or search term." Style="{StaticResource NotionMetaTextStyle}" />
                 </StackPanel>
             </Grid>
         </Border>

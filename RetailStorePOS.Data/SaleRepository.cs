@@ -27,6 +27,19 @@ public sealed class SaleRepository
         var createdAtText = createdAt.ToUniversalTime().ToString("O");
         sale.ReceiptNumber = receiptNumber;
 
+        using var checkCommand = connection.CreateCommand();
+        checkCommand.Transaction = transaction;
+        checkCommand.CommandText = "SELECT COUNT(*) FROM pragma_table_info('sale_items') WHERE name='item_cost_cents';";
+        var hasCostCol = Convert.ToInt64(checkCommand.ExecuteScalar()) > 0;
+
+        if (!hasCostCol)
+        {
+            using var alterCommand = connection.CreateCommand();
+            alterCommand.Transaction = transaction;
+            alterCommand.CommandText = "ALTER TABLE sale_items ADD COLUMN item_cost_cents INTEGER NOT NULL DEFAULT 0;";
+            alterCommand.ExecuteNonQuery();
+        }
+
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
         command.CommandText = @"
@@ -52,14 +65,15 @@ SELECT last_insert_rowid();";
             using var itemCommand = connection.CreateCommand();
             itemCommand.Transaction = transaction;
             itemCommand.CommandText = @"
-INSERT INTO sale_items (sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot)
-VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @quantity, @tax_rate_percent, @tax_cents, @total_cents, @tax_snapshot);";
+INSERT INTO sale_items (sale_id, product_id, name, barcode, price_cents, item_cost_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot)
+VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, @quantity, @tax_rate_percent, @tax_cents, @total_cents, @tax_snapshot);";
 
             itemCommand.Parameters.AddWithValue("@sale_id", saleId);
             itemCommand.Parameters.AddWithValue("@product_id", item.ProductId);
             itemCommand.Parameters.AddWithValue("@name", item.Name);
             itemCommand.Parameters.AddWithValue("@barcode", (object?)item.Barcode ?? DBNull.Value);
             itemCommand.Parameters.AddWithValue("@price_cents", MoneyUtils.ToCents(item.Price));
+            itemCommand.Parameters.AddWithValue("@item_cost_cents", MoneyUtils.ToCents(item.ItemCost));
             itemCommand.Parameters.AddWithValue("@quantity", (double)item.Quantity);
             itemCommand.Parameters.AddWithValue("@tax_rate_percent", (double)item.TaxRatePercent);
             itemCommand.Parameters.AddWithValue("@tax_cents", MoneyUtils.ToCents(item.TaxAmount));
@@ -143,8 +157,32 @@ WHERE id = @product_id;";
         var saleIdParameters = saleIds.Select((saleId, index) => $"@saleId{index}").ToArray();
 
         using var itemCommand = connection.CreateCommand();
+        // Fallback item_cost_cents handling in case the column doesn't exist yet, but assuming we can select it if schema is right.
+        // We'll select price_cents as item_cost_cents if the schema hasn't been migrated, just as a dummy to avoid crashes if possible.
+        // Ideally the schema is updated.
         itemCommand.CommandText = $@"
-            SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot
+            SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot,
+                   (SELECT name FROM pragma_table_info('sale_items') WHERE name='item_cost_cents') as HasCostCol,
+                   price_cents as default_cost
+            FROM sale_items
+            WHERE sale_id IN ({string.Join(", ", saleIdParameters)})
+            ORDER BY sale_id, id;";
+
+        // A proper way to handle dynamic schema columns in sqlite is to check if it exists or use PRAGMA, but for simplicity we assume we'll just try to select it via a safer query or run a quick alter table. Let's do a quick alter table if needed before query.
+
+        using var checkCommand = connection.CreateCommand();
+        checkCommand.CommandText = "SELECT COUNT(*) FROM pragma_table_info('sale_items') WHERE name='item_cost_cents';";
+        var hasCostCol = Convert.ToInt64(checkCommand.ExecuteScalar()) > 0;
+
+        if (!hasCostCol)
+        {
+            using var alterCommand = connection.CreateCommand();
+            alterCommand.CommandText = "ALTER TABLE sale_items ADD COLUMN item_cost_cents INTEGER NOT NULL DEFAULT 0;";
+            alterCommand.ExecuteNonQuery();
+        }
+
+        itemCommand.CommandText = $@"
+            SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot, item_cost_cents
             FROM sale_items
             WHERE sale_id IN ({string.Join(", ", saleIdParameters)})
             ORDER BY sale_id, id;";
@@ -175,7 +213,8 @@ WHERE id = @product_id;";
                 TaxRatePercent = (decimal)itemReader.GetDouble(6),
                 TaxAmount = MoneyUtils.FromCents(itemReader.GetInt64(7)),
                 LineTotal = MoneyUtils.FromCents(itemReader.GetInt64(8)),
-                TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9)
+                TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9),
+                ItemCost = MoneyUtils.FromCents(itemReader.GetInt64(10))
             });
         }
 
