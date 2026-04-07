@@ -3,81 +3,105 @@
     x:Class="RetailStorePOS.WinUiLogin.Views.SettingsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:RetailStorePOS.WinUiLogin.Views"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="Transparent">
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid x:Name="RootLayout">
-        <NavigationView x:Name="SettingsNavView"
-                        PaneDisplayMode="LeftCompact"
-                        IsPaneToggleButtonVisible="False"
-                        IsBackButtonVisible="Collapsed"
-                        IsSettingsVisible="False"
-                        SelectionChanged="SettingsNavView_SelectionChanged"
-                        Background="Transparent"
-                        ItemInvoked="SettingsNavView_ItemInvoked">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-            <NavigationView.PaneFooter>
-                <Grid Padding="8,8,8,12">
-                    <Button x:Name="SettingsPaneToggleButton"
-                            Width="36"
-                            Height="36"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Bottom"
-                            Background="#FFFFFF"
-                            BorderBrush="#D8E1EF"
-                            BorderThickness="1"
-                            CornerRadius="6"
-                            Click="SettingsPaneToggleButton_Click">
-                        <FontIcon Glyph="&#xE700;"
-                                  FontSize="14"
-                                  Foreground="#4B5563" />
-                    </Button>
-                </Grid>
-            </NavigationView.PaneFooter>
-            
-            <NavigationView.MenuItems>
-                <!-- Main Admin Settings -->
-                <NavigationViewItem x:Name="StoreNav" Content="Store Management" Tag="store">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Shop"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="TaxNav" Content="Tax Configuration" Tag="tax">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Calculator"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                
-                <NavigationViewItem x:Name="UsersNav" Content="Users &amp; Roles" Tag="users">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="People"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                
-                <NavigationViewItemSeparator />
+        <Grid Padding="24,24,24,12">
+            <StackPanel>
+                <TextBlock Text="Settings"
+                           FontSize="28"
+                           FontWeight="Bold" />
+                <TextBlock Text="Store setup, tax defaults, user rules, and cashier preferences in one workspace."
+                           Margin="0,4,0,0"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           TextWrapping="Wrap" />
+            </StackPanel>
+        </Grid>
 
-                <!-- User Preferences -->
-                <NavigationViewItem x:Name="PrefsNav" Content="My Preferences" Tag="prefs">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="ContactInfo"/>
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.MenuItems>
+        <Grid Grid.Row="1"
+              Padding="24,0,24,24"
+              ColumnSpacing="24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="280" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-            <!-- Inner Router Frame -->
-            <Frame x:Name="SettingsContentFrame" Background="Transparent" />
+            <Border Grid.Column="0"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    VerticalAlignment="Top">
+                <NavigationView x:Name="SettingsNavView"
+                                Background="Transparent"
+                                IsSettingsVisible="False"
+                                IsBackButtonVisible="Collapsed"
+                                IsPaneToggleButtonVisible="False"
+                                IsTitleBarAutoPaddingEnabled="False"
+                                AlwaysShowHeader="False"
+                                IsPaneOpen="True"
+                                OpenPaneLength="278"
+                                PaneDisplayMode="Left"
+                                SelectionChanged="SettingsNavView_SelectionChanged">
+                    <NavigationView.MenuItems>
+                        <NavigationViewItem x:Name="StoreNav"
+                                            Content="Store Management"
+                                            Tag="store">
+                            <NavigationViewItem.Icon>
+                                <SymbolIcon Symbol="Shop" />
+                            </NavigationViewItem.Icon>
+                        </NavigationViewItem>
 
-        </NavigationView>
+                        <NavigationViewItem x:Name="TaxNav"
+                                            Content="Tax Configuration"
+                                            Tag="tax">
+                            <NavigationViewItem.Icon>
+                                <SymbolIcon Symbol="Calculator" />
+                            </NavigationViewItem.Icon>
+                        </NavigationViewItem>
+
+                        <NavigationViewItem x:Name="UsersNav"
+                                            Content="Users &amp; Roles"
+                                            Tag="users">
+                            <NavigationViewItem.Icon>
+                                <SymbolIcon Symbol="People" />
+                            </NavigationViewItem.Icon>
+                        </NavigationViewItem>
+
+                        <NavigationViewItem x:Name="PrefsNav"
+                                            Content="My Preferences"
+                                            Tag="prefs">
+                            <NavigationViewItem.Icon>
+                                <SymbolIcon Symbol="ContactInfo" />
+                            </NavigationViewItem.Icon>
+                        </NavigationViewItem>
+                    </NavigationView.MenuItems>
+                    <Grid />
+                </NavigationView>
+            </Border>
+
+            <Border Grid.Column="1"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <Frame x:Name="SettingsContentFrame"
+                       Background="Transparent" />
+            </Border>
+        </Grid>
 
         <TeachingTip x:Name="SettingsSubNavigationTip"
-                     Target="{x:Bind SettingsPaneToggleButton, Mode=OneWay}"
                      Title="Settings navigation"
-                     Subtitle="Use this button to show the full settings navigation."
-                     PreferredPlacement="Top"
+                     Subtitle="Use these sections to switch between Store, Tax, Users, and Preferences."
+                     PreferredPlacement="Right"
                      IsLightDismissEnabled="False"
                      CloseButtonContent="Skip"
                      CloseButtonClick="SettingsSubNavigationTip_CloseButtonClick" />

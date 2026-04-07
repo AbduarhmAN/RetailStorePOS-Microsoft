@@ -9,6 +9,7 @@ namespace RetailStorePOS.WinUiLogin.Views;
 public sealed partial class SettingsPage : Page
 {
     private bool _isWaitingToShowSubNavigationTip;
+    private bool _isSyncingNavigationSelection;
 
     public SettingsViewModel ViewModel { get; }
 
@@ -24,32 +25,29 @@ public sealed partial class SettingsPage : Page
     {
         UpdateNavigationAccess();
 
-        // Check if we are being forced into the Users tab because the first-run tutorial starts there.
         if (LoginRuntime.Auth.CurrentUser?.Username == "admin" &&
             (!LoginRuntime.Settings.IsOnboardingPhaseCleared() || !LoginRuntime.Settings.IsFirstRunTutorialCleared()))
         {
-            SettingsNavView.SelectedItem = UsersNav;
+            SelectNavigation(UsersNav);
             return;
         }
 
-        // Check if external navigation passed a specific tag (e.g., from MainWindow Router)
         if (this.Frame?.Tag is string tag && !string.IsNullOrWhiteSpace(tag))
         {
             if (tag.Equals("users", StringComparison.OrdinalIgnoreCase))
             {
-                SettingsNavView.SelectedItem = UsersNav;
+                SelectNavigation(UsersNav);
                 return;
             }
         }
 
-        // Default routing
         if (ViewModel.CanManageSettings)
         {
-            SettingsNavView.SelectedItem = StoreNav;
+            SelectNavigation(StoreNav);
         }
         else
         {
-            SettingsNavView.SelectedItem = PrefsNav;
+            SelectNavigation(PrefsNav);
         }
     }
 
@@ -66,10 +64,7 @@ public sealed partial class SettingsPage : Page
     {
         StoreNav.Visibility = ViewModel.CanManageSettings ? Visibility.Visible : Visibility.Collapsed;
         TaxNav.Visibility = ViewModel.CanManageSettings ? Visibility.Visible : Visibility.Collapsed;
-        
-        // Ensure UsersNav is tied to user management permissions (Onboarding bypasses this intentionally if Admin)
         UsersNav.Visibility = LoginRuntime.Auth.CanManageUsers ? Visibility.Visible : Visibility.Collapsed;
-        
         PrefsNav.Visibility = Visibility.Visible;
     }
 
@@ -78,30 +73,30 @@ public sealed partial class SettingsPage : Page
         base.OnNavigatedTo(e);
         ViewModel.ReloadCommand.Execute(null);
 
-        // If parameter was passed directly via Frame Navigation
         if (e.Parameter is string targetTag && !string.IsNullOrWhiteSpace(targetTag))
         {
             if (targetTag.Equals("users_nested_route", StringComparison.OrdinalIgnoreCase) || targetTag.Equals("users", StringComparison.OrdinalIgnoreCase))
             {
-                SettingsNavView.SelectedItem = UsersNav;
+                SelectNavigation(UsersNav);
             }
         }
     }
 
     private void SettingsNavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (args.SelectedItemContainer != null)
+        if (_isSyncingNavigationSelection || args.SelectedItemContainer is not NavigationViewItem nav)
         {
-            NavigateToInnerPage(args.SelectedItemContainer.Tag?.ToString());
+            return;
         }
-    }
 
-    private void SettingsNavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
-    {
-         if (args.InvokedItemContainer != null)
-         {
-             NavigateToInnerPage(args.InvokedItemContainer.Tag?.ToString());
-         }
+        var wasTeachingTipOpen = SettingsSubNavigationTip.IsOpen;
+        SettingsSubNavigationTip.IsOpen = false;
+        NavigateToInnerPage(nav.Tag?.ToString());
+
+        if (wasTeachingTipOpen)
+        {
+            DispatcherQueue.TryEnqueue(ShowUsersAdministratorAccessTeachingTip);
+        }
     }
 
     private void NavigateToInnerPage(string? tag)
@@ -115,25 +110,11 @@ public sealed partial class SettingsPage : Page
             _ => typeof(MyPreferencesPage)
         };
 
-        // Note: For UsersPage, we do NOT pass SettingsViewModel because it has its own UsersPageViewModel.
-        // For the sub-setting pages, we pass the centralized SettingsViewModel.
         object? parameters = (targetPageType == typeof(UsersPage)) ? null : ViewModel;
 
         if (SettingsContentFrame.CurrentSourcePageType != targetPageType)
         {
             SettingsContentFrame.Navigate(targetPageType, parameters);
-        }
-    }
-
-    private void SettingsPaneToggleButton_Click(object sender, RoutedEventArgs e)
-    {
-        var wasTeachingTipOpen = SettingsSubNavigationTip.IsOpen;
-        SettingsNavView.IsPaneOpen = !SettingsNavView.IsPaneOpen;
-        SettingsSubNavigationTip.IsOpen = false;
-
-        if (wasTeachingTipOpen)
-        {
-            DispatcherQueue.TryEnqueue(ShowUsersAdministratorAccessTeachingTip);
         }
     }
 
@@ -145,9 +126,9 @@ public sealed partial class SettingsPage : Page
             return;
         }
 
-        SettingsPaneToggleButton.UpdateLayout();
+        SettingsNavView.UpdateLayout();
         SettingsSubNavigationTip.IsOpen = false;
-        SettingsSubNavigationTip.Target = SettingsPaneToggleButton;
+        SettingsSubNavigationTip.Target = SettingsNavView;
         SettingsSubNavigationTip.IsOpen = true;
     }
 
@@ -168,9 +149,29 @@ public sealed partial class SettingsPage : Page
     private bool IsSubNavigationTipTargetReady()
     {
         return IsLoaded &&
-               SettingsPaneToggleButton.Visibility == Visibility.Visible &&
-               SettingsPaneToggleButton.ActualWidth > 0 &&
-               SettingsPaneToggleButton.ActualHeight > 0;
+               SettingsNavView.Visibility == Visibility.Visible &&
+               SettingsNavView.ActualWidth > 0 &&
+               SettingsNavView.ActualHeight > 0;
+    }
+
+    private void SelectNavigation(NavigationViewItem nav)
+    {
+        if (nav.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+
+        _isSyncingNavigationSelection = true;
+        try
+        {
+            SettingsNavView.SelectedItem = nav;
+        }
+        finally
+        {
+            _isSyncingNavigationSelection = false;
+        }
+
+        NavigateToInnerPage(nav.Tag?.ToString());
     }
 
     private void QueueSubNavigationTeachingTip()

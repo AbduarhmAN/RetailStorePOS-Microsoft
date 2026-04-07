@@ -102,7 +102,6 @@
                               ItemsSource="{x:Bind ViewModel.Users, Mode=OneWay}"
                               SelectionMode="Single"
                               IsItemClickEnabled="True"
-                              ItemClick="UsersListView_ItemClick"
                               SelectionChanged="UsersListView_SelectionChanged"
                               Padding="0"
                               BorderThickness="0">
@@ -216,7 +215,8 @@
                     </Grid>
 
                     <Grid Grid.Row="1">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer x:Name="UserEditorScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Spacing="14">
                                 <Border Visibility="{x:Bind ViewModel.ReadOnlyBannerVisibility, Mode=OneWay}"
@@ -656,13 +656,36 @@
                      IsLightDismissEnabled="False"
                      CloseButtonContent="Skip"
                      CloseButtonClick="AdministratorAccessTip_CloseButtonClick" />
-        <TeachingTip x:Name="UserEditorActionsTip"
-                     Target="{x:Bind UsersListView, Mode=OneWay}"
+        <TeachingTip x:Name="NewUserTeachingTip"
+                     Target="{x:Bind NewUserButton, Mode=OneWay}"
                      PreferredPlacement="Bottom"
                      IsLightDismissEnabled="False"
                      CloseButtonContent="Skip"
-                     ActionButtonClick="UserEditorActionsTip_ActionButtonClick"
-                     CloseButtonClick="UserEditorActionsTip_CloseButtonClick" />
+                     ActionButtonContent="Next"
+                     Title="New user"
+                     Subtitle="Use this to create another staff account from the user-management page."
+                     ActionButtonClick="NewUserTeachingTip_ActionButtonClick"
+                     CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
+        <TeachingTip x:Name="UnlockTeachingTip"
+                     Target="{x:Bind UnlockUserButton, Mode=OneWay}"
+                     PreferredPlacement="Bottom"
+                     IsLightDismissEnabled="False"
+                     CloseButtonContent="Skip"
+                     ActionButtonContent="Next"
+                     Title="Unlock"
+                     Subtitle="Use this before editing protected credentials and permission settings."
+                     ActionButtonClick="UnlockTeachingTip_ActionButtonClick"
+                     CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
+        <TeachingTip x:Name="SaveChangesTeachingTip"
+                     Target="{x:Bind SaveUserChangesButton, Mode=OneWay}"
+                     PreferredPlacement="Top"
+                     IsLightDismissEnabled="False"
+                     CloseButtonContent="Skip"
+                     ActionButtonContent="Finish"
+                     Title="Save changes"
+                     Subtitle="Use this after reviewing the administrator settings and password changes."
+                     ActionButtonClick="SaveChangesTeachingTip_ActionButtonClick"
+                     CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
     </Grid>
 </Page>
 

@@ -165,6 +165,8 @@ public sealed partial class MainWindow : Window
             return;
         }
 
+        ShellNavigationView.IsPaneOpen = !ShellNavigationView.IsPaneOpen;
+
         if (_isFirstRunTutorialRunning && _firstRunTutorialStepIndex == 0)
         {
             QueueFirstRunTutorialSubNavigationStep();
@@ -182,6 +184,7 @@ public sealed partial class MainWindow : Window
 
         var source = e.OriginalSource as DependencyObject;
         if (IsDescendantOf(source, PaneToggleButton) ||
+            IsDescendantOf(source, ShellNavigationView) ||
             IsDescendantOf(source, FirstRunTutorialTip))
         {
             return;
@@ -190,14 +193,14 @@ public sealed partial class MainWindow : Window
         QueueFirstRunTutorialSubNavigationStep();
     }
 
-    private void ShellNavigationView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void ShellNavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs e)
     {
         if (_isSyncingNavigationSelection || LoginRuntime.Auth.CurrentUser is null)
         {
             return;
         }
 
-        if (sender is not ListView listView || listView.SelectedItem is not ListViewItem item || item.Tag is not string tag)
+        if (e.SelectedItemContainer is not NavigationViewItem item || item.Tag is not string tag)
         {
             return;
         }
@@ -213,6 +216,8 @@ public sealed partial class MainWindow : Window
         {
             ResetFirstRunTutorialSession();
             RootFrame.Tag = null;
+            ShellNavigationView.IsPaneOpen = false;
+            ShellNavigationView.IsPaneVisible = false;
             SyncNavigationSelection(null);
             return;
         }
@@ -270,6 +275,7 @@ public sealed partial class MainWindow : Window
 
         if (_isSettingsSubNavigationTipArmed &&
             e.SourcePageType == typeof(SettingsPage) &&
+            !ShellNavigationView.IsPaneOpen &&
             GetCurrentSettingsPage() is SettingsPage settingsPage)
         {
             _isSettingsSubNavigationTipArmed = false;
@@ -553,7 +559,7 @@ public sealed partial class MainWindow : Window
 
     private void ShellNavigationView_PaneOpenStateChanged(DependencyObject sender, DependencyProperty dp)
     {
-        HandleShellNavigationPaneStateChanged(false);
+        HandleShellNavigationPaneStateChanged(ShellNavigationView.IsPaneOpen);
     }
 
     private void HandleShellNavigationPaneStateChanged(bool isOpen)
@@ -675,7 +681,16 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            // ListView doesn't expose easy named items without x:Name, assuming selection changed already updated it.
+            ShellNavigationView.SelectedItem = tag switch
+            {
+                "checkout" => CheckoutNavItem,
+                "products" => ProductsNavItem,
+                "reports" => ReportsNavItem,
+                "settings" => SettingsNavItem,
+                "about" => AboutNavItem,
+                "signout" => SignOutNavItem,
+                _ => null
+            };
         }
         finally
         {
@@ -705,21 +720,16 @@ public sealed partial class MainWindow : Window
 
     private void UpdateShellChrome()
     {
-        if (LoginRuntime.Auth.CurrentUser is not { } user)
+        if (LoginRuntime.Auth.CurrentUser is null)
         {
             PaneToggleButton.Visibility = Visibility.Collapsed;
-            UserBadge.Visibility = Visibility.Collapsed;
-            UserNameText.Text = string.Empty;
-            UserPicture.Initials = string.Empty;
+            ShellNavigationView.IsPaneOpen = false;
+            ShellNavigationView.IsPaneVisible = false;
             return;
         }
 
         PaneToggleButton.Visibility = Visibility.Visible;
-        UserBadge.Visibility = Visibility.Visible;
-
-        var displayName = string.IsNullOrWhiteSpace(user.DisplayName) ? user.Username : user.DisplayName;
-        UserNameText.Text = displayName;
-        UserPicture.Initials = BuildInitials(displayName);
+        ShellNavigationView.IsPaneVisible = true;
     }
 
     private void UpdateNavigationAccess()
@@ -775,22 +785,6 @@ public sealed partial class MainWindow : Window
         }
 
         return "settings";
-    }
-
-    private static string BuildInitials(string displayName)
-    {
-        var parts = displayName
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Take(2)
-            .Select(part => char.ToUpperInvariant(part[0]))
-            .ToArray();
-
-        if (parts.Length == 0)
-        {
-            return "?";
-        }
-
-        return new string(parts);
     }
 
     private sealed class TutorialStep

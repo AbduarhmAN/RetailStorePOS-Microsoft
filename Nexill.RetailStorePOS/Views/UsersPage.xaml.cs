@@ -11,14 +11,23 @@ namespace RetailStorePOS.WinUiLogin.Views;
 
 public sealed partial class UsersPage : Page
 {
+    private enum UsersOnboardingStep
+    {
+        None,
+        AdminRowTipOpen,
+        WaitingForNewUserTip,
+        NewUserTipOpen,
+        WaitingForUnlockTip,
+        UnlockTipOpen,
+        WaitingForSaveTip,
+        SaveTipOpen,
+        Completed
+    }
+
     private bool _isSyncingSelection;
     private bool _isWaitingToShowAdministratorTip;
-    private bool _isWaitingToShowUserActionTip;
-    private bool _hasShownAdministratorTip;
-    private bool _hasCompletedUserActionTipSequence;
-    private bool _isUserActionTipSequenceQueued;
-    private int _pendingUserActionTipStepIndex = -1;
-    private int _userActionTipStepIndex = -1;
+    private bool _isAdministratorSelectionRequested;
+    private UsersOnboardingStep _usersOnboardingStep = UsersOnboardingStep.None;
 
     public UsersPageViewModel ViewModel { get; } = new();
 
@@ -36,7 +45,7 @@ public sealed partial class UsersPage : Page
         EnsureAdministratorSelectedForOnboarding();
         SyncListSelection();
 
-        if (ViewModel.IsOnboardingActive && !_hasShownAdministratorTip && !_hasCompletedUserActionTipSequence)
+        if (ViewModel.IsOnboardingActive && _usersOnboardingStep == UsersOnboardingStep.None)
         {
             ShowAdministratorAccessTeachingTip();
         }
@@ -44,15 +53,11 @@ public sealed partial class UsersPage : Page
 
     private void UsersPage_Unloaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
-        if (_isWaitingToShowAdministratorTip || _isWaitingToShowUserActionTip)
+        if (_isWaitingToShowAdministratorTip)
         {
             LayoutUpdated -= UsersPage_LayoutUpdated;
             _isWaitingToShowAdministratorTip = false;
-            _isWaitingToShowUserActionTip = false;
-            _pendingUserActionTipStepIndex = -1;
         }
-
-        _isUserActionTipSequenceQueued = false;
 
         ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
         ViewModel.Dispose();
@@ -63,6 +68,15 @@ public sealed partial class UsersPage : Page
         if (e.PropertyName == nameof(ViewModel.SelectedUser))
         {
             SyncListSelection();
+            QueueUsersOnboardingEvaluation();
+            return;
+        }
+
+        if (e.PropertyName == nameof(ViewModel.IsOnboardingActive) ||
+            e.PropertyName == nameof(ViewModel.HasSelectedUserVisibility) ||
+            e.PropertyName == nameof(ViewModel.IsUnlockRequiredVisibility))
+        {
+            QueueUsersOnboardingEvaluation();
         }
     }
 
@@ -82,6 +96,8 @@ public sealed partial class UsersPage : Page
         {
             _isSyncingSelection = false;
         }
+
+        QueueUsersOnboardingEvaluation();
     }
 
     private void SyncListSelection()
@@ -110,16 +126,6 @@ public sealed partial class UsersPage : Page
         }
     }
 
-    private void UsersListView_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is not User clickedUser)
-        {
-            return;
-        }
-
-        TryStartAdministratorActionTipSequence(clickedUser);
-    }
-
     private void UserCard_Tapped(object sender, TappedRoutedEventArgs e)
     {
         if (sender is not FrameworkElement element || element.DataContext is not User clickedUser)
@@ -127,12 +133,20 @@ public sealed partial class UsersPage : Page
             return;
         }
 
-        e.Handled = TryStartAdministratorActionTipSequence(clickedUser);
+        _isAdministratorSelectionRequested = true;
+
+        if (!Equals(ViewModel.SelectedUser, clickedUser))
+        {
+            ViewModel.SelectedUser = clickedUser;
+            SyncListSelection();
+        }
+
+        QueueUsersOnboardingEvaluation();
     }
 
     public void ShowAdministratorAccessTeachingTip()
     {
-        if (!ViewModel.IsOnboardingActive || _hasShownAdministratorTip || _hasCompletedUserActionTipSequence)
+        if (!ViewModel.IsOnboardingActive || _usersOnboardingStep == UsersOnboardingStep.Completed)
         {
             return;
         }
@@ -149,16 +163,16 @@ public sealed partial class UsersPage : Page
         }
 
         target!.UpdateLayout();
-        AdministratorAccessTip.IsOpen = false;
+        CloseAllUsersOnboardingTips();
         AdministratorAccessTip.Target = target;
         AdministratorAccessTip.IsOpen = true;
-        _hasShownAdministratorTip = true;
+        _usersOnboardingStep = UsersOnboardingStep.AdminRowTipOpen;
     }
 
     private void AdministratorAccessTip_CloseButtonClick(TeachingTip sender, object args)
     {
         sender.IsOpen = false;
-        _hasShownAdministratorTip = true;
+        CompleteUsersOnboardingSequence();
     }
 
     private void EnsureAdministratorSelectedForOnboarding()
@@ -204,15 +218,7 @@ public sealed partial class UsersPage : Page
             }
         }
 
-        if (_isWaitingToShowUserActionTip && _pendingUserActionTipStepIndex >= 0)
-        {
-            if (TryResolveUserActionTeachingTipStep(_pendingUserActionTipStepIndex, out var resolvedStepIndex, out var target, out _, out _, out _, out _) &&
-                IsUserActionTipTargetReady(target))
-            {
-                _isWaitingToShowUserActionTip = false;
-                ShowUserActionTeachingTip(resolvedStepIndex);
-            }
-        }
+        EvaluateUsersOnboardingState();
 
         StopWaitingForLayoutIfIdle();
     }
@@ -224,133 +230,107 @@ public sealed partial class UsersPage : Page
             : UsersListView.ContainerFromItem(ViewModel.SelectedUser) as FrameworkElement;
     }
 
-    private void StartUserActionTeachingTipSequence()
+    private void NewUserTeachingTip_ActionButtonClick(TeachingTip sender, object args)
     {
-        if (_hasCompletedUserActionTipSequence)
-        {
-            return;
-        }
-
-        ShowUserActionTeachingTip(0);
+        sender.IsOpen = false;
+        _usersOnboardingStep = UsersOnboardingStep.WaitingForUnlockTip;
+        QueueUsersOnboardingEvaluation();
     }
 
-    private void ShowUserActionTeachingTip(int requestedStepIndex)
+    private void UnlockTeachingTip_ActionButtonClick(TeachingTip sender, object args)
     {
-        if (_hasCompletedUserActionTipSequence)
-        {
-            return;
-        }
-
-        if (!TryResolveUserActionTeachingTipStep(
-                requestedStepIndex,
-                out var resolvedStepIndex,
-                out var target,
-                out var title,
-                out var subtitle,
-                out var actionButtonContent,
-                out var placement))
-        {
-            CompleteUserActionTeachingTipSequence();
-            return;
-        }
-
-        if (!IsUserActionTipTargetReady(target))
-        {
-            QueueUserActionTeachingTip(resolvedStepIndex);
-            return;
-        }
-
-        _pendingUserActionTipStepIndex = -1;
-        _userActionTipStepIndex = resolvedStepIndex;
-        target!.UpdateLayout();
-        UserEditorActionsTip.IsOpen = false;
-        UserEditorActionsTip.Target = target;
-        UserEditorActionsTip.Title = title;
-        UserEditorActionsTip.Subtitle = subtitle;
-        UserEditorActionsTip.ActionButtonContent = actionButtonContent;
-        UserEditorActionsTip.PreferredPlacement = placement;
-        UserEditorActionsTip.IsOpen = true;
+        sender.IsOpen = false;
+        _usersOnboardingStep = UsersOnboardingStep.WaitingForSaveTip;
+        EnsureSaveChangesButtonVisible();
+        QueueUsersOnboardingEvaluation();
     }
 
-    private void QueueUserActionTeachingTip(int stepIndex)
+    private void SaveChangesTeachingTip_ActionButtonClick(TeachingTip sender, object args)
     {
-        _pendingUserActionTipStepIndex = stepIndex;
-        if (_isWaitingToShowUserActionTip)
+        sender.IsOpen = false;
+        CompleteUsersOnboardingSequence();
+    }
+
+    private void UsersWalkthroughTip_CloseButtonClick(TeachingTip sender, object args)
+    {
+        sender.IsOpen = false;
+        CompleteUsersOnboardingSequence();
+    }
+
+    private void QueueUsersOnboardingEvaluation()
+    {
+        if (_usersOnboardingStep == UsersOnboardingStep.Completed || !ViewModel.IsOnboardingActive)
         {
             return;
         }
 
-        _isWaitingToShowUserActionTip = true;
         EnsureLayoutUpdatedSubscription();
-    }
-
-    private void UserEditorActionsTip_ActionButtonClick(TeachingTip sender, object args)
-    {
-        sender.IsOpen = false;
-        ShowUserActionTeachingTip(_userActionTipStepIndex + 1);
-    }
-
-    private void UserEditorActionsTip_CloseButtonClick(TeachingTip sender, object args)
-    {
-        sender.IsOpen = false;
-        CompleteUserActionTeachingTipSequence();
-    }
-
-    private bool TryResolveUserActionTeachingTipStep(
-        int requestedStepIndex,
-        out int resolvedStepIndex,
-        out FrameworkElement? target,
-        out string title,
-        out string subtitle,
-        out string actionButtonContent,
-        out TeachingTipPlacementMode placement)
-    {
-        for (var stepIndex = requestedStepIndex; stepIndex <= 2; stepIndex++)
+        DispatcherQueue.TryEnqueue(() =>
         {
-            switch (stepIndex)
+            EvaluateUsersOnboardingState();
+            StopWaitingForLayoutIfIdle();
+        });
+    }
+
+    private void EvaluateUsersOnboardingState()
+    {
+        if (!ViewModel.IsOnboardingActive || _usersOnboardingStep == UsersOnboardingStep.Completed)
+        {
+            return;
+        }
+
+        if (_usersOnboardingStep != UsersOnboardingStep.None &&
+            _usersOnboardingStep != UsersOnboardingStep.AdminRowTipOpen &&
+            (ViewModel.SelectedUser is not User selectedUser || !IsAdministratorUser(selectedUser)))
+        {
+            CompleteUsersOnboardingSequence();
+            return;
+        }
+
+        if (_usersOnboardingStep == UsersOnboardingStep.AdminRowTipOpen && _isAdministratorSelectionRequested)
+        {
+            if (ViewModel.SelectedUser is not null && !IsAdministratorUser(ViewModel.SelectedUser))
             {
-                case 0 when IsVisibleTarget(NewUserButton):
-                    resolvedStepIndex = stepIndex;
-                    target = NewUserButton;
-                    title = "New user";
-                    subtitle = "Use this to create another staff account from the user-management page.";
-                    actionButtonContent = "Next";
-                    placement = TeachingTipPlacementMode.Bottom;
-                    return true;
-                case 1 when IsVisibleTarget(UnlockUserButton):
-                    resolvedStepIndex = stepIndex;
-                    target = UnlockUserButton;
-                    title = "Unlock";
-                    subtitle = "Use this before editing protected credentials and permission settings.";
-                    actionButtonContent = "Next";
-                    placement = TeachingTipPlacementMode.Bottom;
-                    return true;
-                case 2 when IsVisibleTarget(SaveUserChangesButton):
-                    resolvedStepIndex = stepIndex;
-                    target = SaveUserChangesButton;
-                    title = "Save changes";
-                    subtitle = "Use this after reviewing the administrator settings and password changes.";
-                    actionButtonContent = "Finish";
-                    placement = TeachingTipPlacementMode.Top;
-                    return true;
+                _isAdministratorSelectionRequested = false;
+                return;
+            }
+
+            if (IsSelectedAdministratorReadyForWalkthrough())
+            {
+                _isAdministratorSelectionRequested = false;
+                AdministratorAccessTip.IsOpen = false;
+                _usersOnboardingStep = UsersOnboardingStep.WaitingForNewUserTip;
             }
         }
 
-        resolvedStepIndex = -1;
-        target = null;
-        title = string.Empty;
-        subtitle = string.Empty;
-        actionButtonContent = string.Empty;
-        placement = TeachingTipPlacementMode.Bottom;
-        return false;
-    }
+        if (_usersOnboardingStep == UsersOnboardingStep.WaitingForNewUserTip &&
+            IsWalkthroughTargetReady(NewUserButton))
+        {
+            ShowNewUserTeachingTip();
+            return;
+        }
 
-    private bool IsUserActionTipTargetReady(FrameworkElement? target)
-    {
-        return target is not null &&
-               target.Visibility == Visibility.Visible &&
-               target.ActualWidth > 0 &&
-               target.ActualHeight > 0;
+        if (_usersOnboardingStep == UsersOnboardingStep.WaitingForUnlockTip)
+        {
+            if (!IsVisibleTarget(UnlockUserButton))
+            {
+                _usersOnboardingStep = UsersOnboardingStep.WaitingForSaveTip;
+            }
+            else if (IsWalkthroughTargetReady(UnlockUserButton))
+            {
+                ShowUnlockTeachingTip();
+                return;
+            }
+        }
+
+        if (_usersOnboardingStep == UsersOnboardingStep.WaitingForSaveTip)
+        {
+            EnsureSaveChangesButtonVisible();
+            if (IsWalkthroughTargetReady(SaveUserChangesButton))
+            {
+                ShowSaveChangesTeachingTip();
+            }
+        }
     }
 
     private static bool IsVisibleTarget(FrameworkElement target)
@@ -363,42 +343,59 @@ public sealed partial class UsersPage : Page
         return user.IsAdmin || string.Equals(user.Username, "admin", StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool TryStartAdministratorActionTipSequence(User clickedUser)
+    private bool IsSelectedAdministratorReadyForWalkthrough()
     {
-        if (!Equals(ViewModel.SelectedUser, clickedUser))
-        {
-            ViewModel.SelectedUser = clickedUser;
-            SyncListSelection();
-        }
+        return ViewModel.SelectedUser is User selectedUser &&
+               IsAdministratorUser(selectedUser) &&
+               ViewModel.HasSelectedUser &&
+               IsWalkthroughTargetReady(NewUserButton);
+    }
 
-        if (!ViewModel.IsOnboardingActive ||
-            !IsAdministratorUser(clickedUser) ||
-            _hasCompletedUserActionTipSequence ||
-            UserEditorActionsTip.IsOpen ||
-            _isUserActionTipSequenceQueued)
-        {
-            return false;
-        }
+    private bool IsWalkthroughTargetReady(FrameworkElement target)
+    {
+        return IsLoaded &&
+               ViewModel.HasSelectedUser &&
+               target.Visibility == Visibility.Visible &&
+               target.ActualWidth > 0 &&
+               target.ActualHeight > 0;
+    }
 
+    private void ShowNewUserTeachingTip()
+    {
+        CloseAllUsersOnboardingTips();
+        NewUserButton.UpdateLayout();
+        NewUserTeachingTip.IsOpen = true;
+        _usersOnboardingStep = UsersOnboardingStep.NewUserTipOpen;
+    }
+
+    private void ShowUnlockTeachingTip()
+    {
+        CloseAllUsersOnboardingTips();
+        UnlockUserButton.UpdateLayout();
+        UnlockTeachingTip.IsOpen = true;
+        _usersOnboardingStep = UsersOnboardingStep.UnlockTipOpen;
+    }
+
+    private void ShowSaveChangesTeachingTip()
+    {
+        CloseAllUsersOnboardingTips();
+        SaveUserChangesButton.UpdateLayout();
+        SaveChangesTeachingTip.IsOpen = true;
+        _usersOnboardingStep = UsersOnboardingStep.SaveTipOpen;
+    }
+
+    private void EnsureSaveChangesButtonVisible()
+    {
+        SaveUserChangesButton.StartBringIntoView();
+        UserEditorScrollViewer.UpdateLayout();
+    }
+
+    private void CloseAllUsersOnboardingTips()
+    {
         AdministratorAccessTip.IsOpen = false;
-        _isWaitingToShowAdministratorTip = false;
-        StopWaitingForLayoutIfIdle();
-        _isUserActionTipSequenceQueued = true;
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            _isUserActionTipSequenceQueued = false;
-            if (_hasCompletedUserActionTipSequence || UserEditorActionsTip.IsOpen)
-            {
-                return;
-            }
-
-            UpdateLayout();
-            NewUserButton.UpdateLayout();
-            UnlockUserButton.UpdateLayout();
-            SaveUserChangesButton.UpdateLayout();
-            StartUserActionTeachingTipSequence();
-        });
-        return true;
+        NewUserTeachingTip.IsOpen = false;
+        UnlockTeachingTip.IsOpen = false;
+        SaveChangesTeachingTip.IsOpen = false;
     }
 
     private void EnsureLayoutUpdatedSubscription()
@@ -409,7 +406,11 @@ public sealed partial class UsersPage : Page
 
     private void StopWaitingForLayoutIfIdle()
     {
-        if (_isWaitingToShowAdministratorTip || _isWaitingToShowUserActionTip)
+        if (_isWaitingToShowAdministratorTip ||
+            _isAdministratorSelectionRequested ||
+            _usersOnboardingStep == UsersOnboardingStep.WaitingForNewUserTip ||
+            _usersOnboardingStep == UsersOnboardingStep.WaitingForUnlockTip ||
+            _usersOnboardingStep == UsersOnboardingStep.WaitingForSaveTip)
         {
             return;
         }
@@ -417,13 +418,12 @@ public sealed partial class UsersPage : Page
         LayoutUpdated -= UsersPage_LayoutUpdated;
     }
 
-    private void CompleteUserActionTeachingTipSequence()
+    private void CompleteUsersOnboardingSequence()
     {
-        _hasCompletedUserActionTipSequence = true;
-        _userActionTipStepIndex = -1;
-        _pendingUserActionTipStepIndex = -1;
-        _isWaitingToShowUserActionTip = false;
-        UserEditorActionsTip.IsOpen = false;
+        _usersOnboardingStep = UsersOnboardingStep.Completed;
+        _isAdministratorSelectionRequested = false;
+        _isWaitingToShowAdministratorTip = false;
+        CloseAllUsersOnboardingTips();
         StopWaitingForLayoutIfIdle();
     }
 }
