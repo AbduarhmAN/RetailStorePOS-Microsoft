@@ -10,12 +10,15 @@
     mc:Ignorable="d"
     Background="Transparent">
 
+    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                  HorizontalScrollBarVisibility="Disabled"
+                  HorizontalScrollMode="Disabled">
     <Grid Padding="24" RowSpacing="{x:Bind ViewModel.PageRowSpacing, Mode=OneWay}" ColumnSpacing="16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -46,48 +49,94 @@
             </StackPanel>
         </Grid>
 
-        <!-- Filters Layer -->
-        <Grid Grid.Row="1" ColumnSpacing="24" Margin="0,0,0,32" Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+        <!-- Inline Tools -->
+        <Border Grid.Row="1"
+                Margin="0,0,0,32"
+                Padding="16"
+                Background="#FCFDFD"
+                BorderBrush="{StaticResource BorderDivider}"
+                BorderThickness="1"
+                CornerRadius="14"
+                Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
+            <Grid RowSpacing="14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-            <StackPanel Grid.Column="0">
-                <TextBlock Text="Quick Range" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <Button Content="Today" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
-                    <Button Content="7 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
-                    <Button Content="30 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
-                </StackPanel>
-            </StackPanel>
-
-            <StackPanel Grid.Column="1">
-                <TextBlock Text="From" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
-                <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
-            </StackPanel>
-
-            <StackPanel Grid.Column="2">
-                <TextBlock Text="To" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
-                <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
-            </StackPanel>
-
-            <StackPanel Grid.Column="3">
-                <TextBlock Text="Search" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
-                <Grid ColumnSpacing="4">
+                <Grid ColumnSpacing="16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search transactions..." BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
-                    <Button Grid.Column="1" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}" ToolTipService.ToolTip="Clear Search">
-                        <SymbolIcon Symbol="Clear" Foreground="{StaticResource MutedText}" />
-                    </Button>
+
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="Filters"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryText}" />
+                        <TextBlock Text="Refine the reporting window without leaving the page body."
+                                   Style="{StaticResource NotionMetaTextStyle}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                Orientation="Horizontal"
+                                Spacing="6"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind ViewModel.RangeLabel, Mode=OneWay}"
+                                   Style="{StaticResource NotionMetaTextStyle}" />
+                        <TextBlock Text="|"
+                                   Style="{StaticResource NotionMetaTextStyle}" />
+                        <TextBlock Text="{x:Bind ViewModel.VisibleTransactionsCount, Mode=OneWay}"
+                                   Style="{StaticResource NotionMetaTextStyle}" />
+                        <TextBlock Text="shown"
+                                   Style="{StaticResource NotionMetaTextStyle}" />
+                    </StackPanel>
                 </Grid>
-            </StackPanel>
-        </Grid>
+
+                <Grid Grid.Row="1" ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="Quick Range" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Today" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
+                            <Button Content="7 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
+                            <Button Content="30 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="From" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                        <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="To" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                        <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3">
+                        <TextBlock Text="Search" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                        <Grid ColumnSpacing="4">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search transactions..." BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                            <Button Grid.Column="1" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}" ToolTipService.ToolTip="Clear Search">
+                                <SymbolIcon Symbol="Clear" Foreground="{StaticResource MutedText}" />
+                            </Button>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
 
         <!-- KPI Metrics Layer (Tier 1 Cognitive Ease) -->
         <StackPanel Grid.Row="2" Spacing="32" Margin="0,0,0,32" Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}">
@@ -242,7 +291,15 @@
                     </Button>
                 </Grid>
 
-                <ListView Grid.Row="1" ItemsSource="{x:Bind ViewModel.Sales, Mode=OneWay}" SelectionMode="None" ShowsScrollingPlaceholders="False" Background="Transparent" BorderThickness="0">
+                <ListView Grid.Row="1"
+                          ItemsSource="{x:Bind ViewModel.Sales, Mode=OneWay}"
+                          SelectionMode="None"
+                          ShowsScrollingPlaceholders="False"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.VerticalScrollMode="Disabled"
+                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                          ScrollViewer.HorizontalScrollMode="Disabled">
                     <ListView.Header>
                         <Grid Padding="16,8" BorderBrush="{StaticResource BorderDivider}" BorderThickness="0,0,0,1">
                             <Grid.ColumnDefinitions>
@@ -307,6 +364,7 @@
         </Border>
 
     </Grid>
+    </ScrollViewer>
 </Page>
 
 

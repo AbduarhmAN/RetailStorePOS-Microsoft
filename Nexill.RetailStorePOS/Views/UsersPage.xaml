@@ -54,7 +54,7 @@
         </Style>
     </Page.Resources>
 
-    <Grid Padding="16,16,16,3">
+    <Grid Padding="3,3,3,3">
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.5*" />
@@ -77,7 +77,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="4" Margin="16">
                             <TextBlock Text="Manage Users"
                                        Style="{StaticResource UsersSectionTitleTextStyle}" />
                             <TextBlock Text="Select a team member to review or edit their account details."

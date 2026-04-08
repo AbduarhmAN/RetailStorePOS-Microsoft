@@ -37,7 +37,7 @@ public sealed partial class AboutPage : Page
                 .Replace("{{POLICY_LAST_UPDATED_DATE}}", GetAssemblyMetadata("RetailStorePOSPolicyLastUpdatedDate", "Unavailable"), StringComparison.Ordinal)
                 .Replace("{{SUPPORT_EMAIL}}", GetAssemblyMetadata("RetailStorePOSSupportEmail", "Unavailable"), StringComparison.Ordinal)
                 .Replace("{{PRIVACY_CONTACT_EMAIL}}", GetAssemblyMetadata("RetailStorePOSPrivacyContactEmail", "Unavailable"), StringComparison.Ordinal)
-                .Replace("Version: 1.0.0", $"Version: {_displayVersion}", StringComparison.Ordinal);
+                .Replace("Version: 1.2.2", $"Version: {_displayVersion}", StringComparison.Ordinal);
 
             PolicyTextBlock.Text = policyText;
         }

@@ -219,7 +219,7 @@ If Nexill later offers paid services, Nexill may apply additional rules for mate
 For questions about these Terms, contact:
 
 Nexill
-maghrbi006@gmail.com
+{{SUPPORT_EMAIL}}
 
 Part II. Privacy Policy
 
@@ -391,7 +391,7 @@ If changes materially affect how Nexill processes personal information, Nexill w
 For privacy questions or rights requests, contact:
 
 Nexill
-maghrbi006@gmail.com
+{{PRIVACY_CONTACT_EMAIL}}
 
 If EEA or UK representative details are required, Nexill will publish them here.
 

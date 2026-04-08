@@ -18,14 +18,11 @@ public sealed partial class MainWindow : Window
     public static new MainWindow? Current { get; private set; }
 
     private AppWindow? _appWindow;
-    private bool _isSyncingNavigationSelection;
     private bool _isFirstRunTutorialQueued;
     private bool _isFirstRunTutorialRunning;
     private bool _isFirstRunTutorialPaused;
     private bool _isFirstRunTutorialCompletedThisSession;
-    private long _shellPaneOpenStateToken = -1;
     private bool _isSettingsSubNavigationTipArmed;
-    private bool _lastShellNavigationPaneState;
     private int _firstRunTutorialStepIndex = -1;
     private TutorialStep[]? _firstRunTutorialSteps;
 
@@ -35,13 +32,8 @@ public sealed partial class MainWindow : Window
         Current = this;
         InitializeComponent();
         ConfigureWindow();
-        _shellPaneOpenStateToken = ShellNavigationView.RegisterPropertyChangedCallback(NavigationView.IsPaneOpenProperty, ShellNavigationView_PaneOpenStateChanged);
-        _lastShellNavigationPaneState = ShellNavigationView.IsPaneOpen;
 
         RootFrame.Navigated += RootFrame_Navigated;
-        RootGrid.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootGrid_PointerPressed), true);
-
-        
         RootGrid.Loaded += MainWindow_Loaded;
 
         StartupTrace.Write("MainWindow.ctor:end");
@@ -165,11 +157,25 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        ShellNavigationView.IsPaneOpen = !ShellNavigationView.IsPaneOpen;
+        if (GetCurrentSettingsPage() is not SettingsPage settingsPage)
+        {
+            return;
+        }
+
+        var wasOpen = settingsPage.IsNavigationPaneOpen;
+        settingsPage.ToggleNavigationPane();
 
         if (_isFirstRunTutorialRunning && _firstRunTutorialStepIndex == 0)
         {
             QueueFirstRunTutorialSubNavigationStep();
+        }
+
+        if (_isSettingsSubNavigationTipArmed &&
+            wasOpen &&
+            !settingsPage.IsNavigationPaneOpen)
+        {
+            _isSettingsSubNavigationTipArmed = false;
+            DispatcherQueue.TryEnqueue(() => settingsPage.ShowSubNavigationTeachingTip());
         }
     }
 
@@ -184,7 +190,6 @@ public sealed partial class MainWindow : Window
 
         var source = e.OriginalSource as DependencyObject;
         if (IsDescendantOf(source, PaneToggleButton) ||
-            IsDescendantOf(source, ShellNavigationView) ||
             IsDescendantOf(source, FirstRunTutorialTip))
         {
             return;
@@ -193,94 +198,17 @@ public sealed partial class MainWindow : Window
         QueueFirstRunTutorialSubNavigationStep();
     }
 
-    private void ShellNavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs e)
-    {
-        if (_isSyncingNavigationSelection || LoginRuntime.Auth.CurrentUser is null)
-        {
-            return;
-        }
-
-        if (e.SelectedItemContainer is not NavigationViewItem item || item.Tag is not string tag)
-        {
-            return;
-        }
-
-        NavigateToTag(tag);
-    }
-
     private void RootFrame_Navigated(object sender, NavigationEventArgs e)
     {
-        UpdateShellChrome();
-
         if (e.SourcePageType == typeof(LoginPage))
         {
             ResetFirstRunTutorialSession();
             RootFrame.Tag = null;
-            ShellNavigationView.IsPaneOpen = false;
-            ShellNavigationView.IsPaneVisible = false;
-            SyncNavigationSelection(null);
+            UpdateShellChrome();
             return;
         }
 
-        if (e.SourcePageType == typeof(CheckoutPage))
-        {
-            if (!LoginRuntime.Auth.CanCheckout)
-            {
-                NavigateToFirstAvailablePage();
-                return;
-            }
-
-            RootFrame.Tag = "checkout";
-        }
-        else if (e.SourcePageType == typeof(ProductsPage))
-        {
-            if (!LoginRuntime.Auth.CanManageProducts)
-            {
-                NavigateToFirstAvailablePage();
-                return;
-            }
-
-            RootFrame.Tag = "products";
-        }
-        else if (e.SourcePageType == typeof(UsersPage))
-        {
-            if (!LoginRuntime.Auth.CanManageUsers)
-            {
-                NavigateToFirstAvailablePage();
-                return;
-            }
-
-            RootFrame.Tag = "users";
-        }
-        else if (e.SourcePageType == typeof(AboutPage))
-        {
-            RootFrame.Tag = "about";
-        }
-        else if (e.SourcePageType == typeof(ReportsPage))
-        {
-            if (!LoginRuntime.Auth.CanViewReports)
-            {
-                NavigateToFirstAvailablePage();
-                return;
-            }
-
-            RootFrame.Tag = "reports";
-        }
-        else if (e.SourcePageType == typeof(SettingsPage))
-        {
-            RootFrame.Tag = "settings";
-        }
-
-        SyncNavigationSelection(RootFrame.Tag as string);
-
-        if (_isSettingsSubNavigationTipArmed &&
-            e.SourcePageType == typeof(SettingsPage) &&
-            !ShellNavigationView.IsPaneOpen &&
-            GetCurrentSettingsPage() is SettingsPage settingsPage)
-        {
-            _isSettingsSubNavigationTipArmed = false;
-            DispatcherQueue.TryEnqueue(() => settingsPage.ShowSubNavigationTeachingTip());
-        }
+        UpdateShellChrome();
 
         if (_isFirstRunTutorialRunning && RootFrame.CurrentSourcePageType != typeof(SettingsPage))
         {
@@ -306,79 +234,41 @@ public sealed partial class MainWindow : Window
 
             if (LoginRuntime.Auth.CurrentUser?.Username == "admin" && !LoginRuntime.Settings.IsOnboardingPhaseCleared())
             {
-                NavigateToTag("settings");
+                NavigateToTag("users");
                 return;
             }
 
-            if (RootFrame.CurrentSourcePageType == typeof(CheckoutPage) && !LoginRuntime.Auth.CanCheckout)
+            if (LoginRuntime.Auth.CurrentUser is not null && RootFrame.CurrentSourcePageType == typeof(LoginPage))
             {
                 NavigateToFirstAvailablePage();
                 return;
             }
 
-            if (RootFrame.CurrentSourcePageType == typeof(ProductsPage) && !LoginRuntime.Auth.CanManageProducts)
-            {
-                NavigateToFirstAvailablePage();
-                return;
-            }
-
-            if (RootFrame.CurrentSourcePageType == typeof(ReportsPage) && !LoginRuntime.Auth.CanViewReports)
-            {
-                NavigateToFirstAvailablePage();
-                return;
-            }
-
-
+            GetCurrentSettingsPage()?.RefreshNavigationAccess();
         });
     }
 
     private void MaybeStartFirstRunTutorial()
     {
-        if (_isFirstRunTutorialCompletedThisSession)
+        if (_isFirstRunTutorialCompletedThisSession ||
+            LoginRuntime.Auth.CurrentUser is null ||
+            RootFrame.CurrentSourcePageType != typeof(SettingsPage) ||
+            LoginRuntime.Settings.IsFirstRunTutorialCleared() ||
+            GetCurrentSettingsPage() is not SettingsPage settingsPage)
         {
             return;
         }
 
-        if (LoginRuntime.Auth.CurrentUser is null)
-        {
-            return;
-        }
+        _isFirstRunTutorialQueued = false;
+        _isFirstRunTutorialRunning = false;
+        _isFirstRunTutorialPaused = false;
+        _isSettingsSubNavigationTipArmed = false;
+        _firstRunTutorialStepIndex = -1;
+        _firstRunTutorialSteps = null;
+        _isFirstRunTutorialCompletedThisSession = true;
+        FirstRunTutorialTip.IsOpen = false;
 
-        if (RootFrame.CurrentSourcePageType != typeof(SettingsPage))
-        {
-            return;
-        }
-
-        if (LoginRuntime.Settings.IsFirstRunTutorialCleared())
-        {
-            return;
-        }
-
-        var settingsPage = GetCurrentSettingsPage();
-        if (settingsPage is null)
-        {
-            return;
-        }
-
-        if (_isFirstRunTutorialPaused && _firstRunTutorialSteps is not null && _firstRunTutorialStepIndex >= 0)
-        {
-            ResumeFirstRunTutorial();
-            return;
-        }
-
-        if (_isFirstRunTutorialQueued || _isFirstRunTutorialRunning)
-        {
-            return;
-        }
-
-        var steps = BuildFirstRunTutorialSteps();
-        if (steps.Length == 0)
-        {
-            return;
-        }
-
-        _isFirstRunTutorialQueued = true;
-        _ = RunFirstRunTutorialAsync(steps);
+        DispatcherQueue.TryEnqueue(settingsPage.ShowSubNavigationTeachingTip);
     }
 
     private async Task RunFirstRunTutorialAsync(TutorialStep[] steps)
@@ -534,7 +424,6 @@ public sealed partial class MainWindow : Window
         _isFirstRunTutorialQueued = false;
         _isFirstRunTutorialCompletedThisSession = true;
         _isSettingsSubNavigationTipArmed = true;
-        _lastShellNavigationPaneState = ShellNavigationView.IsPaneOpen;
         _firstRunTutorialStepIndex = -1;
         _firstRunTutorialSteps = null;
     }
@@ -551,29 +440,9 @@ public sealed partial class MainWindow : Window
         _isFirstRunTutorialPaused = false;
         _isFirstRunTutorialCompletedThisSession = false;
         _isSettingsSubNavigationTipArmed = false;
-        _lastShellNavigationPaneState = ShellNavigationView.IsPaneOpen;
         _firstRunTutorialStepIndex = -1;
         _firstRunTutorialSteps = null;
         FirstRunTutorialTip.IsOpen = false;
-    }
-
-    private void ShellNavigationView_PaneOpenStateChanged(DependencyObject sender, DependencyProperty dp)
-    {
-        HandleShellNavigationPaneStateChanged(ShellNavigationView.IsPaneOpen);
-    }
-
-    private void HandleShellNavigationPaneStateChanged(bool isOpen)
-    {
-        if (_isSettingsSubNavigationTipArmed &&
-            _lastShellNavigationPaneState &&
-            !isOpen &&
-            GetCurrentSettingsPage() is SettingsPage settingsPage)
-        {
-            _isSettingsSubNavigationTipArmed = false;
-            DispatcherQueue.TryEnqueue(() => settingsPage.ShowSubNavigationTeachingTip());
-        }
-
-        _lastShellNavigationPaneState = isOpen;
     }
 
     private static bool IsDescendantOf(DependencyObject? node, DependencyObject ancestor)
@@ -602,149 +471,81 @@ public sealed partial class MainWindow : Window
 
     private void NavigateToTag(string tag)
     {
-        var previousTag = RootFrame.Tag as string;
+        if (tag == "signout")
+        {
+            LoginRuntime.Auth.Logout();
+            return;
+        }
+
         RootFrame.Tag = tag;
 
-        switch (tag)
+        if (GetCurrentSettingsPage() is SettingsPage settingsPage)
         {
-            case "checkout":
-                if (!LoginRuntime.Auth.CanCheckout)
-                {
-                    NavigateToFirstAvailablePage();
-                    return;
-                }
-
-                if (!TryNavigate(typeof(CheckoutPage), "MainWindow.NavigateToTag.checkout"))
-                {
-                    RootFrame.Tag = previousTag;
-                    return;
-                }
-                break;
-
-            case "products":
-                if (!LoginRuntime.Auth.CanManageProducts)
-                {
-                    NavigateToFirstAvailablePage();
-                    return;
-                }
-
-                if (!TryNavigate(typeof(ProductsPage), "MainWindow.NavigateToTag.products"))
-                {
-                    RootFrame.Tag = previousTag;
-                    return;
-                }
-                break;
-
-            case "signout":
-                LoginRuntime.Auth.Logout();
-                return;
-
-            case "about":
-                if (!TryNavigate(typeof(AboutPage), "MainWindow.NavigateToTag.about"))
-                {
-                    RootFrame.Tag = previousTag;
-                    return;
-                }
-                break;
-
-            case "reports":
-                if (!LoginRuntime.Auth.CanViewReports)
-                {
-                    NavigateToFirstAvailablePage();
-                    return;
-                }
-
-                if (!TryNavigate(typeof(ReportsPage), "MainWindow.NavigateToTag.reports"))
-                {
-                    RootFrame.Tag = previousTag;
-                    return;
-                }
-                break;
-
-
-
-            case "settings":
-                if (!TryNavigate(typeof(SettingsPage), "MainWindow.NavigateToTag.settings"))
-                {
-                    RootFrame.Tag = previousTag;
-                    return;
-                }
-                break;
-        }
-
-        SyncNavigationSelection(tag);
-    }
-
-    private void SyncNavigationSelection(string? tag)
-    {
-        _isSyncingNavigationSelection = true;
-
-        try
-        {
-            ShellNavigationView.SelectedItem = tag switch
-            {
-                "checkout" => CheckoutNavItem,
-                "products" => ProductsNavItem,
-                "reports" => ReportsNavItem,
-                "settings" => SettingsNavItem,
-                "about" => AboutNavItem,
-                "signout" => SignOutNavItem,
-                _ => null
-            };
-        }
-        finally
-        {
-            _isSyncingNavigationSelection = false;
-        }
-    }
-
-    private bool TryNavigate(Type pageType, string operationName)
-    {
-        if (RootFrame.CurrentSourcePageType == pageType)
-        {
-            return true;
+            settingsPage.NavigateToTag(tag);
+            UpdateShellChrome();
+            return;
         }
 
         try
         {
-            RootFrame.Navigate(pageType);
-            return true;
+            RootFrame.Navigate(typeof(SettingsPage), tag);
         }
         catch (Exception ex)
         {
-            StartupTrace.Write($"{operationName} failed: {ex.Message}");
-            LoginRuntime.ReportException(ex, operationName);
-            return false;
+            StartupTrace.Write($"MainWindow.NavigateToTag({tag}) failed: {ex.Message}");
+            LoginRuntime.ReportException(ex, $"MainWindow.NavigateToTag.{tag}");
         }
     }
 
     private void UpdateShellChrome()
     {
-        if (LoginRuntime.Auth.CurrentUser is null)
+        ShellContextText.Text = GetShellContextText();
+
+        if (LoginRuntime.Auth.CurrentUser is not { } user)
         {
             PaneToggleButton.Visibility = Visibility.Collapsed;
-            ShellNavigationView.IsPaneOpen = false;
-            ShellNavigationView.IsPaneVisible = false;
+            UserBadge.Visibility = Visibility.Collapsed;
+            UserNameText.Text = string.Empty;
+            UserPicture.Initials = string.Empty;
             return;
         }
 
-        PaneToggleButton.Visibility = Visibility.Visible;
-        ShellNavigationView.IsPaneVisible = true;
+        PaneToggleButton.Visibility = Visibility.Collapsed;
+        UserBadge.Visibility = Visibility.Visible;
+
+        var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
+            ? user.Username
+            : user.DisplayName;
+
+        UserNameText.Text = displayName;
+        UserPicture.Initials = BuildInitials(displayName);
+    }
+
+    private string GetShellContextText()
+    {
+        if (RootFrame.CurrentSourcePageType == typeof(LoginPage))
+        {
+            return "Secure sign in";
+        }
+
+        return (RootFrame.Tag as string) switch
+        {
+            "checkout" => "Checkout workspace",
+            "products" => "Products workspace",
+            "reports" => "Reports workspace",
+            "store" => "Store settings",
+            "tax" => "Tax configuration",
+            "users" => "Users workspace",
+            "prefs" => "My preferences",
+            "settings" => "Store settings",
+            "about" => "About this app",
+            _ => "Daily store control"
+        };
     }
 
     private void UpdateNavigationAccess()
     {
-        CheckoutNavItem.Visibility = LoginRuntime.Auth.CanCheckout
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-
-        ProductsNavItem.Visibility = LoginRuntime.Auth.CanManageProducts
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-
-        ReportsNavItem.Visibility = LoginRuntime.Auth.CanViewReports
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        GetCurrentSettingsPage()?.RefreshNavigationAccess();
     }
 
     private void NavigateToFirstAvailablePage()
@@ -778,13 +579,45 @@ public sealed partial class MainWindow : Window
             return "reports";
         }
 
-
         if (LoginRuntime.Auth.CanManageSettings)
         {
-            return "settings";
+            return "store";
         }
 
-        return "settings";
+        if (LoginRuntime.Auth.CanManageUsers)
+        {
+            return "users";
+        }
+
+        return "prefs";
+    }
+
+    public void SetCurrentRouteTag(string? tag)
+    {
+        RootFrame.Tag = tag;
+        UpdateShellChrome();
+    }
+
+    private static string BuildInitials(string displayName)
+    {
+        var parts = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var initials = new List<char>(2);
+
+        foreach (var part in parts)
+        {
+            initials.Add(char.ToUpperInvariant(part[0]));
+            if (initials.Count == 2)
+            {
+                break;
+            }
+        }
+
+        if (initials.Count == 0)
+        {
+            return "?";
+        }
+
+        return new string(initials.ToArray());
     }
 
     private sealed class TutorialStep

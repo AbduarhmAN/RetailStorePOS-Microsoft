@@ -438,24 +438,6 @@ public sealed partial class LoginPage : Page
             RefreshStatus();
         }
 
-        if (e.PropertyName == nameof(LoginWindowViewModel.IsAuthenticated) && ViewModel.IsAuthenticated && Frame?.CurrentSourcePageType != typeof(CheckoutPage))
-        {
-            try
-            {
-                Frame?.Navigate(typeof(CheckoutPage));
-            }
-            catch (Exception ex)
-            {
-                StartupTrace.Write($"LoginPage.NavigateToCheckout failed: {ex.Message}");
-                LoginRuntime.ReportException(ex, "WinUiLogin.LoginPage.NavigateToCheckout");
-
-                StatusInfoBar.Visibility = Visibility.Visible;
-                StatusInfoBar.IsOpen = true;
-                StatusInfoBar.Severity = InfoBarSeverity.Error;
-                StatusInfoBar.Title = "Workspace unavailable";
-                StatusInfoBar.Message = "Signed in, but the checkout workspace could not open.";
-            }
-        }
     }
 
     private void RefreshStatus()

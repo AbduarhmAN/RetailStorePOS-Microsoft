@@ -9,51 +9,59 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid x:Name="RootLayout">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+        <NavigationView x:Name="SettingsNavView"
+                        Background="Transparent"
+                        IsTabStop="False"
+                        IsSettingsVisible="False"
+                        IsBackButtonVisible="Collapsed"
+                        IsTitleBarAutoPaddingEnabled="False"
+                        AlwaysShowHeader="False"
+                        IsPaneToggleButtonVisible="True"
+                        PaneDisplayMode="Left"
+                        IsPaneOpen="True"
+                        OpenPaneLength="278"
+                        SelectionChanged="SettingsNavView_SelectionChanged">
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="CheckoutNavItem"
+                                    Content="Checkout"
+                                    ToolTipService.ToolTip="Checkout"
+                                    Tag="checkout">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Shop" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-        <Grid Padding="24,24,24,12">
-            <StackPanel>
-                <TextBlock Text="Settings"
-                           FontSize="28"
-                           FontWeight="Bold" />
-                <TextBlock Text="Store setup, tax defaults, user rules, and cashier preferences in one workspace."
-                           Margin="0,4,0,0"
-                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                           TextWrapping="Wrap" />
-            </StackPanel>
-        </Grid>
+                <NavigationViewItem x:Name="ProductsNavItem"
+                                    Content="Products"
+                                    ToolTipService.ToolTip="Products"
+                                    Tag="products">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Library" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-        <Grid Grid.Row="1"
-              Padding="24,0,24,24"
-              ColumnSpacing="24">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="280" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
+                <NavigationViewItem x:Name="ReportsNavItem"
+                                    Content="Reports"
+                                    ToolTipService.ToolTip="Reports"
+                                    Tag="reports">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="View" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
 
-            <Border Grid.Column="0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    VerticalAlignment="Top">
-                <NavigationView x:Name="SettingsNavView"
-                                Background="Transparent"
-                                IsSettingsVisible="False"
-                                IsBackButtonVisible="Collapsed"
-                                IsPaneToggleButtonVisible="False"
-                                IsTitleBarAutoPaddingEnabled="False"
-                                AlwaysShowHeader="False"
-                                IsPaneOpen="True"
-                                OpenPaneLength="278"
-                                PaneDisplayMode="Left"
-                                SelectionChanged="SettingsNavView_SelectionChanged">
-                    <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="SettingsRootNav"
+                                    Content="Settings"
+                                    ToolTipService.ToolTip="Settings"
+                                    Tag="settings-root"
+                                    SelectsOnInvoked="False">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Setting" />
+                    </NavigationViewItem.Icon>
+
+                    <NavigationViewItem.MenuItems>
                         <NavigationViewItem x:Name="StoreNav"
                                             Content="Store Management"
+                                            ToolTipService.ToolTip="Store Management"
                                             Tag="store">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="Shop" />
@@ -62,6 +70,7 @@
 
                         <NavigationViewItem x:Name="TaxNav"
                                             Content="Tax Configuration"
+                                            ToolTipService.ToolTip="Tax Configuration"
                                             Tag="tax">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="Calculator" />
@@ -70,6 +79,7 @@
 
                         <NavigationViewItem x:Name="UsersNav"
                                             Content="Users &amp; Roles"
+                                            ToolTipService.ToolTip="Users &amp; Roles"
                                             Tag="users">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="People" />
@@ -78,25 +88,39 @@
 
                         <NavigationViewItem x:Name="PrefsNav"
                                             Content="My Preferences"
+                                            ToolTipService.ToolTip="My Preferences"
                                             Tag="prefs">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="ContactInfo" />
                             </NavigationViewItem.Icon>
                         </NavigationViewItem>
-                    </NavigationView.MenuItems>
-                    <Grid />
-                </NavigationView>
-            </Border>
+                    </NavigationViewItem.MenuItems>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
 
-            <Border Grid.Column="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="6">
-                <Frame x:Name="SettingsContentFrame"
-                       Background="Transparent" />
-            </Border>
-        </Grid>
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Name="AboutNavItem"
+                                    Content="About"
+                                    ToolTipService.ToolTip="About"
+                                    Tag="about">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Help" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+
+                <NavigationViewItem x:Name="SignOutNavItem"
+                                    Content="Sign out"
+                                    ToolTipService.ToolTip="Sign out"
+                                    Tag="signout">
+                    <NavigationViewItem.Icon>
+                        <FontIcon Glyph="&#xE8AC;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
+
+            <Frame x:Name="SettingsContentFrame"
+                   Background="Transparent" />
+        </NavigationView>
 
         <TeachingTip x:Name="SettingsSubNavigationTip"
                      Title="Settings navigation"
