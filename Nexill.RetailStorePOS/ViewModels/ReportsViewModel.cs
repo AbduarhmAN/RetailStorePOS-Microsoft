@@ -232,21 +232,26 @@ public sealed class ReportsViewModel : ObservableObject
         IsTransactionsExpanded = !IsTransactionsExpanded;
     }
 
-    private void ReprintReceipt(Sale? sale)
+    private async void ReprintReceipt(Sale? sale)
     {
         if (sale is null) return;
         try
         {
-            var pdfPath = ReceiptHelper.GetReceiptPdfPath(sale.ReceiptNumber);
-            if (!File.Exists(pdfPath))
-            {
-                pdfPath = ReceiptHelper.ArchiveReceipt(BuildReceiptSummary(sale));
-            }
+            var receipt = BuildReceiptSummary(sale);
+            var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
+            var storeAddress = LoginRuntime.Settings.GetStoreAddress();
+            var currencyCode = LoginRuntime.Settings.GetCurrencyCode() ?? "USD";
 
-            if (!ReceiptHelper.TryOpenReceiptPdf(pdfPath))
-            {
-                StatusText = $"Receipt PDF not found for #{sale.ReceiptNumber:D6}";
-            }
+            using var printHelper = new ReceiptPrintHelper();
+            await printHelper.PrintReceiptAsync(
+                IntPtr.Zero,
+                null!,
+                receipt,
+                storeName,
+                storeAddress,
+                currencyCode);
+
+            StatusText = $"Receipt #{sale.ReceiptNumber:D6} sent to printer.";
         }
         catch (Exception ex)
         {

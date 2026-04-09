@@ -18,7 +18,7 @@
                         AlwaysShowHeader="False"
                         IsPaneToggleButtonVisible="True"
                         PaneDisplayMode="Left"
-                        IsPaneOpen="True"
+                        IsPaneOpen="False"
                         OpenPaneLength="278"
                         SelectionChanged="SettingsNavView_SelectionChanged">
             <NavigationView.MenuItems>
@@ -45,7 +45,7 @@
                                     ToolTipService.ToolTip="Reports"
                                     Tag="reports">
                     <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="View" />
+                        <FontIcon Glyph="&#xE9F9;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
 
@@ -113,7 +113,7 @@
                                     ToolTipService.ToolTip="Sign out"
                                     Tag="signout">
                     <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE8AC;" />
+                        <FontIcon Glyph="&#xF3B1;" />
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.FooterMenuItems>
@@ -122,12 +122,5 @@
                    Background="Transparent" />
         </NavigationView>
 
-        <TeachingTip x:Name="SettingsSubNavigationTip"
-                     Title="Settings navigation"
-                     Subtitle="Use these sections to switch between Store, Tax, Users, and Preferences."
-                     PreferredPlacement="Right"
-                     IsLightDismissEnabled="False"
-                     CloseButtonContent="Skip"
-                     CloseButtonClick="SettingsSubNavigationTip_CloseButtonClick" />
     </Grid>
 </Page>

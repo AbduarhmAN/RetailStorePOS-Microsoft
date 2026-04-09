@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -15,6 +15,21 @@ namespace RetailStorePOS.WinUiLogin;
 
 public sealed partial class MainWindow : Window
 {
+    [System.Runtime.InteropServices.DllImport("dwmapi.dll")]
+    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attr, ref int attrValue, int attrSize);
+    private const int DWMWA_BORDER_COLOR = 34;
+    private const int DWM_COLOR_NONE = unchecked((int)0x00691B2D); // Color match to #2D1B69
+    private const int DWM_COLOR_DEFAULT = unchecked((int)0xFFFFFFFF);
+    private const int DWMWA_WINDOW_CORNER_PREFERENCE = 33;
+    private const int DWMWCP_DEFAULT = 0;
+    private const int DWMWCP_DONOTROUND = 1;
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+    [System.Runtime.InteropServices.DllImport("user32.dll")]
+    private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
+    private const int GWL_STYLE = -16;
+    private const int WS_BORDER = 0x00800000;
+    private const int WS_THICKFRAME = 0x00040000;
     public static new MainWindow? Current { get; private set; }
 
     private AppWindow? _appWindow;
@@ -39,38 +54,68 @@ public sealed partial class MainWindow : Window
         StartupTrace.Write("MainWindow.ctor:end");
     }
 
+    private static readonly SizeInt32 SplashSize = new(580, 380);
+    private static readonly SizeInt32 AppSize = new(1365, 768);
+
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         try
         {
+            // Start the visual progress bar animation
+            var pbTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(15) };
+            pbTimer.Tick += (s, args) => {
+                if (SplashProgressBar.Value < 95) SplashProgressBar.Value += 1.5;
+            };
+            pbTimer.Start();
+
             // Run the heavy database and runtime initialization off the UI thread
             await Task.Run(() => LoginRuntime.Initialize());
+            
+            // Snap progress bar to 100% and pause to let user see it
+            pbTimer.Stop();
+            SplashProgressBar.Value = 100;
+            await Task.Delay(300);
+
+            // Hide the window completely so resizing doesn't flash on screen
+            _appWindow.Hide();
+
+            // Prepare the main app UI invisibly
+            RootGrid.RequestedTheme = ElementTheme.Light;
+            RootGrid.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                Microsoft.UI.ColorHelper.FromArgb(255, 247, 250, 252));
+            TransitionToAppWindow();
 
             // Initialize the root UI state
             LoginRuntime.Auth.LoginStateChanged += Auth_LoginStateChanged;
             UpdateShellChrome();
             UpdateNavigationAccess();
+
+            // Prepare the frame to fade in
+            RootFrame.Opacity = 0.0;
             RootFrame.Navigate(typeof(LoginPage));
 
-            // Smoothly fade out the splash overlay
-            var animation = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
+            // Small delay to ensure UI threads have rendered the new size
+            await Task.Delay(150);
+
+            // Pop the window back up on screen
+            _appWindow.Show();
+
+            // Fade IN the main login screen
+            var fadeInAnim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
             {
-                From = 1.0,
-                To = 0.0,
-                Duration = new Duration(TimeSpan.FromMilliseconds(300))
+                From = 0.0,
+                To = 1.0,
+                Duration = new Duration(TimeSpan.FromMilliseconds(500)),
+                EasingFunction = new Microsoft.UI.Xaml.Media.Animation.QuadraticEase()
             };
-
-            var storyboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
-            storyboard.Children.Add(animation);
-            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(animation, SplashOverlay);
-            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(animation, "Opacity");
-
-            storyboard.Completed += (s, args) =>
-            {
-                SplashOverlay.Visibility = Visibility.Collapsed;
-            };
-
-            storyboard.Begin();
+            var inStoryboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
+            inStoryboard.Children.Add(fadeInAnim);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeInAnim, RootFrame);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeInAnim, "Opacity");
+            inStoryboard.Begin();
+            
+            // Clean up splash overlay
+            SplashOverlay.Visibility = Visibility.Collapsed;
         }
         catch (Exception ex)
         {
@@ -79,31 +124,82 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void ConfigureWindow()
+    private void TransitionToAppWindow()
     {
+        if (_appWindow is null)
+            return;
+
+        // Restore title bar and border
+        if (_appWindow.Presenter is OverlappedPresenter presenter)
+        {
+            presenter.SetBorderAndTitleBar(true, true);
+            presenter.IsResizable = true;
+            presenter.IsMaximizable = true;
+            presenter.IsMinimizable = true;
+        }
+
+        // Restore the default Windows 11 1px border for the main app
+        int styleTrans = GetWindowLong(WindowNative.GetWindowHandle(this), GWL_STYLE);
+        SetWindowLong(WindowNative.GetWindowHandle(this), GWL_STYLE, styleTrans | WS_BORDER | WS_THICKFRAME);
+        int colorDefault = DWM_COLOR_DEFAULT;
+        DwmSetWindowAttribute(WindowNative.GetWindowHandle(this), DWMWA_BORDER_COLOR, ref colorDefault, sizeof(int));
+        int doRound = DWMWCP_DEFAULT;
+        DwmSetWindowAttribute(WindowNative.GetWindowHandle(this), DWMWA_WINDOW_CORNER_PREFERENCE, ref doRound, sizeof(int));
+
         ExtendsContentIntoTitleBar = true;
         SetTitleBar(TitleBarDragRegion);
+        AppTitleBar.Visibility = Visibility.Visible;
 
+        // Resize and center to full app size
+        var hwnd = WindowNative.GetWindowHandle(this);
+        var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+        _appWindow.Resize(AppSize);
+        CenterWindow(windowId, AppSize);
+
+        // Restore app title bar colors
+        if (AppWindowTitleBar.IsCustomizationSupported())
+        {
+            var titleBar = _appWindow.TitleBar;
+            titleBar.ButtonBackgroundColor = Colors.Transparent;
+            titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+            titleBar.ButtonForegroundColor = ColorHelper.FromArgb(255, 98, 113, 135);
+            titleBar.ButtonInactiveForegroundColor = ColorHelper.FromArgb(255, 154, 165, 181);
+            titleBar.ButtonHoverBackgroundColor = ColorHelper.FromArgb(255, 241, 245, 249);
+            titleBar.ButtonPressedBackgroundColor = ColorHelper.FromArgb(255, 226, 232, 240);
+        }
+    }
+
+    private void ConfigureWindow()
+    {
         var hwnd = WindowNative.GetWindowHandle(this);
         var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
         _appWindow = AppWindow.GetFromWindowId(windowId);
         TrySetWindowIcon();
-        var preferredSize = new SizeInt32(1365, 768);
-        _appWindow.Resize(preferredSize);
-        CenterWindow(windowId, preferredSize);
 
-        if (!AppWindowTitleBar.IsCustomizationSupported())
+        // Start as a borderless splash card
+        if (_appWindow.Presenter is OverlappedPresenter presenter)
         {
-            return;
+            presenter.SetBorderAndTitleBar(true, false);
+            presenter.IsResizable = false;
+            presenter.IsMaximizable = false;
+            presenter.IsMinimizable = false;
         }
 
-        var titleBar = _appWindow.TitleBar;
-        titleBar.ButtonBackgroundColor = Colors.Transparent;
-        titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-        titleBar.ButtonForegroundColor = ColorHelper.FromArgb(255, 98, 113, 135);
-        titleBar.ButtonInactiveForegroundColor = ColorHelper.FromArgb(255, 154, 165, 181);
-        titleBar.ButtonHoverBackgroundColor = ColorHelper.FromArgb(255, 241, 245, 249);
-        titleBar.ButtonPressedBackgroundColor = ColorHelper.FromArgb(255, 226, 232, 240);
+        // Hide the app title bar during splash
+        AppTitleBar.Visibility = Visibility.Collapsed;
+
+        // Size the window to exactly the splash card dimensions
+                _appWindow.Resize(SplashSize);
+
+        // Remove the default Windows 11 1px border during splash screen
+        int styleConfig = GetWindowLong(hwnd, GWL_STYLE);
+        SetWindowLong(hwnd, GWL_STYLE, styleConfig & ~WS_BORDER & ~WS_THICKFRAME);
+        int colorNone = DWM_COLOR_NONE;
+        DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, ref colorNone, sizeof(int));
+        int doNotRound = DWMWCP_DONOTROUND;
+        DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref doNotRound, sizeof(int));
+        
+        CenterWindow(windowId, SplashSize);
     }
 
     private void TrySetWindowIcon()

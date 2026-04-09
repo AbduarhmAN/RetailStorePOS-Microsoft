@@ -87,6 +87,12 @@
                     <AppBarButton Label="Add" Click="AddProductButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
                         <AppBarButton.Icon><SymbolIcon Symbol="Add" /></AppBarButton.Icon>
                     </AppBarButton>
+                    <AppBarButton Label="Import Data" Click="ImportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                        <AppBarButton.Icon><FontIcon Glyph="&#xE8B5;" /></AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Label="Export Data" Click="ExportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                        <AppBarButton.Icon><FontIcon Glyph="&#xE8D8;" /></AppBarButton.Icon>
+                    </AppBarButton>
                     <AppBarButton Label="Refresh" Click="RefreshButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
                         <AppBarButton.Icon><SymbolIcon Symbol="Refresh" /></AppBarButton.Icon>
                     </AppBarButton>

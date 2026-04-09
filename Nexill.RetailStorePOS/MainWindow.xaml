@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="RetailStorePOS.WinUiLogin.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -9,8 +9,8 @@
     Title="Nexill">
 
         <Grid x:Name="RootGrid"
-              Background="#F7FAFC"
-              RequestedTheme="Light">
+              Background="#2D1B69"
+              RequestedTheme="Dark">
         <Grid.RowDefinitions>
             <RowDefinition Height="48" />
             <RowDefinition Height="*" />
@@ -39,7 +39,7 @@
                                 Width="32"
                                 Height="32"
                                 CornerRadius="8"
-                                Background="Transparent"
+                                Background="#2D1B69"
                                 BorderBrush="Transparent"
                                 Visibility="Collapsed">
                             <FontIcon Glyph="&#xE700;"
@@ -74,7 +74,7 @@
                     <Border x:Name="UserBadge"
                             Grid.Column="1"
                             Visibility="Collapsed"
-                            Background="#F7FAFC"
+                            Background="#FFF"
                             BorderBrush="#D7E1EA"
                             BorderThickness="1"
                             CornerRadius="3"
@@ -116,43 +116,93 @@
                      Canvas.ZIndex="300" />
 
         <!-- SPLASH SCREEN OVERLAY -->
-        <Grid x:Name="SplashOverlay" Grid.RowSpan="2" Background="#0F172A">
-            <Border Width="440" Height="260" Background="#1E293B" CornerRadius="28" BorderBrush="#335A78A6" BorderThickness="1" Padding="24" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
+        <Grid x:Name="SplashOverlay" Grid.RowSpan="2" CornerRadius="4">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#2D1B69" Offset="0.0" />
+                    <GradientStop Color="#4338CA" Offset="0.45" />
+                    <GradientStop Color="#7C3AED" Offset="0.75" />
+                    <GradientStop Color="#6D28D9" Offset="1.0" />
+                </LinearGradientBrush>
+            </Grid.Background>
 
-                    <StackPanel Grid.Row="0" Orientation="Horizontal">
-                        <Border Width="56" Height="56" CornerRadius="18" Background="#F8FBFF" Padding="8">
-                            <Image Source="ms-appx:///Assets/Logo.png" Stretch="Uniform" />
-                        </Border>
-                        <StackPanel Margin="14,2,0,0">
-                            <TextBlock Text="Nexill POS" FontSize="24" FontWeight="Bold" Foreground="White" />
-                            <TextBlock Text="Preparing the store workspace" Margin="0,4,0,0" FontSize="13" Foreground="#C9D8EE" />
-                        </StackPanel>
+            <!-- Background decorative glows -->
+            <Ellipse Width="600" Height="600"
+                     HorizontalAlignment="Right" VerticalAlignment="Top"
+                     Margin="0,-200,-150,0"
+                     Fill="#18FFFFFF" />
+            <Ellipse Width="400" Height="400"
+                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                     Margin="-120,0,0,-120"
+                     Fill="#10000080" />
+
+            <!-- Centered branding -->
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="18">
+                <Border Width="72" Height="72"
+                        CornerRadius="10"
+                        Background="#20FFFFFF"
+                        Padding="12"
+                        HorizontalAlignment="Center">
+                    <Image Source="ms-appx:///Assets/Logo.png" Stretch="Uniform" />
+                </Border>
+                <TextBlock Text="Nexill Retail POS"
+                           FontSize="30"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="Store management &amp; point of sale"
+                           FontSize="13"
+                           Foreground="#C4B5FD"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Bottom bar -->
+            <Grid VerticalAlignment="Bottom" Margin="32,0,32,28">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Status + version row -->
+                <Grid Grid.Row="0">
+                    <StackPanel HorizontalAlignment="Left" Spacing="2">
+                        <TextBlock x:Name="SplashStatusTitle"
+                                   Text="Starting services..."
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="#E9D5FF" />
+                        <TextBlock x:Name="SplashStatusDetail"
+                                   Text="Loading local database, services, and runtime."
+                                   FontSize="10"
+                                   Foreground="#A78BFA" />
                     </StackPanel>
-
-                    <StackPanel Grid.Row="1" VerticalAlignment="Center" Margin="0,16,0,18">
-                        <TextBlock x:Name="SplashStatusTitle" Text="Starting services" FontSize="18" FontWeight="SemiBold" Foreground="White" />
-                        <TextBlock x:Name="SplashStatusDetail" Text="Loading local database, services, and runtime." Margin="0,8,0,0" FontSize="13" TextWrapping="Wrap" Foreground="#B7C9E2" LineHeight="20" />
+                    <StackPanel HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Spacing="2">
+                        <TextBlock Text="v1.2.1"
+                                   FontSize="18"
+                                   FontWeight="Light"
+                                   Foreground="#E5E7EB"
+                                   HorizontalAlignment="Right" />
+                        <TextBlock Text="© 2026 Nexill Inc."
+                                   FontSize="10"
+                                   Foreground="#A78BFA"
+                                   HorizontalAlignment="Right" />
                     </StackPanel>
-
-                    <Grid Grid.Row="2">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-                        <ProgressBar IsIndeterminate="True" Height="8" VerticalAlignment="Center" Background="#0F172A" Foreground="#5EA0FF" CornerRadius="4" />
-                        <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="16,0,0,0" VerticalAlignment="Center">
-                            <FontIcon Glyph="&#xE945;" FontSize="16" Foreground="#9CC2FF" Margin="0,0,6,0" />
-                            <TextBlock Text="Offline-first startup" FontSize="11" FontWeight="SemiBold" Foreground="#AFC6E8" VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Grid>
                 </Grid>
-            </Border>
+
+                <!-- Thin progress bar -->
+                <ProgressBar Grid.Row="2"
+                             x:Name="SplashProgressBar" IsIndeterminate="False" Minimum="0" Maximum="100" Value="0"
+                             Height="6"
+                             HorizontalAlignment="Stretch"
+                             CornerRadius="6"
+                             Foreground="#E9D5FF"
+                             Background="#4338CA" />
+            </Grid>
         </Grid>
     </Grid>
 </Window>

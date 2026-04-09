@@ -789,7 +789,8 @@
             </Grid>
         </ScrollViewer>
     </Grid>
+    
+    <!-- Hidden container removed -->
     </Grid>
 </Page>
-
 

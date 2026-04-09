@@ -43,7 +43,7 @@ public sealed partial class LoginPage : Page
 
     private int GetInitialMode()
     {
-        return ViewModel.IsSetupMode || ViewModel.Staff.Count == 0 ? AdminMode : CashierMode;
+        return !LoginRuntime.Settings.IsOnboardingPhaseCleared() ? AdminMode : CashierMode;
     }
 
     private void LoginPage_Loaded(object sender, RoutedEventArgs e)
@@ -57,7 +57,7 @@ public sealed partial class LoginPage : Page
         FocusCurrentMode();
         StartupTrace.Write("LoginPage.Loaded:after FocusCurrentMode");
         ShowBootstrapAdminHintIfNeeded();
-        UpdateDefaultAdminPasswordTipVisibility();
+        UpdateFirstRunCashierTipVisibility();
         UpdateOnboardingHintVisibility();
     }
 
@@ -65,7 +65,7 @@ public sealed partial class LoginPage : Page
     {
         var isCleared = LoginRuntime.Settings.IsOnboardingPhaseCleared();
         OnboardingHintPanel.Visibility = isCleared ? Visibility.Collapsed : Visibility.Visible;
-        UpdateDefaultAdminPasswordTipVisibility();
+        UpdateFirstRunCashierTipVisibility();
     }
 
     private void LoginPage_Unloaded(object sender, RoutedEventArgs e)
@@ -146,7 +146,7 @@ public sealed partial class LoginPage : Page
             FocusCurrentMode();
         }
 
-        UpdateDefaultAdminPasswordTipVisibility();
+        UpdateFirstRunCashierTipVisibility();
         StartupTrace.Write($"LoginPage.ApplyModeComplete:{modeIndex}");
     }
 
@@ -498,9 +498,11 @@ public sealed partial class LoginPage : Page
             && RetailStorePOS.Data.Repositories.UserRepository.VerifyPassword("1234", admin.PasswordHash);
     }
 
-    private void UpdateDefaultAdminPasswordTipVisibility()
+    private void UpdateFirstRunCashierTipVisibility()
     {
-        DefaultAdminPasswordTip.IsOpen = false;
+        var isCleared = LoginRuntime.Settings.IsOnboardingPhaseCleared();
+        bool shouldShow = ViewModel.SelectedModeIndex == CashierMode && !isCleared && IsDefaultAdminPasswordStillActive();
+        CashierPinTip.IsOpen = shouldShow;
     }
 
     private void ClearStatus()

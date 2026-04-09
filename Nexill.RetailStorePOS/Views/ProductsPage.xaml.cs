@@ -7,6 +7,11 @@ using Microsoft.UI.Xaml.Controls;
 using RetailStorePOS.Data.Models;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Models;
+using RetailStorePOS.Data.Services;
+using Windows.Storage.Pickers;
+using WinRT.Interop;
+using System;
+using System.Threading.Tasks;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
@@ -582,6 +587,77 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         RaiseSelectedProductProperties();
         RaiseEditorStateProperties();
         TracePageState("AddButton:end");
+    }
+
+    private async void ImportDataButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanBrowseProducts) return;
+
+        try
+        {
+            var picker = new FileOpenPicker();
+            picker.ViewMode = PickerViewMode.List;
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            picker.FileTypeFilter.Add(".csv");
+
+            var hwnd = WindowNative.GetWindowHandle(MainWindow.Current);
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            var file = await picker.PickSingleFileAsync();
+            if (file is null) return;
+
+            SetStatus("Importing CSV ...", InfoBarSeverity.Informational);
+
+            var service = new ProductImportService(LoginRuntime.ConnectionFactory);
+            
+            var result = await Task.Run(() => 
+                service.ImportFromCsv(file.Path, null, System.Threading.CancellationToken.None)
+            );
+
+            LoginRuntime.RaiseProductsUpdated();
+            ReloadProducts();
+
+            SetStatus($"Import complete: {result.CreatedCount} created, {result.UpdatedCount} updated, {result.SkippedCount} skipped.", 
+                result.SkippedCount > 0 ? InfoBarSeverity.Warning : InfoBarSeverity.Success);
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.ImportDataButton_Click");
+            SetStatus($"Import failed: {ex.Message}", InfoBarSeverity.Error);
+        }
+    }
+
+    private async void ExportDataButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanBrowseProducts) return;
+
+        try
+        {
+            var picker = new FileSavePicker();
+            picker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
+            picker.FileTypeChoices.Add("CSV Document", new System.Collections.Generic.List<string>() { ".csv" });
+            picker.SuggestedFileName = "ProductsExport";
+
+            var hwnd = WindowNative.GetWindowHandle(MainWindow.Current);
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            var file = await picker.PickSaveFileAsync();
+            if (file is null) return;
+
+            SetStatus("Exporting CSV ...", InfoBarSeverity.Informational);
+
+            var products = LoginRuntime.Products.GetAll();
+            var service = new ProductExportService();
+
+            await Task.Run(() => service.ExportToCsv(file.Path, products));
+
+            SetStatus("Export complete.", InfoBarSeverity.Success);
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.ExportDataButton_Click");
+            SetStatus($"Export failed: {ex.Message}", InfoBarSeverity.Error);
+        }
     }
 
     private void SelectedProductActionButton_Click(object sender, RoutedEventArgs e)

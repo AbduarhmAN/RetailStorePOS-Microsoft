@@ -8,7 +8,6 @@ namespace RetailStorePOS.WinUiLogin.Views;
 
 public sealed partial class SettingsPage : Page
 {
-    private bool _isWaitingToShowSubNavigationTip;
     private bool _isSyncingNavigationSelection;
     private string? _pendingInitialTag;
 
@@ -30,11 +29,6 @@ public sealed partial class SettingsPage : Page
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (_isWaitingToShowSubNavigationTip)
-        {
-            LayoutUpdated -= SettingsPage_LayoutUpdated;
-            _isWaitingToShowSubNavigationTip = false;
-        }
     }
 
     private void UpdateNavigationAccess()
@@ -70,21 +64,9 @@ public sealed partial class SettingsPage : Page
 
     private void SettingsNavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (_isSyncingNavigationSelection ||
-            args.SelectedItemContainer is not NavigationViewItem navItem ||
-            navItem == SettingsRootNav ||
-            navItem.Tag is not string tag)
+        if (args.SelectedItemContainer is NavigationViewItem navItem && navItem.Tag is string tag)
         {
-            return;
-        }
-
-        var wasTeachingTipOpen = SettingsSubNavigationTip.IsOpen;
-        SettingsSubNavigationTip.IsOpen = false;
-        NavigateToTag(tag);
-
-        if (wasTeachingTipOpen)
-        {
-            DispatcherQueue.TryEnqueue(ShowUsersAdministratorAccessTeachingTip);
+            NavigateToTag(tag);
         }
     }
 
@@ -172,24 +154,7 @@ public sealed partial class SettingsPage : Page
 
     public void ShowSubNavigationTeachingTip()
     {
-        if (!IsSubNavigationTipTargetReady())
-        {
-            QueueSubNavigationTeachingTip();
-            return;
-        }
-
-        SettingsNavView.UpdateLayout();
-        SettingsSubNavigationTip.IsOpen = false;
-        SettingsSubNavigationTip.Target = IsSettingsRootNavTargetReady()
-            ? SettingsRootNav
-            : SettingsNavView;
-        SettingsSubNavigationTip.IsOpen = true;
-    }
-
-    private void SettingsSubNavigationTip_CloseButtonClick(TeachingTip sender, object args)
-    {
-        sender.IsOpen = false;
-        DispatcherQueue.TryEnqueue(ShowUsersAdministratorAccessTeachingTip);
+        // Feature disabled
     }
 
     private void ShowUsersAdministratorAccessTeachingTip()
@@ -200,47 +165,9 @@ public sealed partial class SettingsPage : Page
         }
     }
 
-    private bool IsSubNavigationTipTargetReady()
-    {
-        return IsLoaded &&
-               SettingsNavView.Visibility == Visibility.Visible &&
-               SettingsNavView.ActualWidth > 0 &&
-               SettingsNavView.ActualHeight > 0;
-    }
-
-    private bool IsSettingsRootNavTargetReady()
-    {
-        return SettingsRootNav.Visibility == Visibility.Visible &&
-               SettingsRootNav.ActualWidth > 0 &&
-               SettingsRootNav.ActualHeight > 0;
-    }
-
     private void SelectNavigation(NavigationViewItem nav)
     {
         NavigateToTag(nav.Tag?.ToString());
-    }
-
-    private void QueueSubNavigationTeachingTip()
-    {
-        if (_isWaitingToShowSubNavigationTip)
-        {
-            return;
-        }
-
-        _isWaitingToShowSubNavigationTip = true;
-        LayoutUpdated += SettingsPage_LayoutUpdated;
-    }
-
-    private void SettingsPage_LayoutUpdated(object? sender, object e)
-    {
-        if (!IsSubNavigationTipTargetReady())
-        {
-            return;
-        }
-
-        LayoutUpdated -= SettingsPage_LayoutUpdated;
-        _isWaitingToShowSubNavigationTip = false;
-        ShowSubNavigationTeachingTip();
     }
 
     private string ResolveRequestedTag()
