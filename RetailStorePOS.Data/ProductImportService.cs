@@ -142,6 +142,13 @@ public sealed class ProductImportService
             errorMessage = $"Row skipped: invalid price for '{name}'.";
             return false;
         }
+        
+        if (price < 0)
+        {
+            product = null;
+            errorMessage = $"Row skipped: price cannot be negative for '{name}'.";
+            return false;
+        }
 
         TryParseDecimal(record.CostPrice, out var costPrice);
         decimal.TryParse(record.QuantityStore, NumberStyles.Any, CultureInfo.InvariantCulture, out var qs);
