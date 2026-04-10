@@ -1,0 +1,58 @@
+using System.Text.Json.Serialization;
+
+namespace RetailStorePOS.App.Services;
+
+public interface ILocalPreferencesService
+{
+    event EventHandler<LocalPreferencesChangedEventArgs>? PreferencesChanged;
+
+    // Loads settings from disk. Returns default if file missing.
+    Task<LocalPreferences> LoadPreferencesAsync();
+
+    // Saves current settings to disk.
+    Task SavePreferencesAsync(LocalPreferences preferences);
+
+    // Helper methods for individual updates
+    Task UpdateThemeAsync(bool isDarkMode);
+    Task UpdateQuickCashAsync(decimal[] amounts);
+    Task UpdateInstallMetadataAsync(DateTime installedAtUtc);
+    Task UpdateSetupCompletionAsync(DateTime setupCompletedAtUtc, string? eventId = null);
+}
+
+public sealed class LocalPreferencesChangedEventArgs : EventArgs
+{
+    public LocalPreferencesChangedEventArgs(LocalPreferences preferences)
+    {
+        Preferences = preferences;
+    }
+
+    public LocalPreferences Preferences { get; }
+}
+
+public class LocalPreferences
+{
+    public bool IsDarkMode { get; set; } = false;
+
+    [JsonPropertyName("quickCash")]
+    public decimal[] QuickCashAmounts { get; set; } = new[] { 5.0m, 10.0m, 20.0m };
+
+    public string? InstallId { get; set; }
+
+    public DateTime? InstalledAtUtc { get; set; }
+
+    public DateTime? SetupCompletedAtUtc { get; set; }
+
+    public DateTime? FirstRunAt { get; set; }
+
+    public DateTime? LastSeenAt { get; set; }
+
+    public int LaunchCount { get; set; }
+
+    public int CrashCount { get; set; }
+
+    public DateTime? LastUpdatePromptAt { get; set; }
+
+    public DateTime? LastUpdateInstalledAt { get; set; }
+
+    public string? SetupCompletedEventId { get; set; }
+}

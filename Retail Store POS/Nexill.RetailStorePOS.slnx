@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="Nexill.RetailStorePOS/Nexill.RetailStorePOS.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="Debug|Any CPU" Project="x64" />
+    <Deploy Solution="*|x64" />
+  </Project>
+  <Project Path="RetailStorePOS.Data/RetailStorePOS.Data.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+</Solution>

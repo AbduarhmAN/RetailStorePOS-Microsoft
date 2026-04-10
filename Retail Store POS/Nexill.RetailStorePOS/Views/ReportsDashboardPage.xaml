@@ -1,0 +1,459 @@
+<Page
+    x:Class="RetailStorePOS.WinUiLogin.Views.ReportsDashboardPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="using:RetailStorePOS.WinUiLogin.Views"
+    mc:Ignorable="d"
+    Background="#F4F5F7">
+
+    <Page.Resources>
+        <!-- Card Style -->
+        <Style x:Key="DashCard" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="BorderBrush" Value="#E8EAF0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <!-- KPI Label -->
+        <Style x:Key="KpiLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#8F96A3"/>
+            <Setter Property="FontWeight" Value="Normal"/>
+        </Style>
+
+        <!-- KPI Value -->
+        <Style x:Key="KpiValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="26"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#1A1D23"/>
+        </Style>
+
+        <!-- Section Header -->
+        <Style x:Key="CardTitle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#1A1D23"/>
+        </Style>
+
+        <!-- Badge Green -->
+        <Style x:Key="BadgeGreen" TargetType="Border">
+            <Setter Property="Background" Value="#E6F4EA"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+
+        <!-- Badge Red -->
+        <Style x:Key="BadgeRed" TargetType="Border">
+            <Setter Property="Background" Value="#FCE8E6"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+    </Page.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Padding="24,20,24,24" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/> <!-- Header -->
+                <RowDefinition Height="Auto"/> <!-- 4 KPI Cards -->
+                <RowDefinition Height="Auto"/> <!-- Middle Row -->
+                <RowDefinition Height="Auto"/> <!-- Bottom Row -->
+            </Grid.RowDefinitions>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  ROW 0: Header Bar                              -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel>
+                    <TextBlock x:Name="GreetingText"
+                               FontSize="22" FontWeight="SemiBold"
+                               Foreground="#1A1D23"/>
+                    <TextBlock Text="Here's an overview of your store activity."
+                               FontSize="13" Foreground="#8F96A3" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Border Background="White" CornerRadius="8" Padding="12,7" BorderBrush="#E8EAF0" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <SymbolIcon Symbol="Calendar" Foreground="#8F96A3"/>
+                            <TextBlock x:Name="TodayDateText" FontSize="13" Foreground="#1A1D23"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Background="#1976D2" CornerRadius="8" Padding="12,7" BorderThickness="0">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <SymbolIcon Symbol="Repair" Foreground="White"/>
+                            <TextBlock Text="Quick Actions" Foreground="White" FontSize="13"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  ROW 1: 4 KPI Metric Cards                     -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Grid Grid.Row="1" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Card 1: Sales Today -->
+                <Border Grid.Column="0" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="Sales Today" Style="{StaticResource KpiLabel}"/>
+                            <!-- Sparkline -->
+                            <Viewbox HorizontalAlignment="Right" Width="60" Height="24">
+                                <Polyline Points="0,50 20,35 40,42 60,18 80,28 100,8 120,18"
+                                          Stroke="#1976D2" StrokeThickness="3"
+                                          Fill="Transparent" Stretch="Fill"/>
+                            </Viewbox>
+                        </Grid>
+                        <TextBlock Grid.Row="1" x:Name="SalesTodayText" Style="{StaticResource KpiValue}"/>
+                        <Border Grid.Row="2" Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
+                            <TextBlock x:Name="SalesDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Card 2: Net Profit Today -->
+                <Border Grid.Column="1" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="Net Profit Today" Style="{StaticResource KpiLabel}"/>
+                            <Viewbox HorizontalAlignment="Right" Width="60" Height="24">
+                                <Polyline Points="0,45 20,32 40,38 60,14 80,22 100,5 120,14"
+                                          Stroke="#43A047" StrokeThickness="3"
+                                          Fill="Transparent" Stretch="Fill"/>
+                            </Viewbox>
+                        </Grid>
+                        <TextBlock Grid.Row="1" x:Name="ProfitTodayText" Style="{StaticResource KpiValue}"/>
+                        <Border Grid.Row="2" Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
+                            <TextBlock x:Name="ProfitDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Card 3: Invoice Count -->
+                <Border Grid.Column="2" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="Invoice Count" Style="{StaticResource KpiLabel}"/>
+                            <Viewbox HorizontalAlignment="Right" Width="60" Height="24">
+                                <Polyline Points="0,50 20,38 40,44 60,22 80,32 100,12 120,24"
+                                          Stroke="#1976D2" StrokeThickness="3"
+                                          Fill="Transparent" Stretch="Fill"/>
+                            </Viewbox>
+                        </Grid>
+                        <TextBlock Grid.Row="1" x:Name="InvoiceCountText" Style="{StaticResource KpiValue}"/>
+                        <Border Grid.Row="2" Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
+                            <TextBlock x:Name="InvoiceDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <!-- Card 4: Avg Invoice Value -->
+                <Border Grid.Column="3" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="6">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <TextBlock Text="Avg. Invoice Value" Style="{StaticResource KpiLabel}"/>
+                            <Viewbox HorizontalAlignment="Right" Width="60" Height="24">
+                                <Polyline Points="0,40 20,28 40,34 60,16 80,26 100,10 120,20"
+                                          Stroke="#F9A825" StrokeThickness="3"
+                                          Fill="Transparent" Stretch="Fill"/>
+                            </Viewbox>
+                        </Grid>
+                        <TextBlock Grid.Row="1" x:Name="AvgInvoiceText" Style="{StaticResource KpiValue}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="Median:" FontSize="11" Foreground="#8F96A3"/>
+                            <TextBlock x:Name="MedianText" FontSize="11" Foreground="#8F96A3"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  ROW 2: Middle Cards (Sales vs Target | Top Products | Discounts + Stock Health) -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Grid Grid.Row="2" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="280"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Sales vs Target Card -->
+                <Border Grid.Column="0" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="14">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Sales vs Target" Style="{StaticResource CardTitle}"/>
+
+                        <!-- Dual-layer bar: gray=yesterday, blue=today -->
+                        <Grid Grid.Row="1" Height="20">
+                            <!-- Yesterday gray background -->
+                            <Border Background="#E8EAF0" CornerRadius="10"/>
+                            <!-- Yesterday faint bar (45% of target) -->
+                            <Grid HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="45*"/>
+                                    <ColumnDefinition Width="55*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#B0BEC5" CornerRadius="10"/>
+                            </Grid>
+                            <!-- Today blue bar (53% of target) -->
+                            <Grid HorizontalAlignment="Left">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="53*"/>
+                                    <ColumnDefinition Width="47*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="#1976D2" CornerRadius="10" Opacity="0.92"/>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Values Row -->
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="CurrentSalesText" FontSize="20" FontWeight="Bold" Foreground="#1A1D23"/>
+                            <Border Grid.Column="1" Margin="8,0" Style="{StaticResource BadgeRed}" VerticalAlignment="Center">
+                                <TextBlock x:Name="SalesGapText" FontSize="11" FontWeight="SemiBold" Foreground="#C62828"/>
+                            </Border>
+                            <TextBlock Grid.Column="2" x:Name="TargetText" FontSize="16" FontWeight="SemiBold" Foreground="#8F96A3" VerticalAlignment="Center"/>
+                        </Grid>
+
+                        <TextBlock Grid.Row="3" x:Name="TargetSubText" FontSize="11" Foreground="#8F96A3"/>
+                    </Grid>
+                </Border>
+
+                <!-- Top Selling Products Card -->
+                <Border Grid.Column="1" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Top Selling Products" Style="{StaticResource CardTitle}"/>
+
+                        <ItemsControl Grid.Row="1" x:Name="TopProductsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:DashboardProductItem">
+                                    <Grid Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{x:Bind Name}" FontSize="13" Foreground="#1A1D23"/>
+                                            <ProgressBar Value="{x:Bind Pct}" Minimum="0" Maximum="100"
+                                                         Height="5" CornerRadius="3" Margin="0,4,0,0"
+                                                         Background="#E8EAF0" Foreground="#1976D2"/>
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" Text="{x:Bind Revenue}" FontSize="13"
+                                                   FontWeight="SemiBold" Foreground="#1A1D23"
+                                                   VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+
+                <!-- Right Column: Discounts + Stock Health -->
+                <StackPanel Grid.Column="2" Spacing="16">
+
+                    <!-- Discounts Today -->
+                    <Border Style="{StaticResource DashCard}">
+                        <Grid RowSpacing="6">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Grid.Row="0" Text="Discounts Today" Style="{StaticResource KpiLabel}"/>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="DiscountsTotalText" Style="{StaticResource KpiValue}"/>
+                                <Border Grid.Column="1" Style="{StaticResource BadgeGreen}" VerticalAlignment="Center">
+                                    <TextBlock x:Name="DiscountsDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                </Border>
+                            </Grid>
+                            <TextBlock Grid.Row="2" x:Name="DiscountsCountText" FontSize="11" Foreground="#8F96A3"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Stock Health Donut -->
+                    <Border Style="{StaticResource DashCard}">
+                        <Grid RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Text="Stock Health" Style="{StaticResource CardTitle}"/>
+
+                            <!-- Donut drawn in code-behind via Path+ArcSegment -->
+                            <Grid Grid.Row="1" HorizontalAlignment="Center">
+                                <Canvas x:Name="StockHealthCanvas" Width="140" Height="140"/>
+                                <!-- Center label overlaid on canvas -->
+                                <TextBlock x:Name="DonutCenterText"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           FontSize="15" FontWeight="Bold"
+                                           Foreground="#1A1D23"/>
+                            </Grid>
+
+                            <!-- Legend -->
+                            <StackPanel Grid.Row="2" Spacing="6">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="10" Height="10" Fill="#1976D2" VerticalAlignment="Center"/>
+                                    <TextBlock Text="51%  Healthy" FontSize="12" Foreground="#1A1D23"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="10" Height="10" Fill="#F9A825" VerticalAlignment="Center"/>
+                                    <TextBlock Text="29%  Low Stock" FontSize="12" Foreground="#1A1D23"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Ellipse Width="10" Height="10" Fill="#E53935" VerticalAlignment="Center"/>
+                                    <TextBlock Text="20%  Out of Stock" FontSize="12" Foreground="#1A1D23"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <!-- ═══════════════════════════════════════════════ -->
+            <!--  ROW 3: Bottom Cards (Critical Alerts | Low Stock) -->
+            <!-- ═══════════════════════════════════════════════ -->
+            <Grid Grid.Row="3" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Critical Alerts -->
+                <Border Grid.Column="0" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+                            <Border Background="#FCE8E6" CornerRadius="4" Padding="4">
+                                <SymbolIcon Symbol="Important" Foreground="#E53935"/>
+                            </Border>
+                            <TextBlock Text="Critical Alerts" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="3 Out of Stock" FontSize="13" Foreground="#1A1D23"/>
+                            <Border Grid.Column="1" Margin="4,0" Style="{StaticResource BadgeRed}">
+                                <TextBlock Text="+2" FontSize="11" FontWeight="SemiBold" Foreground="#C62828"/>
+                            </Border>
+                            <TextBlock Grid.Column="2" Text="$920" FontSize="13" FontWeight="SemiBold" Foreground="#1A1D23"/>
+                        </Grid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="8 Low Stock" FontSize="13" Foreground="#1A1D23"/>
+                            <Border Grid.Column="1" Margin="4,0" Style="{StaticResource BadgeGreen}">
+                                <TextBlock Text="-5" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                            </Border>
+                            <TextBlock Grid.Column="2" Text="$920" FontSize="13" FontWeight="SemiBold" Foreground="#1A1D23"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Low Stock / Out of Stock -->
+                <Border Grid.Column="1" Style="{StaticResource DashCard}">
+                    <Grid RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Low Stock / Out of Stock" Style="{StaticResource CardTitle}"/>
+
+                        <ItemsControl Grid.Row="1" x:Name="LowStockList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="local:DashboardStockItem">
+                                    <Grid Margin="0,0,0,8">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{x:Bind Name}" FontSize="13" Foreground="#1A1D23" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Column="1" Text="{x:Bind StockStatus}" FontSize="12"
+                                                   Foreground="{x:Bind StatusBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="2" Style="{StaticResource BadgeGreen}" Visibility="{x:Bind BadgeVisible}">
+                                            <TextBlock Text="{x:Bind BadgeText}" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                        </Border>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Grid>
+                </Border>
+            </Grid>
+
+        </Grid>
+    </ScrollViewer>
+</Page>

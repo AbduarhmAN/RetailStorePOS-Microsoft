@@ -1,0 +1,59 @@
+<Project>
+  <PropertyGroup>
+    <RetailStorePOSBrandName>Nexill</RetailStorePOSBrandName>
+    <RetailStorePOSProductName>Retail Store POS</RetailStorePOSProductName>
+    <RetailStorePOSDescription>Retail store management software</RetailStorePOSDescription>
+    <RetailStorePOSExecutableName>RetailStorePOS</RetailStorePOSExecutableName>
+    <RetailStorePOSSetupBaseFilename>RetailStorePOS_Installer_v$(RetailStorePOSVersion)</RetailStorePOSSetupBaseFilename>
+    <RetailStorePOSWizardImageRelativePath>Retail Store POS\Nexill.RetailStorePOS\Assets\Nexill_164x314p.bmp</RetailStorePOSWizardImageRelativePath>
+    <RetailStorePOSWizardSmallImageRelativePath>Retail Store POS\Nexill.RetailStorePOS\Assets\Nexill_55x55p.bmp</RetailStorePOSWizardSmallImageRelativePath>
+
+    <RetailStorePOSWinUiAssemblyName>Nexill.RetailStorePOS</RetailStorePOSWinUiAssemblyName>
+    <RetailStorePOSWinUiTargetName>Nexill.RetailStorePOS</RetailStorePOSWinUiTargetName>
+    <RetailStorePOSWinUiTitle>Retail Store POS</RetailStorePOSWinUiTitle>
+    <RetailStorePOSWinUiProductName>Retail Store POS</RetailStorePOSWinUiProductName>
+    <RetailStorePOSWinUiPackageIdentityName>Nexill.RetailStore</RetailStorePOSWinUiPackageIdentityName>
+    <RetailStorePOSWinUiPackagePublisher>CN=9A3EB885-0023-4A35-9C0F-B54D1E9D2824</RetailStorePOSWinUiPackagePublisher>
+    <RetailStorePOSWinUiPackageDisplayName>Retail Store POS</RetailStorePOSWinUiPackageDisplayName>
+    <RetailStorePOSWinUiPackageDescription>Retail store management software</RetailStorePOSWinUiPackageDescription>
+
+    <RetailStorePOSVersion>1.2.2</RetailStorePOSVersion>
+    <RetailStorePOSAssemblyVersion>1.2.2.0</RetailStorePOSAssemblyVersion>
+
+    <AssemblyVersion>$(RetailStorePOSAssemblyVersion)</AssemblyVersion>
+    <FileVersion>$(RetailStorePOSAssemblyVersion)</FileVersion>
+    <InformationalVersion>$(RetailStorePOSVersion)</InformationalVersion>
+
+    <RetailStorePOSPolicyEffectiveDate>March 11, 2026</RetailStorePOSPolicyEffectiveDate>
+    <RetailStorePOSPolicyLastUpdatedDate>March 11, 2026</RetailStorePOSPolicyLastUpdatedDate>
+    <RetailStorePOSSupportEmail>contact@nextillretail.store</RetailStorePOSSupportEmail>
+    <RetailStorePOSPrivacyContactEmail>contact@nextillretail.store</RetailStorePOSPrivacyContactEmail>
+    <RetailStorePOSAppUserModelId>Nexill.RetailStorePOS</RetailStorePOSAppUserModelId>
+
+    <RetailStorePOSAppIcon>$(MSBuildThisFileDirectory)Retail Store POS\Nexill.RetailStorePOS\Assets\app_icon.ico</RetailStorePOSAppIcon>
+    <RetailStorePOSLicenseRelativePath>Retail Store POS\Nexill.RetailStorePOS\Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt</RetailStorePOSLicenseRelativePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RetailStorePOSPolicyEffectiveDate</_Parameter1>
+      <_Parameter2>$(RetailStorePOSPolicyEffectiveDate)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RetailStorePOSPolicyLastUpdatedDate</_Parameter1>
+      <_Parameter2>$(RetailStorePOSPolicyLastUpdatedDate)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RetailStorePOSSupportEmail</_Parameter1>
+      <_Parameter2>$(RetailStorePOSSupportEmail)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RetailStorePOSPrivacyContactEmail</_Parameter1>
+      <_Parameter2>$(RetailStorePOSPrivacyContactEmail)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RetailStorePOSAppUserModelId</_Parameter1>
+      <_Parameter2>$(RetailStorePOSAppUserModelId)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

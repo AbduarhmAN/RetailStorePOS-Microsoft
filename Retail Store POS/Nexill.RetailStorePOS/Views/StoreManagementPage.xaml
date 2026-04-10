@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="RetailStorePOS.WinUiLogin.Views.StoreManagementPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RetailStorePOS.WinUiLogin.Views"
+    xmlns:models="using:RetailStorePOS.Data.Models"
+    xmlns:common="using:RetailStorePOS.WinUiLogin.Common"
+    Background="Transparent">
+
+    <Grid Padding="24">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Section Header -->
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Store Management" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold"/>
+                <TextBlock Text="Manage store details, receipt output, and tax settings used across the workspace." 
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <Button Grid.Column="1" 
+                    CornerRadius="3"
+                    Content="Save" 
+                    Style="{StaticResource AccentButtonStyle}" 
+                    Command="{x:Bind ViewModel.SaveStoreSettingsCommand}"/>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="24">
+                
+                <!-- General Store Details -->
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Store Identity" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock Text="These details appear on receipts and other customer-facing documents." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+                        
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Store Name"/>
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{x:Bind ViewModel.StoreName, Mode=TwoWay}" 
+                                         IsReadOnly="{x:Bind local:StoreManagementPage.InverseBool(ViewModel.IsStoreNameUnlocked), Mode=OneWay}" CornerRadius="3"/>
+                                <ToggleButton Grid.Column="1" Content="&#xE72E;" FontFamily="Segoe Fluent Icons" 
+                                              IsChecked="{x:Bind ViewModel.IsStoreNameUnlocked, Mode=TwoWay}" ToolTipService.ToolTip="Unlock field for editing" CornerRadius="2"/>
+                            </Grid>
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Store Address"/>
+                            <Grid ColumnSpacing="8">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="{x:Bind ViewModel.StoreAddress, Mode=TwoWay}" MinHeight="80" AcceptsReturn="True" TextWrapping="Wrap" CornerRadius="3"
+                                         IsReadOnly="{x:Bind local:StoreManagementPage.InverseBool(ViewModel.IsStoreAddressUnlocked), Mode=OneWay}"/>
+                                <ToggleButton Grid.Column="1" Content="&#xE72E;" FontFamily="Segoe Fluent Icons" VerticalAlignment="Top" CornerRadius="2"
+                                              IsChecked="{x:Bind ViewModel.IsStoreAddressUnlocked, Mode=TwoWay}" ToolTipService.ToolTip="Unlock field for editing"/>
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Checkout Defaults -->
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock Text="Checkout Defaults" FontWeight="SemiBold" FontSize="16"/>
+                        
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Currency Code"/>
+                            <TextBox Text="{x:Bind ViewModel.CurrencyCode, Mode=TwoWay}" Width="120" HorizontalAlignment="Left" CornerRadius="3"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Status readout -->
+                <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" 
+                           Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" 
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"/>
+<!-- comment start here 
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
+                        BorderThickness="1"
+                        CornerRadius="6"
+                        Padding="16">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Fresh Start"
+                                   FontWeight="SemiBold"
+                                   FontSize="16"/>
+                        <TextBlock Text="Delete the local catalog, users, receipts, preferences, secure credentials, and telemetry cache. The app will reopen like a fresh install."
+                                   TextWrapping="Wrap"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                        <Button Content="Reset app data"
+                                Click="ResetAppDataButton_Click"
+                                HorizontalAlignment="Left"
+                                ToolTipService.ToolTip="Wipes local app data and relaunches the app fresh."
+                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
+                    </StackPanel>
+                </Border>
+ comment start here -->
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Page>
