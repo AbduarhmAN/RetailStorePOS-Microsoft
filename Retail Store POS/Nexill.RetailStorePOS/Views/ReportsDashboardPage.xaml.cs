@@ -63,7 +63,9 @@ public sealed partial class ReportsDashboardPage : Page
         TargetSubText.Text    = "-47% vs target  ·  TARGET: $30,000";
 
         // Wire bar widths when the container is measured
-        SalesBarContainer.SizeChanged += (_, _) => UpdateSalesBar(todayPct: 0.53, yesterdayPct: 0.45);
+        SalesBarContainer.SizeChanged += (_, _) => UpdateSalesBar(todayPct: 0.53, yesterdayPct: 0.75);
+        // Force an initial update in case SizeChanged already fired before Loaded
+        UpdateSalesBar(todayPct: 0.53, yesterdayPct: 0.75);
 
         // ── DISCOUNTS ──────────────────────────────────────
         DiscountsTotalText.Text = "$540";
