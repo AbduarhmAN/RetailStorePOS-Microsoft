@@ -136,17 +136,26 @@ public sealed class ProductImportService
             return false;
         }
 
-        if (!TryParseDecimal(record.Price, out var price) || price < 0)
+        if (!TryParseDecimal(record.Price, out var price))
         {
             product = null;
             errorMessage = $"Row skipped: invalid price for '{name}'.";
             return false;
         }
 
+        TryParseDecimal(record.CostPrice, out var costPrice);
+        decimal.TryParse(record.QuantityStore, NumberStyles.Any, CultureInfo.InvariantCulture, out var qs);
+        decimal.TryParse(record.QuantityWarehouse, NumberStyles.Any, CultureInfo.InvariantCulture, out var qw);
+        long? taxGroupId = long.TryParse(record.TaxGroupId, out var tId) ? tId : null;
+
         product = new Product
         {
             Name = name,
             Price = price,
+            CostPrice = costPrice,
+            QuantityStore = qs,
+            QuantityWarehouse = qw,
+            TaxGroupId = taxGroupId,
             Barcode = Clean(record.Barcode),
             Unit = Clean(record.Unit),
             Sku = Clean(record.Sku)
@@ -170,17 +179,27 @@ public sealed class ProductImportService
         var lookupBarcodeParameter = lookupCommand.Parameters.Add("@barcode", SqliteType.Text);
         lookupCommand.Prepare();
 
+        using var lookupNameCommand = connection.CreateCommand();
+        lookupNameCommand.Transaction = transaction;
+        lookupNameCommand.CommandText = "SELECT id FROM products WHERE name = @name LIMIT 1;";
+        var lookupNameParameter = lookupNameCommand.Parameters.Add("@name", SqliteType.Text);
+        lookupNameCommand.Prepare();
+
         using var insertCommand = connection.CreateCommand();
         insertCommand.Transaction = transaction;
         insertCommand.CommandText = @"
-INSERT INTO products (sku, name, barcode, unit, price_cents, tax_category_id, created_at, updated_at)
-VALUES (@sku, @name, @barcode, @unit, @price_cents, @tax_category_id, @created_at, @updated_at);";
+INSERT INTO products (sku, name, barcode, unit, price_cents, cost_price_cents, tax_category_id, tax_group_id, quantity, quantity_store, quantity_warehouse, created_at, updated_at)
+VALUES (@sku, @name, @barcode, @unit, @price_cents, @cost_price_cents, @tax_category_id, @tax_group_id, @quantity_store, @quantity_store, @quantity_warehouse, @created_at, @updated_at);";
         var insertSkuParameter = insertCommand.Parameters.Add("@sku", SqliteType.Text);
         var insertNameParameter = insertCommand.Parameters.Add("@name", SqliteType.Text);
         var insertBarcodeParameter = insertCommand.Parameters.Add("@barcode", SqliteType.Text);
         var insertUnitParameter = insertCommand.Parameters.Add("@unit", SqliteType.Text);
         var insertPriceParameter = insertCommand.Parameters.Add("@price_cents", SqliteType.Integer);
+        var insertCostPriceParameter = insertCommand.Parameters.Add("@cost_price_cents", SqliteType.Integer);
         var insertTaxCategoryParameter = insertCommand.Parameters.Add("@tax_category_id", SqliteType.Integer);
+        var insertTaxGroupParameter = insertCommand.Parameters.Add("@tax_group_id", SqliteType.Integer);
+        var insertQuantityStoreParameter = insertCommand.Parameters.Add("@quantity_store", SqliteType.Real);
+        var insertQuantityWarehouseParameter = insertCommand.Parameters.Add("@quantity_warehouse", SqliteType.Real);
         var insertCreatedAtParameter = insertCommand.Parameters.Add("@created_at", SqliteType.Text);
         var insertUpdatedAtParameter = insertCommand.Parameters.Add("@updated_at", SqliteType.Text);
         insertCommand.Prepare();
@@ -194,7 +213,12 @@ SET sku = @sku,
     barcode = @barcode,
     unit = @unit,
     price_cents = @price_cents,
+    cost_price_cents = @cost_price_cents,
     tax_category_id = @tax_category_id,
+    tax_group_id = @tax_group_id,
+    quantity = @quantity_store,
+    quantity_store = @quantity_store,
+    quantity_warehouse = @quantity_warehouse,
     updated_at = @updated_at
 WHERE id = @id;";
         var updateIdParameter = updateCommand.Parameters.Add("@id", SqliteType.Integer);
@@ -203,7 +227,11 @@ WHERE id = @id;";
         var updateBarcodeParameter = updateCommand.Parameters.Add("@barcode", SqliteType.Text);
         var updateUnitParameter = updateCommand.Parameters.Add("@unit", SqliteType.Text);
         var updatePriceParameter = updateCommand.Parameters.Add("@price_cents", SqliteType.Integer);
+        var updateCostPriceParameter = updateCommand.Parameters.Add("@cost_price_cents", SqliteType.Integer);
         var updateTaxCategoryParameter = updateCommand.Parameters.Add("@tax_category_id", SqliteType.Integer);
+        var updateTaxGroupParameter = updateCommand.Parameters.Add("@tax_group_id", SqliteType.Integer);
+        var updateQuantityStoreParameter = updateCommand.Parameters.Add("@quantity_store", SqliteType.Real);
+        var updateQuantityWarehouseParameter = updateCommand.Parameters.Add("@quantity_warehouse", SqliteType.Real);
         var updateUpdatedAtParameter = updateCommand.Parameters.Add("@updated_at", SqliteType.Text);
         updateCommand.Prepare();
 
@@ -219,38 +247,64 @@ WHERE id = @id;";
                     existingId = Convert.ToInt64(lookupResult, CultureInfo.InvariantCulture);
                 }
             }
+            else if (!string.IsNullOrWhiteSpace(product.Name))
+            {
+                lookupNameParameter.Value = product.Name;
+                var lookupResult = lookupNameCommand.ExecuteScalar();
+                if (lookupResult != null && lookupResult != DBNull.Value)
+                {
+                    existingId = Convert.ToInt64(lookupResult, CultureInfo.InvariantCulture);
+                }
+            }
 
             var now = DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture);
             var skuValue = (object?)product.Sku ?? DBNull.Value;
             var barcodeValue = (object?)product.Barcode ?? DBNull.Value;
             var unitValue = (object?)product.Unit ?? DBNull.Value;
             var priceInCents = MoneyUtils.ToCents(product.Price);
+            var costPriceInCents = MoneyUtils.ToCents(product.CostPrice);
 
-            if (existingId.HasValue)
+            try
             {
-                updateIdParameter.Value = existingId.Value;
-                updateSkuParameter.Value = skuValue;
-                updateNameParameter.Value = product.Name;
-                updateBarcodeParameter.Value = barcodeValue;
-                updateUnitParameter.Value = unitValue;
-                updatePriceParameter.Value = priceInCents;
-                updateTaxCategoryParameter.Value = product.TaxCategoryId;
-                updateUpdatedAtParameter.Value = now;
-                updateCommand.ExecuteNonQuery();
-                result.UpdatedCount++;
-                continue;
-            }
+                if (existingId.HasValue)
+                {
+                    updateIdParameter.Value = existingId.Value;
+                    updateSkuParameter.Value = skuValue;
+                    updateNameParameter.Value = product.Name;
+                    updateBarcodeParameter.Value = barcodeValue;
+                    updateUnitParameter.Value = unitValue;
+                    updatePriceParameter.Value = priceInCents;
+                    updateCostPriceParameter.Value = costPriceInCents;
+                    updateTaxCategoryParameter.Value = product.TaxCategoryId;
+                    updateTaxGroupParameter.Value = (object?)product.TaxGroupId ?? DBNull.Value;
+                    updateQuantityStoreParameter.Value = product.QuantityStore;
+                    updateQuantityWarehouseParameter.Value = product.QuantityWarehouse;
+                    updateUpdatedAtParameter.Value = now;
+                    updateCommand.ExecuteNonQuery();
+                    result.UpdatedCount++;
+                    continue;
+                }
 
-            insertSkuParameter.Value = skuValue;
-            insertNameParameter.Value = product.Name;
-            insertBarcodeParameter.Value = barcodeValue;
-            insertUnitParameter.Value = unitValue;
-            insertPriceParameter.Value = priceInCents;
-            insertTaxCategoryParameter.Value = product.TaxCategoryId;
-            insertCreatedAtParameter.Value = now;
-            insertUpdatedAtParameter.Value = now;
-            insertCommand.ExecuteNonQuery();
-            result.CreatedCount++;
+                insertSkuParameter.Value = skuValue;
+                insertNameParameter.Value = product.Name;
+                insertBarcodeParameter.Value = barcodeValue;
+                insertUnitParameter.Value = unitValue;
+                insertPriceParameter.Value = priceInCents;
+                insertCostPriceParameter.Value = costPriceInCents;
+                insertTaxCategoryParameter.Value = product.TaxCategoryId;
+                insertTaxGroupParameter.Value = (object?)product.TaxGroupId ?? DBNull.Value;
+                insertQuantityStoreParameter.Value = product.QuantityStore;
+                insertQuantityWarehouseParameter.Value = product.QuantityWarehouse;
+                insertCreatedAtParameter.Value = now;
+                insertUpdatedAtParameter.Value = now;
+                insertCommand.ExecuteNonQuery();
+                result.CreatedCount++;
+            }
+            catch (SqliteException ex)
+            {
+                result.SkippedCount++;
+                AddError(result, $"Database error for '{product.Name}': {ex.Message}");
+            }
         }
 
         transaction.Commit();
@@ -297,12 +351,4 @@ WHERE id = @id;";
         return decimal.TryParse(value, NumberStyles.Any, CultureInfo.CurrentCulture, out result);
     }
 
-    private sealed class ProductCsvRow
-    {
-        public string? Name { get; set; }
-        public string? Price { get; set; }
-        public string? Barcode { get; set; }
-        public string? Unit { get; set; }
-        public string? Sku { get; set; }
-    }
 }

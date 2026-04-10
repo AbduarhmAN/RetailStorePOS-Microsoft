@@ -592,17 +592,6 @@
                                                          PasswordRevealMode="Peek"
                                                          AutomationProperties.Name="Password"
                                                          KeyDown="AdminCredentialBox_KeyDown" />
-                                            <muxc:TeachingTip x:Name="DefaultAdminPasswordTip"
-                                                              Target="{x:Bind PinPasswordBox, Mode=OneWay}"
-                                                              PreferredPlacement="Left"
-                                                              TailVisibility="Visible"
-                                                              PlacementMargin="12"
-                                                              ShouldConstrainToRootBounds="True"
-                                                              IsLightDismissEnabled="True"
-                                                              CloseButtonContent="Close"
-                                                              Title="Administrator password"
-                                                              Subtitle="The default password is 1234."
-                                                              />
                                         </StackPanel>
 
                                         <Button x:Name="AdminActionButton"
@@ -639,6 +628,17 @@
                 </ScrollViewer>
             </Grid>
         </Grid>
+
+        <TeachingTip x:Name="CashierPinTip"
+                     Target="{x:Bind PinPasswordBox, Mode=OneWay}"
+                     PreferredPlacement="Left"
+                     TailVisibility="Visible"
+                     PlacementMargin="12"
+                     ShouldConstrainToRootBounds="True"
+                     IsLightDismissEnabled="True"
+                     CloseButtonContent="Close"
+                     Title="Cashier PIN"
+                     Subtitle="The default Cashier PIN is 1234." />
     </Grid>
 </Page>
 

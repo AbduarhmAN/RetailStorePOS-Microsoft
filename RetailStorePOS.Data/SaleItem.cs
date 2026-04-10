@@ -8,6 +8,7 @@ public class SaleItem
     public string Name { get; set; } = string.Empty;
     public string? Barcode { get; set; }
     public decimal Price { get; set; }
+    public decimal ItemCost { get; set; }
     public decimal Quantity { get; set; }
     public decimal TaxRatePercent { get; set; }
     public decimal TaxAmount { get; set; }

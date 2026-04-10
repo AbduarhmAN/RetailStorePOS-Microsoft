@@ -47,59 +47,70 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="18,16">
-                <Grid ColumnSpacing="12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Spacing="6">
-                        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                            <Border Width="36" Height="36" Background="{ThemeResource TextOnAccentFillColorPrimaryBrush}">
-                                <SymbolIcon Symbol="Shop" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <TextBlock Text="Products" FontSize="24" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        </StackPanel>
-                        <TextBlock Text="Browse the live product catalog" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                        <InfoBar IsOpen="{x:Bind HasCatalogInventoryAlerts, Mode=OneWay}" Visibility="{x:Bind CatalogInventoryAlertVisibility, Mode=OneWay}" Severity="{x:Bind CatalogInventoryAlertSeverity, Mode=OneWay}" Message="{x:Bind CatalogInventoryAlertText, Mode=OneWay}" IsClosable="False" />
+            <Grid Grid.Row="0"
+                  ColumnSpacing="12"
+                  VerticalAlignment="Top">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Spacing="6">
+                    <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                        <Border Width="34"
+                                Height="34"
+                                CornerRadius="10"
+                                Background="{ThemeResource TextOnAccentFillColorPrimaryBrush}">
+                            <SymbolIcon Symbol="Shop"
+                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center" />
+                        </Border>
+                        <TextBlock Text="Products"
+                                   FontSize="24"
+                                   FontWeight="SemiBold"
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </StackPanel>
-                    <Border Grid.Column="1"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                            BorderThickness="1"
-                            CornerRadius="6"
-                            Padding="8,6">
-                        <CommandBar Background="Transparent" DefaultLabelPosition="Right" VerticalAlignment="Center">
-                            <AppBarButton Label="Add" Click="AddProductButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
-                                <AppBarButton.Icon><SymbolIcon Symbol="Add" /></AppBarButton.Icon>
-                            </AppBarButton>
-                            <AppBarButton Label="Refresh" Click="RefreshButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
-                                <AppBarButton.Icon><SymbolIcon Symbol="Refresh" /></AppBarButton.Icon>
-                            </AppBarButton>
-                            <AppBarButton Label="Clear" Click="ClearSearchButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
-                                <AppBarButton.Icon><SymbolIcon Symbol="Clear" /></AppBarButton.Icon>
-                            </AppBarButton>
-                        </CommandBar>
-                    </Border>
-                </Grid>
-            </Border>
+                    <TextBlock Text="Browse the live product catalog"
+                               TextWrapping="WrapWholeWords"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <InfoBar IsOpen="{x:Bind HasCatalogInventoryAlerts, Mode=OneWay}"
+                             Visibility="{x:Bind CatalogInventoryAlertVisibility, Mode=OneWay}"
+                             Severity="{x:Bind CatalogInventoryAlertSeverity, Mode=OneWay}"
+                             Message="{x:Bind CatalogInventoryAlertText, Mode=OneWay}"
+                             IsClosable="False" />
+                </StackPanel>
+
+                <CommandBar Grid.Column="1"
+                            Background="Transparent"
+                            DefaultLabelPosition="Right"
+                            VerticalAlignment="Top">
+                    <AppBarButton Label="Add" Click="AddProductButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                        <AppBarButton.Icon><SymbolIcon Symbol="Add" /></AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Label="Import Data" Click="ImportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                        <AppBarButton.Icon><FontIcon Glyph="&#xE8B5;" /></AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Label="Export Data" Click="ExportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                        <AppBarButton.Icon><FontIcon Glyph="&#xE8D8;" /></AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Label="Refresh" Click="RefreshButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                        <AppBarButton.Icon><SymbolIcon Symbol="Refresh" /></AppBarButton.Icon>
+                    </AppBarButton>
+                    <AppBarButton Label="Clear" Click="ClearSearchButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                        <AppBarButton.Icon><SymbolIcon Symbol="Clear" /></AppBarButton.Icon>
+                    </AppBarButton>
+                </CommandBar>
+            </Grid>
 
 
             <!-- LIST panel -->
             <Border Grid.Row="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="14">
-                    <Grid RowSpacing="12">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                <Grid RowSpacing="12">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
                     <Grid Background="{ThemeResource ControlFillColorDefaultBrush}" Padding="12,0">
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>

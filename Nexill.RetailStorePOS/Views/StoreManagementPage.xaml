@@ -89,7 +89,7 @@
                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" 
                            FontWeight="SemiBold"
                            TextWrapping="Wrap"/>
-<!-- comment start here -->
+<!-- comment start here 
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
                         BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
                         BorderThickness="1"
@@ -109,7 +109,7 @@
                                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
                     </StackPanel>
                 </Border>
-<!-- comment start here -->
+ comment start here -->
             </StackPanel>
         </ScrollViewer>
     </Grid>

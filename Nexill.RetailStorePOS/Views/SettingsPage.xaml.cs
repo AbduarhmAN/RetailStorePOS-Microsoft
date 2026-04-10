@@ -8,7 +8,8 @@ namespace RetailStorePOS.WinUiLogin.Views;
 
 public sealed partial class SettingsPage : Page
 {
-    private bool _isWaitingToShowSubNavigationTip;
+    private bool _isSyncingNavigationSelection;
+    private string? _pendingInitialTag;
 
     public SettingsViewModel ViewModel { get; }
 
@@ -23,138 +24,137 @@ public sealed partial class SettingsPage : Page
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
         UpdateNavigationAccess();
-
-        // Check if we are being forced into the Users tab because the first-run tutorial starts there.
-        if (LoginRuntime.Auth.CurrentUser?.Username == "admin" &&
-            (!LoginRuntime.Settings.IsOnboardingPhaseCleared() || !LoginRuntime.Settings.IsFirstRunTutorialCleared()))
-        {
-            SettingsNavView.SelectedItem = UsersNav;
-            return;
-        }
-
-        // Check if external navigation passed a specific tag (e.g., from MainWindow Router)
-        if (this.Frame?.Tag is string tag && !string.IsNullOrWhiteSpace(tag))
-        {
-            if (tag.Equals("users", StringComparison.OrdinalIgnoreCase))
-            {
-                SettingsNavView.SelectedItem = UsersNav;
-                return;
-            }
-        }
-
-        // Default routing
-        if (ViewModel.CanManageSettings)
-        {
-            SettingsNavView.SelectedItem = StoreNav;
-        }
-        else
-        {
-            SettingsNavView.SelectedItem = PrefsNav;
-        }
+        NavigateToTag(ResolveRequestedTag());
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)
     {
-        if (_isWaitingToShowSubNavigationTip)
-        {
-            LayoutUpdated -= SettingsPage_LayoutUpdated;
-            _isWaitingToShowSubNavigationTip = false;
-        }
     }
 
     private void UpdateNavigationAccess()
     {
+        CheckoutNavItem.Visibility = LoginRuntime.Auth.CanCheckout ? Visibility.Visible : Visibility.Collapsed;
+        ProductsNavItem.Visibility = LoginRuntime.Auth.CanManageProducts ? Visibility.Visible : Visibility.Collapsed;
+        ReportsNavItem.Visibility = LoginRuntime.Auth.CanViewReports ? Visibility.Visible : Visibility.Collapsed;
         StoreNav.Visibility = ViewModel.CanManageSettings ? Visibility.Visible : Visibility.Collapsed;
         TaxNav.Visibility = ViewModel.CanManageSettings ? Visibility.Visible : Visibility.Collapsed;
-        
-        // Ensure UsersNav is tied to user management permissions (Onboarding bypasses this intentionally if Admin)
         UsersNav.Visibility = LoginRuntime.Auth.CanManageUsers ? Visibility.Visible : Visibility.Collapsed;
-        
         PrefsNav.Visibility = Visibility.Visible;
+        AboutNavItem.Visibility = Visibility.Visible;
+        SignOutNavItem.Visibility = Visibility.Visible;
+        SettingsRootNav.Visibility = Visibility.Visible;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
         ViewModel.ReloadCommand.Execute(null);
+        UpdateNavigationAccess();
 
-        // If parameter was passed directly via Frame Navigation
         if (e.Parameter is string targetTag && !string.IsNullOrWhiteSpace(targetTag))
         {
-            if (targetTag.Equals("users_nested_route", StringComparison.OrdinalIgnoreCase) || targetTag.Equals("users", StringComparison.OrdinalIgnoreCase))
-            {
-                SettingsNavView.SelectedItem = UsersNav;
-            }
+            _pendingInitialTag = targetTag;
+        }
+
+        if (IsLoaded)
+        {
+            NavigateToTag(ResolveRequestedTag());
         }
     }
 
     private void SettingsNavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (args.SelectedItemContainer != null)
+        if (args.SelectedItemContainer is NavigationViewItem navItem && navItem.Tag is string tag)
         {
-            NavigateToInnerPage(args.SelectedItemContainer.Tag?.ToString());
+            NavigateToTag(tag);
         }
     }
 
-    private void SettingsNavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+    public bool IsNavigationPaneOpen => SettingsNavView.IsPaneOpen;
+
+    public void ToggleNavigationPane()
     {
-         if (args.InvokedItemContainer != null)
-         {
-             NavigateToInnerPage(args.InvokedItemContainer.Tag?.ToString());
-         }
+        SettingsNavView.IsPaneOpen = !SettingsNavView.IsPaneOpen;
     }
 
-    private void NavigateToInnerPage(string? tag)
+    public void RefreshNavigationAccess()
     {
+        UpdateNavigationAccess();
+    }
+
+    public void NavigateToTag(string? tag)
+    {
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            tag = GetFirstAvailableTag();
+        }
+
+        tag = NormalizeTag(tag);
+        if (string.IsNullOrWhiteSpace(tag))
+        {
+            return;
+        }
+
+        if (tag.Equals("signout", StringComparison.OrdinalIgnoreCase))
+        {
+            LoginRuntime.Auth.Logout();
+            return;
+        }
+
+        var targetNavItem = GetNavItemForTag(tag);
+        if (targetNavItem is null || targetNavItem.Visibility != Visibility.Visible)
+        {
+            tag = GetFirstAvailableTag();
+            targetNavItem = GetNavItemForTag(tag);
+            if (targetNavItem is null || targetNavItem.Visibility != Visibility.Visible)
+            {
+                return;
+            }
+        }
+
+        _isSyncingNavigationSelection = true;
+        try
+        {
+            SettingsRootNav.IsExpanded = tag is "store" or "tax" or "users" or "prefs";
+            SettingsNavView.SelectedItem = targetNavItem;
+        }
+        finally
+        {
+            _isSyncingNavigationSelection = false;
+        }
+
         Type targetPageType = tag switch
         {
+            "checkout" => typeof(CheckoutPage),
+            "products" => typeof(ProductsPage),
+            "reports" => typeof(ReportsPage),
             "store" => typeof(StoreManagementPage),
             "tax" => typeof(TaxConfigurationPage),
             "users" => typeof(UsersPage),
             "prefs" => typeof(MyPreferencesPage),
-            _ => typeof(MyPreferencesPage)
+            "about" => typeof(AboutPage),
+            _ => typeof(StoreManagementPage)
         };
 
-        // Note: For UsersPage, we do NOT pass SettingsViewModel because it has its own UsersPageViewModel.
-        // For the sub-setting pages, we pass the centralized SettingsViewModel.
-        object? parameters = (targetPageType == typeof(UsersPage)) ? null : ViewModel;
+        object? parameters = targetPageType switch
+        {
+            var type when type == typeof(StoreManagementPage) => ViewModel,
+            var type when type == typeof(TaxConfigurationPage) => ViewModel,
+            var type when type == typeof(MyPreferencesPage) => ViewModel,
+            _ => null
+        };
 
         if (SettingsContentFrame.CurrentSourcePageType != targetPageType)
         {
             SettingsContentFrame.Navigate(targetPageType, parameters);
         }
-    }
 
-    private void SettingsPaneToggleButton_Click(object sender, RoutedEventArgs e)
-    {
-        var wasTeachingTipOpen = SettingsSubNavigationTip.IsOpen;
-        SettingsNavView.IsPaneOpen = !SettingsNavView.IsPaneOpen;
-        SettingsSubNavigationTip.IsOpen = false;
-
-        if (wasTeachingTipOpen)
-        {
-            DispatcherQueue.TryEnqueue(ShowUsersAdministratorAccessTeachingTip);
-        }
+        MainWindow.Current?.SetCurrentRouteTag(tag);
     }
 
     public void ShowSubNavigationTeachingTip()
     {
-        if (!IsSubNavigationTipTargetReady())
-        {
-            QueueSubNavigationTeachingTip();
-            return;
-        }
-
-        SettingsPaneToggleButton.UpdateLayout();
-        SettingsSubNavigationTip.IsOpen = false;
-        SettingsSubNavigationTip.Target = SettingsPaneToggleButton;
-        SettingsSubNavigationTip.IsOpen = true;
-    }
-
-    private void SettingsSubNavigationTip_CloseButtonClick(TeachingTip sender, object args)
-    {
-        sender.IsOpen = false;
-        DispatcherQueue.TryEnqueue(ShowUsersAdministratorAccessTeachingTip);
+        // Feature disabled
     }
 
     private void ShowUsersAdministratorAccessTeachingTip()
@@ -165,34 +165,94 @@ public sealed partial class SettingsPage : Page
         }
     }
 
-    private bool IsSubNavigationTipTargetReady()
+    private void SelectNavigation(NavigationViewItem nav)
     {
-        return IsLoaded &&
-               SettingsPaneToggleButton.Visibility == Visibility.Visible &&
-               SettingsPaneToggleButton.ActualWidth > 0 &&
-               SettingsPaneToggleButton.ActualHeight > 0;
+        NavigateToTag(nav.Tag?.ToString());
     }
 
-    private void QueueSubNavigationTeachingTip()
+    private string ResolveRequestedTag()
     {
-        if (_isWaitingToShowSubNavigationTip)
+        if (!string.IsNullOrWhiteSpace(_pendingInitialTag))
         {
-            return;
+            var pending = _pendingInitialTag;
+            _pendingInitialTag = null;
+            return pending;
         }
 
-        _isWaitingToShowSubNavigationTip = true;
-        LayoutUpdated += SettingsPage_LayoutUpdated;
+        if (LoginRuntime.Auth.CurrentUser?.Username == "admin" &&
+            (!LoginRuntime.Settings.IsOnboardingPhaseCleared() || !LoginRuntime.Settings.IsFirstRunTutorialCleared()))
+        {
+            return "users";
+        }
+
+        if (Frame?.Tag is string frameTag && !string.IsNullOrWhiteSpace(frameTag))
+        {
+            return frameTag;
+        }
+
+        return GetFirstAvailableTag();
     }
 
-    private void SettingsPage_LayoutUpdated(object? sender, object e)
+    private string NormalizeTag(string tag)
     {
-        if (!IsSubNavigationTipTargetReady())
+        if (tag.Equals("users_nested_route", StringComparison.OrdinalIgnoreCase))
         {
-            return;
+            return "users";
         }
 
-        LayoutUpdated -= SettingsPage_LayoutUpdated;
-        _isWaitingToShowSubNavigationTip = false;
-        ShowSubNavigationTeachingTip();
+        if (tag.Equals("settings", StringComparison.OrdinalIgnoreCase) ||
+            tag.Equals("settings-root", StringComparison.OrdinalIgnoreCase))
+        {
+            return ViewModel.CanManageSettings ? "store" : LoginRuntime.Auth.CanManageUsers ? "users" : "prefs";
+        }
+
+        return tag;
+    }
+
+    private string GetFirstAvailableTag()
+    {
+        if (LoginRuntime.Auth.CanCheckout)
+        {
+            return "checkout";
+        }
+
+        if (LoginRuntime.Auth.CanManageProducts)
+        {
+            return "products";
+        }
+
+        if (LoginRuntime.Auth.CanViewReports)
+        {
+            return "reports";
+        }
+
+        if (ViewModel.CanManageSettings)
+        {
+            return "store";
+        }
+
+        if (LoginRuntime.Auth.CanManageUsers)
+        {
+            return "users";
+        }
+
+        return "prefs";
+    }
+
+    private NavigationViewItem? GetNavItemForTag(string? tag)
+    {
+        return tag switch
+        {
+            "checkout" => CheckoutNavItem,
+            "products" => ProductsNavItem,
+            "reports" => ReportsNavItem,
+            "store" => StoreNav,
+            "tax" => TaxNav,
+            "users" => UsersNav,
+            "prefs" => PrefsNav,
+            "about" => AboutNavItem,
+            "signout" => SignOutNavItem,
+            _ => null
+        };
     }
 }

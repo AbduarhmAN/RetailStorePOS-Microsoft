@@ -54,7 +54,7 @@
         </Style>
     </Page.Resources>
 
-    <Grid Padding="16,16,16,3">
+    <Grid Padding="3,3,3,3">
         <Grid ColumnSpacing="16">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="0.5*" />
@@ -77,7 +77,7 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel Spacing="4">
+                        <StackPanel Spacing="4" Margin="16">
                             <TextBlock Text="Manage Users"
                                        Style="{StaticResource UsersSectionTitleTextStyle}" />
                             <TextBlock Text="Select a team member to review or edit their account details."
@@ -119,7 +119,8 @@
                                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                         BorderThickness="1"
                                         CornerRadius="6"
-                                        Padding="12,11">
+                                        Padding="12,11"
+                                        Tapped="UserCard_Tapped">
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
@@ -190,7 +191,8 @@
                                     Background="Transparent"
                                     DefaultLabelPosition="Right"
                                     VerticalAlignment="Center">
-                            <AppBarButton Label="New user" CornerRadius="6"
+                            <AppBarButton x:Name="NewUserButton"
+                                          Label="New user" CornerRadius="6"
                                           Background="#fcfcfc"
                                           Command="{x:Bind ViewModel.NewUserCommand}"
                                           IsEnabled="{x:Bind ViewModel.CanManageUsers, Mode=OneWay}">
@@ -199,7 +201,7 @@
                                 </AppBarButton.Icon>
                             </AppBarButton>
 
-                            <AppBarButton
+                            <AppBarButton x:Name="UnlockUserButton"
                                            Label="Unlock"
                                            CornerRadius="3"
                                            Background="#fcfcfc"
@@ -213,7 +215,8 @@
                     </Grid>
 
                     <Grid Grid.Row="1">
-                        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                        <ScrollViewer x:Name="UserEditorScrollViewer"
+                                      VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
                             <StackPanel Spacing="14">
                                 <Border Visibility="{x:Bind ViewModel.ReadOnlyBannerVisibility, Mode=OneWay}"
@@ -491,7 +494,8 @@
                                                 <TextBlock Text="Cancel Changes" />
                                             </Button>
 
-                                            <Button Background="#6d998e" CornerRadius="3"
+                                            <Button x:Name="SaveUserChangesButton"
+                                                    Background="#6d998e" CornerRadius="3"
                                                     BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                                                     Foreground="White"
                                                     Command="{x:Bind ViewModel.SaveUserCommand}"
@@ -645,13 +649,43 @@
             </Border>
         </Grid>
         <TeachingTip x:Name="AdministratorAccessTip"
-                     Target="{x:Bind AdministratorAccessToggle, Mode=OneWay}"
-                     Title="Administrator access"
-                     Subtitle="Use this switch to define whether the selected user has full administrator permissions."
+                     Target="{x:Bind UsersListView, Mode=OneWay}"
+                     Title="Administrator profile"
+                     Subtitle="Click this administrator profile to continue the user-settings walkthrough."
                      PreferredPlacement="Right"
                      IsLightDismissEnabled="False"
                      CloseButtonContent="Skip"
                      CloseButtonClick="AdministratorAccessTip_CloseButtonClick" />
+        <TeachingTip x:Name="NewUserTeachingTip"
+                     Target="{x:Bind NewUserButton, Mode=OneWay}"
+                     PreferredPlacement="Bottom"
+                     IsLightDismissEnabled="False"
+                     CloseButtonContent="Skip"
+                     ActionButtonContent="Next"
+                     Title="New user"
+                     Subtitle="Use this to create another staff account from the user-management page."
+                     ActionButtonClick="NewUserTeachingTip_ActionButtonClick"
+                     CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
+        <TeachingTip x:Name="UnlockTeachingTip"
+                     Target="{x:Bind UnlockUserButton, Mode=OneWay}"
+                     PreferredPlacement="Bottom"
+                     IsLightDismissEnabled="False"
+                     CloseButtonContent="Skip"
+                     ActionButtonContent="Next"
+                     Title="Unlock"
+                     Subtitle="Use this before editing protected credentials and permission settings."
+                     ActionButtonClick="UnlockTeachingTip_ActionButtonClick"
+                     CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
+        <TeachingTip x:Name="SaveChangesTeachingTip"
+                     Target="{x:Bind SaveUserChangesButton, Mode=OneWay}"
+                     PreferredPlacement="Top"
+                     IsLightDismissEnabled="False"
+                     CloseButtonContent="Skip"
+                     ActionButtonContent="Finish"
+                     Title="Save changes"
+                     Subtitle="Use this after reviewing the administrator settings and password changes."
+                     ActionButtonClick="SaveChangesTeachingTip_ActionButtonClick"
+                     CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
     </Grid>
 </Page>
 

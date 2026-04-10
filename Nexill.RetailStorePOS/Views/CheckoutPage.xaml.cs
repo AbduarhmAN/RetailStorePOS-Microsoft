@@ -314,35 +314,63 @@ public sealed partial class CheckoutPage : Page
     {
         try
         {
-            var pdfPath = ViewModel.Receipt?.PdfPath;
+            var receipt = ViewModel.Receipt;
+            if (receipt is null || receipt.Items.Count == 0)
+            {
+                return;
+            }
+
+            // Try native Windows print dialog first
+            try
+            {
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(MainWindow.Current);
+                var rootGrid = (Grid)this.Content;
+                var printContainer = new Canvas { Opacity = 0, IsHitTestVisible = false };
+                rootGrid.Children.Add(printContainer);
+
+                var printHelper = new ReceiptPrintHelper();
+                await printHelper.PrintReceiptAsync(
+                    hwnd,
+                    printContainer,
+                    receipt,
+                    ViewModel.StoreName,
+                    ViewModel.StoreAddress,
+                    ViewModel.CurrencyCode);
+
+                return;
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                // Native print not available — fall through to PDF approach
+            }
+
+            // Fallback: open PDF with shell print verb
+            var pdfPath = receipt.PdfPath;
             if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
             {
                 ViewModel.OpenReceiptPdfCommand.Execute(null);
-                pdfPath = ViewModel.Receipt?.PdfPath;
+                pdfPath = receipt.PdfPath;
             }
 
-            if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
+            if (!string.IsNullOrWhiteSpace(pdfPath) && File.Exists(pdfPath))
             {
-                return;
-            }
-
-            try
-            {
-                Process.Start(new ProcessStartInfo
+                try
                 {
-                    FileName = pdfPath,
-                    Verb = "print",
-                    UseShellExecute = true
-                });
-                return;
-            }
-            catch
-            {
-                Process.Start(new ProcessStartInfo
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = pdfPath,
+                        Verb = "print",
+                        UseShellExecute = true
+                    });
+                }
+                catch
                 {
-                    FileName = pdfPath,
-                    UseShellExecute = true
-                });
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = pdfPath,
+                        UseShellExecute = true
+                    });
+                }
             }
         }
         catch (Exception ex)

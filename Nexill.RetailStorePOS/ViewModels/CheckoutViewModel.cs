@@ -972,6 +972,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                     Name = item.Name,
                     Barcode = item.Barcode,
                     Price = item.Price,
+                    ItemCost = item.CostPrice,
                     Quantity = item.Quantity,
                     TaxRatePercent = _taxEnabled ? item.TaxRatePercent : 0m,
                     TaxAmount = _taxEnabled ? item.TaxAmount : 0m,
@@ -1161,26 +1162,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
     {
         try
         {
-            var receiptNumber = Receipt?.ReceiptNumber ?? _lastReceiptNumber;
-            if (receiptNumber <= 0)
-            {
-                SetStatus(InfoBarSeverity.Warning, "No receipt folder is available yet.");
-                return;
-            }
-
-            var folder = Path.GetDirectoryName(GetReceiptPdfPath(receiptNumber));
-            if (string.IsNullOrWhiteSpace(folder))
-            {
-                SetStatus(InfoBarSeverity.Warning, "Unable to locate receipts folder.");
-                return;
-            }
-
-            Directory.CreateDirectory(folder);
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = folder,
-                UseShellExecute = true
-            });
+            ReceiptHelper.OpenReceiptsFolder();
         }
         catch (Exception ex)
         {

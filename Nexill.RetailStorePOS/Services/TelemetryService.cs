@@ -298,7 +298,7 @@ public class TelemetryService
                 screen_resolution_bucket = GetScreenResolutionBucket(),
 
                 // Requested Missing Safe Fields
-                build_number = "1100",
+                build_number = "1200",
                 release_channel = "production",
                 first_run_at = trackingData.FirstRunAt?.ToString("O"),
                 last_seen_at = DateTime.UtcNow.ToString("O"),
