@@ -62,6 +62,9 @@ public sealed partial class ReportsDashboardPage : Page
         TargetText.Text       = "$30,000";
         TargetSubText.Text    = "-47% vs target  ·  TARGET: $30,000";
 
+        // Wire bar widths when the container is measured
+        SalesBarContainer.SizeChanged += (_, _) => UpdateSalesBar(todayPct: 0.53, yesterdayPct: 0.45);
+
         // ── DISCOUNTS ──────────────────────────────────────
         DiscountsTotalText.Text = "$540";
         DiscountsDeltaText.Text = "+3.4%";
@@ -190,5 +193,14 @@ public sealed partial class ReportsDashboardPage : Page
             StrokeEndLineCap   = PenLineCap.Round,
             Fill            = null
         };
+    }
+
+    private void UpdateSalesBar(double todayPct, double yesterdayPct)
+    {
+        double containerWidth = SalesBarContainer.ActualWidth;
+        if (containerWidth <= 0) return;
+
+        YesterdayBar.Width = containerWidth * yesterdayPct;
+        TodayBar.Width = containerWidth * todayPct;
     }
 }

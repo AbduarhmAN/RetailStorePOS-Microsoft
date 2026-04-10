@@ -225,26 +225,29 @@
 
                         <TextBlock Grid.Row="0" Text="Sales vs Target" Style="{StaticResource CardTitle}"/>
 
-                        <!-- Dual-layer bar: gray=yesterday, blue=today -->
-                        <Grid Grid.Row="1" Height="20">
-                            <!-- Yesterday gray background -->
-                            <Border Background="#E8EAF0" CornerRadius="10"/>
-                            <!-- Yesterday faint bar (45% of target) -->
-                            <Grid HorizontalAlignment="Left">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="45*"/>
-                                    <ColumnDefinition Width="55*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#B0BEC5" CornerRadius="10"/>
-                            </Grid>
-                            <!-- Today blue bar (53% of target) -->
-                            <Grid HorizontalAlignment="Left">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="53*"/>
-                                    <ColumnDefinition Width="47*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#1976D2" CornerRadius="10" Opacity="0.92"/>
-                            </Grid>
+                        <!-- 3-layer bar: White bg | Grey yesterday | Blue today -->
+                        <Grid Grid.Row="1" Height="20" x:Name="SalesBarContainer">
+                            <!-- Layer 1: White background (full width) -->
+                            <Border Background="White"
+                                    BorderBrush="#E2E8F0"
+                                    BorderThickness="1"
+                                    CornerRadius="10"/>
+
+                            <!-- Layer 2: Grey bar = Yesterday's sales (45% of target) -->
+                            <Border x:Name="YesterdayBar"
+                                    Background="#CFD8DC"
+                                    CornerRadius="10"
+                                    HorizontalAlignment="Left"
+                                    Width="0"/>
+                            <!--  ↑ Width set in code-behind as % of container  -->
+
+                            <!-- Layer 3: Blue bar = Today's sales (53% of target) -->
+                            <Border x:Name="TodayBar"
+                                    Background="#1976D2"
+                                    CornerRadius="10"
+                                    HorizontalAlignment="Left"
+                                    Width="0"/>
+                            <!--  ↑ Width set in code-behind as % of container  -->
                         </Grid>
 
                         <!-- Values Row -->
