@@ -17,8 +17,8 @@
     <Platforms>x86;x64;ARM64</Platforms>
     <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
     <UseWinUI>true</UseWinUI>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <AppxPackage>true</AppxPackage>
+    <EnableMsixTooling Condition="'$(WindowsPackageType)' != 'None'">true</EnableMsixTooling>
+    <AppxPackage Condition="'$(WindowsPackageType)' != 'None'">true</AppxPackage>
     <WindowsPackageType>MSIX</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
@@ -32,10 +32,12 @@
     <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <GenerateTestArtifacts>False</GenerateTestArtifacts>
-    <AppxBundle>Never</AppxBundle>
+    <AppxBundle>Always</AppxBundle>
     <IsTestProject>false</IsTestProject>
     <SkipLiveUnitTesting>true</SkipLiveUnitTesting>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
   </PropertyGroup>
 
   <ItemGroup>
@@ -81,7 +83,7 @@
     <ProjectCapability Remove="TestContainer" />
   </ItemGroup>
 
-  <Target Name="CopyWinUiPriToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishDir)' != '' and '$(WindowsPackageType)'!='None'">
+  <Target Name="CopyWinUiPriToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
     <ItemGroup>
       <_GeneratedAppPri Include="$(TargetDir)$(AssemblyName).pri" Condition="Exists('$(TargetDir)$(AssemblyName).pri')" />
       <_GeneratedRootXbf Include="$(TargetDir)*.xbf" />

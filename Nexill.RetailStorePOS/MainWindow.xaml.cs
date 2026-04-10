@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using System.Reflection;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Views;
 using Windows.Graphics;
@@ -200,6 +201,15 @@ public sealed partial class MainWindow : Window
         DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref doNotRound, sizeof(int));
         
         CenterWindow(windowId, SplashSize);
+
+        // Bind Splash screen text to MSBuild properties compiled into Assembly metadata
+        var assembly = System.Reflection.Assembly.GetEntryAssembly();
+        var version = assembly?.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        var copyright = assembly?.GetCustomAttribute<System.Reflection.AssemblyCopyrightAttribute>()?.Copyright;
+
+        var cleanVersion = string.IsNullOrWhiteSpace(version) ? "1.0.0" : version.Split('+')[0];
+        SplashVersionText.Text = $"v{cleanVersion}";
+        SplashCopyrightText.Text = string.IsNullOrWhiteSpace(copyright) ? "© Nexill" : copyright;
     }
 
     private void TrySetWindowIcon()

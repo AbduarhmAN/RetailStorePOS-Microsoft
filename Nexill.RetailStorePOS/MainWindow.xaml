@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Window
     x:Class="RetailStorePOS.WinUiLogin.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -182,12 +182,14 @@
                     <StackPanel HorizontalAlignment="Right"
                                 VerticalAlignment="Bottom"
                                 Spacing="2">
-                        <TextBlock Text="v1.2.1"
+                        <TextBlock x:Name="SplashVersionText"
+                                   Text="vX.X.X"
                                    FontSize="18"
                                    FontWeight="Light"
                                    Foreground="#E5E7EB"
                                    HorizontalAlignment="Right" />
-                        <TextBlock Text="© 2026 Nexill Inc."
+                        <TextBlock x:Name="SplashCopyrightText"
+                                   Text="© XXXX"
                                    FontSize="10"
                                    Foreground="#A78BFA"
                                    HorizontalAlignment="Right" />
