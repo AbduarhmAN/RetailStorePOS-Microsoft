@@ -10,10 +10,11 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  HorizontalScrollMode="Disabled">
-        <Grid Padding="24" RowSpacing="32">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto"
+                      HorizontalScrollBarVisibility="Disabled"
+                      HorizontalScrollMode="Disabled">
+            <Grid Padding="24" RowSpacing="32">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -70,6 +71,16 @@
                                 <Button Content="Today" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
                                 <Button Content="7 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
                                 <Button Content="30 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
+                                <Button Style="{StaticResource AccentBlueButtonStyle}" Command="{x:Bind ViewModel.GenerateXReportCommand}" 
+                                        Margin="16,0,0,0" Translation="0,0,8">
+                                    <Button.Shadow>
+                                        <ThemeShadow />
+                                    </Button.Shadow>
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <FontIcon Glyph="&#xE9F9;" FontSize="13" Foreground="White" />
+                                        <TextBlock Text="Generate X Report" FontSize="13" Foreground="White" />
+                                    </StackPanel>
+                                </Button>
                             </StackPanel>
                         </StackPanel>
 
@@ -191,4 +202,40 @@
             </Border>
         </Grid>
     </ScrollViewer>
+
+        <ContentDialog x:Name="XReportDialog"
+                       Title="X Report Ready"
+                       PrimaryButtonText="Print Report"
+                       SecondaryButtonText="Open PDF"
+                       CloseButtonText="Cancel"
+                       PrimaryButtonClick="XReportDialog_PrintClick"
+                       SecondaryButtonClick="XReportDialog_OpenPdfClick"
+                       CloseButtonClick="XReportDialog_CloseClick"
+                       PrimaryButtonStyle="{StaticResource AccentBlueButtonStyle}"
+                       SecondaryButtonStyle="{StaticResource AccentBlueButtonStyle}"
+                       CloseButtonStyle="{StaticResource FlatCloseButtonStyle}">
+            <StackPanel Spacing="16" MinWidth="360">
+
+                <!-- Success Banner -->
+                <Border Background="#F0FFF4" Padding="12" CornerRadius="4">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="#2E7D32" />
+                        <TextBlock Text="X Report generated successfully." FontSize="14" Foreground="#2E7D32" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- File path -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Saved to" FontSize="12" Foreground="{StaticResource MutedText}" />
+                    <TextBlock x:Name="XReportStatusText" FontSize="12" Foreground="{StaticResource PrimaryText}" TextWrapping="Wrap"
+                               IsTextSelectionEnabled="True" />
+                </StackPanel>
+
+                <!-- Hint -->
+                <TextBlock Text="Choose Print to send directly to the default printer, or Open PDF to preview." 
+                           FontSize="12" Foreground="{StaticResource MutedText}" TextWrapping="Wrap" />
+
+            </StackPanel>
+        </ContentDialog>
+    </Grid>
 </Page>

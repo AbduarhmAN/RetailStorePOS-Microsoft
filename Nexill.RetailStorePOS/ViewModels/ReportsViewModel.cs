@@ -45,6 +45,7 @@ public sealed class ReportsViewModel : ObservableObject
         OpenReceiptFolderCommand = new RelayCommand(OpenReceiptFolder);
         ReprintReceiptCommand = new RelayCommand<Sale>(ReprintReceipt);
         ToggleTransactionsViewCommand = new RelayCommand(ToggleTransactionsView);
+        GenerateXReportCommand = new RelayCommand(GenerateXReport);
 
         SetTodayRange(loadReport: false);
         StatusText = "Loading...";
@@ -60,6 +61,7 @@ public sealed class ReportsViewModel : ObservableObject
     public RelayCommand OpenReceiptFolderCommand { get; }
     public RelayCommand<Sale> ReprintReceiptCommand { get; }
     public RelayCommand ToggleTransactionsViewCommand { get; }
+    public RelayCommand GenerateXReportCommand { get; }
 
     public DateTimeOffset? FromDate
     {
@@ -492,6 +494,24 @@ public sealed class ReportsViewModel : ObservableObject
         }
 
         return false;
+    }
+
+    public event EventHandler<string>? XReportGenerated;
+
+    private void GenerateXReport()
+    {
+        try
+        {
+            var sales = LoginRuntime.Sales.GetSalesByDate(DateTime.Today);
+            var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
+            var pdfPath = XReportHelper.GenerateXReport(sales, DateTime.Today, storeName);
+            XReportGenerated?.Invoke(this, pdfPath);
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Unable to generate X Report: {ex.Message}";
+            LoginRuntime.ReportException(ex, "ReportsViewModel.GenerateXReport");
+        }
     }
 }
 
