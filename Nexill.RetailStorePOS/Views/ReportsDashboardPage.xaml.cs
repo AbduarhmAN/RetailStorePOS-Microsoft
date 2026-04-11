@@ -6,6 +6,11 @@ using System;
 using System.Collections.ObjectModel;
 using Windows.Foundation;
 using Windows.UI;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using LiveChartsCore.Kernel.Sketches;
+using SkiaSharp;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
@@ -36,6 +41,26 @@ public sealed partial class ReportsDashboardPage : Page
         this.InitializeComponent();
         this.Loaded += (_, _) => PopulateDashboard();
     }
+
+    // ── LiveCharts Sparkline Properties ──────────────────────────────────────
+    public ISeries[] SalesSparkline { get; set; } = [
+        new LineSeries<double> { Values = [50, 35, 42, 18, 28, 8, 18], Stroke = new SolidColorPaint(new SKColor(25, 118, 210)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(25, 118, 210, 40)), GeometrySize = 0 }
+    ];
+
+    public ISeries[] ProfitSparkline { get; set; } = [
+        new LineSeries<double> { Values = [45, 32, 38, 14, 22, 5, 14], Stroke = new SolidColorPaint(new SKColor(67, 160, 71)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(67, 160, 71, 40)), GeometrySize = 0 }
+    ];
+
+    public ISeries[] InvoiceSparkline { get; set; } = [
+        new LineSeries<double> { Values = [50, 38, 44, 22, 32, 12, 24], Stroke = new SolidColorPaint(new SKColor(25, 118, 210)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(25, 118, 210, 40)), GeometrySize = 0 }
+    ];
+
+    public ISeries[] AvgInvoiceSparkline { get; set; } = [
+        new LineSeries<double> { Values = [40, 28, 34, 16, 26, 10, 20], Stroke = new SolidColorPaint(new SKColor(249, 168, 37)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(249, 168, 37, 40)), GeometrySize = 0 }
+    ];
+
+    public IEnumerable<ICartesianAxis> HiddenXAxes { get; set; } = new ICartesianAxis[] { new Axis { IsVisible = false } };
+    public IEnumerable<ICartesianAxis> HiddenYAxes { get; set; } = new ICartesianAxis[] { new Axis { IsVisible = false } };
 
     private void PopulateDashboard()
     {

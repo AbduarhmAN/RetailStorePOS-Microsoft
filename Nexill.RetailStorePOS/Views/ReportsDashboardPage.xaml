@@ -5,8 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:RetailStorePOS.WinUiLogin.Views"
+    xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI"
     mc:Ignorable="d"
-    Background="#F4F5F7">
+    Background="White">
 
     <Page.Resources>
         <!-- Card Style -->
@@ -21,8 +22,8 @@
         <!-- KPI Label -->
         <Style x:Key="KpiLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="#8F96A3"/>
-            <Setter Property="FontWeight" Value="Normal"/>
+            <Setter Property="Foreground" Value="#454443"/>
+            <Setter Property="FontWeight" Value="Bold"/>
         </Style>
 
         <!-- KPI Value -->
@@ -108,111 +109,162 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Card 1: Sales Today -->
-                <Border Grid.Column="0" Style="{StaticResource DashCard}">
-                    <Grid RowSpacing="6">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
+                <Border Grid.Column="0" Style="{StaticResource DashCard}" Padding="10" Background="White">
+                    <Grid>
+                        <!-- BACKGROUND CHART LAYER -->
+                        <Grid Opacity="0.3" Margin="0,34,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Sales Today" Style="{StaticResource KpiLabel}"/>
-                            <Polyline Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                                      Height="32" Stretch="Fill"
-                                      Points="0,50 20,35 40,42 60,18 80,28 100,8 120,18"
-                                      Stroke="#1976D2" StrokeThickness="2"
-                                      Fill="Transparent" Opacity="0.5"/>
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                                Background="White"
+                                      Series="{x:Bind SalesSparkline}" 
+                                      IsHitTestVisible="False"
+                                      MinHeight="72">
+                                <lvc:CartesianChart.XAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.XAxes>
+                                <lvc:CartesianChart.YAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.YAxes>
+                            </lvc:CartesianChart>
                         </Grid>
-                        <TextBlock Grid.Row="1" x:Name="SalesTodayText" Style="{StaticResource KpiValue}"/>
-                        <Border Grid.Row="2" Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
-                            <TextBlock x:Name="SalesDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                        </Border>
+
+                        <!-- FOREGROUND TEXT LAYER -->
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Sales Today" Style="{StaticResource KpiLabel}" FontSize="18dp"/>
+                            <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
+
+                            <!-- Metrics -->
+                            <StackPanel Spacing="6" Margin="0,16,0,8">
+                                <TextBlock x:Name="SalesTodayText" Style="{StaticResource KpiValue}"/>
+                                <Border Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
+                                    <TextBlock x:Name="SalesDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Card 2: Net Profit Today -->
-                <Border Grid.Column="1" Style="{StaticResource DashCard}">
-                    <Grid RowSpacing="6">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
+                <Border Grid.Column="1" Style="{StaticResource DashCard}" Background="White">
+                    <Grid>
+                        <Grid Opacity="0.3" Margin="0,34,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Net Profit Today" Style="{StaticResource KpiLabel}"/>
-                            <Polyline Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                                      Height="32" Stretch="Fill"
-                                      Points="0,45 20,32 40,38 60,14 80,22 100,5 120,14"
-                                      Stroke="#43A047" StrokeThickness="2"
-                                      Fill="Transparent" Opacity="0.5"/>
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      Series="{x:Bind ProfitSparkline}" 
+                                      IsHitTestVisible="False" 
+                                      MinHeight="72">
+                                <lvc:CartesianChart.XAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.XAxes>
+                                <lvc:CartesianChart.YAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.YAxes>
+                            </lvc:CartesianChart>
                         </Grid>
-                        <TextBlock Grid.Row="1" x:Name="ProfitTodayText" Style="{StaticResource KpiValue}"/>
-                        <Border Grid.Row="2" Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
-                            <TextBlock x:Name="ProfitDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                        </Border>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Net Profit Today" Style="{StaticResource KpiLabel}"/>
+                            <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
+
+                            <StackPanel Spacing="6" Margin="0,16,0,8">
+                                <TextBlock x:Name="ProfitTodayText" Style="{StaticResource KpiValue}"/>
+                                <Border Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
+                                    <TextBlock x:Name="ProfitDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Card 3: Invoice Count -->
-                <Border Grid.Column="2" Style="{StaticResource DashCard}">
-                    <Grid RowSpacing="6">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
+                <Border Grid.Column="2" Style="{StaticResource DashCard}" Background="White">
+                    <Grid>
+                        <Grid Opacity="0.3" Margin="0,34,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Invoice Count" Style="{StaticResource KpiLabel}"/>
-                            <Polyline Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                                      Height="32" Stretch="Fill"
-                                      Points="0,50 20,38 40,44 60,22 80,32 100,12 120,24"
-                                      Stroke="#1976D2" StrokeThickness="2"
-                                      Fill="Transparent" Opacity="0.5"/>
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      Series="{x:Bind InvoiceSparkline}" 
+                                      IsHitTestVisible="False" 
+                                      MinHeight="72">
+                                <lvc:CartesianChart.XAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.XAxes>
+                                <lvc:CartesianChart.YAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.YAxes>
+                            </lvc:CartesianChart>
                         </Grid>
-                        <TextBlock Grid.Row="1" x:Name="InvoiceCountText" Style="{StaticResource KpiValue}"/>
-                        <Border Grid.Row="2" Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
-                            <TextBlock x:Name="InvoiceDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                        </Border>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Invoice Count" Style="{StaticResource KpiLabel}"/>
+                            <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
+
+                            <StackPanel Spacing="6" Margin="0,16,0,8">
+                                <TextBlock x:Name="InvoiceCountText" Style="{StaticResource KpiValue}"/>
+                                <Border Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
+                                    <TextBlock x:Name="InvoiceDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
                 <!-- Card 4: Avg Invoice Value -->
-                <Border Grid.Column="3" Style="{StaticResource DashCard}">
-                    <Grid RowSpacing="6">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
+                <Border Grid.Column="3" Style="{StaticResource DashCard}" Background="White">
+                    <Grid>
+                        <Grid Opacity="0.3" Margin="0,34,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Grid.ColumnSpan="2" Text="Avg. Invoice Value" Style="{StaticResource KpiLabel}"/>
-                            <Polyline Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                                      Height="32" Stretch="Fill"
-                                      Points="0,40 20,28 40,34 60,16 80,26 100,10 120,20"
-                                      Stroke="#F9A825" StrokeThickness="2"
-                                      Fill="Transparent" Opacity="0.5"/>
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                      Series="{x:Bind AvgInvoiceSparkline}" 
+                                      IsHitTestVisible="False" 
+                                      MinHeight="72">
+                                <lvc:CartesianChart.XAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.XAxes>
+                                <lvc:CartesianChart.YAxes>
+                                    <lvc:AxesCollection>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                    </lvc:AxesCollection>
+                                </lvc:CartesianChart.YAxes>
+                            </lvc:CartesianChart>
                         </Grid>
-                        <TextBlock Grid.Row="1" x:Name="AvgInvoiceText" Style="{StaticResource KpiValue}"/>
-                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="Median:" FontSize="11" Foreground="#8F96A3"/>
-                            <TextBlock x:Name="MedianText" FontSize="11" Foreground="#8F96A3"/>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Avg. Invoice Value" Style="{StaticResource KpiLabel}"/>
+                            <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
+
+                            <StackPanel Spacing="6" Margin="0,16,0,8">
+                                <TextBlock x:Name="AvgInvoiceText" Style="{StaticResource KpiValue}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="Median:" FontSize="11" Foreground="#8F96A3"/>
+                                    <TextBlock x:Name="MedianText" FontSize="11" Foreground="#8F96A3"/>
+                                </StackPanel>
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -229,7 +281,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Sales vs Target Card -->
-                <Border Grid.Column="0" Style="{StaticResource DashCard}">
+                <Border Grid.Column="0" Style="{StaticResource DashCard}" Background="White">
                     <Grid RowSpacing="14">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -284,7 +336,7 @@
                 </Border>
 
                 <!-- Top Selling Products Card -->
-                <Border Grid.Column="1" Style="{StaticResource DashCard}">
+                <Border Grid.Column="1" Style="{StaticResource DashCard}" Background="White">
                     <Grid RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -321,7 +373,7 @@
                 <StackPanel Grid.Column="2" Spacing="16">
 
                     <!-- Discounts Today -->
-                    <Border Style="{StaticResource DashCard}">
+                    <Border Style="{StaticResource DashCard}" Background="White">
                         <Grid RowSpacing="6">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -345,7 +397,7 @@
                     </Border>
 
                     <!-- Stock Health Donut -->
-                    <Border Style="{StaticResource DashCard}">
+                    <Border Style="{StaticResource DashCard}" Background="White">
                         <Grid RowSpacing="12">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -396,7 +448,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Critical Alerts -->
-                <Border Grid.Column="0" Style="{StaticResource DashCard}">
+                <Border Grid.Column="0" Style="{StaticResource DashCard}" Background="White">
                     <Grid RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -440,7 +492,7 @@
                 </Border>
 
                 <!-- Low Stock / Out of Stock -->
-                <Border Grid.Column="1" Style="{StaticResource DashCard}">
+                <Border Grid.Column="1" Style="{StaticResource DashCard}" Background="White">
                     <Grid RowSpacing="12">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
