@@ -46,21 +46,17 @@ public sealed partial class ReportsReceiptsPage : Page
 
     private void XReportDialog_PrintClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        if (!string.IsNullOrWhiteSpace(_latestXReportPdfPath) && System.IO.File.Exists(_latestXReportPdfPath))
+        try
         {
-            try
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName = _latestXReportPdfPath,
-                    UseShellExecute = true,
-                    Verb = "print"
-                });
-            }
-            catch (Exception ex)
-            {
-                LoginRuntime.ReportException(ex, "ReportsReceiptsPage.PrintXReport");
-            }
+            var sales = LoginRuntime.Sales.GetSalesByDate(DateTime.Today);
+            var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
+
+            using var printHelper = new XReportPrintHelper();
+            printHelper.PrintXReport(sales, DateTime.Today, storeName);
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "ReportsReceiptsPage.PrintXReport");
         }
     }
 
