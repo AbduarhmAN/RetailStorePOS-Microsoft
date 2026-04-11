@@ -70,6 +70,7 @@
                                 <Button Content="Today" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
                                 <Button Content="7 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
                                 <Button Content="30 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
+                                <Button Content="Generate X Report" Style="{ThemeResource AccentButtonStyle}" Command="{x:Bind ViewModel.GenerateXReportCommand}" Margin="16,0,0,0" />
                             </StackPanel>
                         </StackPanel>
 
@@ -191,4 +192,19 @@
             </Border>
         </Grid>
     </ScrollViewer>
+
+    <ContentDialog x:Name="XReportDialog"
+                   Title="X Report Status"
+                   PrimaryButtonText="Print Report"
+                   SecondaryButtonText="Open PDF"
+                   CloseButtonText="Close"
+                   PrimaryButtonClick="XReportDialog_PrintClick"
+                   SecondaryButtonClick="XReportDialog_OpenPdfClick"
+                   CloseButtonClick="XReportDialog_CloseClick">
+        <StackPanel Spacing="16">
+            <TextBlock Text="X Report Generated Successfully. How would you like to proceed?" TextWrapping="Wrap" />
+            <TextBlock x:Name="XReportStatusText" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+    </ContentDialog>
+
 </Page>
