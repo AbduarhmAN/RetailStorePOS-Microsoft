@@ -44,19 +44,19 @@ public sealed partial class ReportsDashboardPage : Page
 
     // ── LiveCharts Sparkline Properties ──────────────────────────────────────
     public ISeries[] SalesSparkline { get; set; } = [
-        new LineSeries<double> { Values = [50, 35, 42, 18, 28, 8, 18], Stroke = new SolidColorPaint(new SKColor(25, 118, 210)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(25, 118, 210, 40)), GeometrySize = 0 }
+        new LineSeries<double> { Values = [18, 8, 28, 18, 42, 35, 50], Stroke = new SolidColorPaint(new SKColor(25, 118, 210)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(25, 118, 210, 40)), GeometrySize = 0 }
     ];
 
     public ISeries[] ProfitSparkline { get; set; } = [
-        new LineSeries<double> { Values = [45, 32, 38, 14, 22, 5, 14], Stroke = new SolidColorPaint(new SKColor(67, 160, 71)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(67, 160, 71, 40)), GeometrySize = 0 }
+        new LineSeries<double> { Values = [14, 5, 22, 14, 38, 32, 45], Stroke = new SolidColorPaint(new SKColor(67, 160, 71)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(67, 160, 71, 40)), GeometrySize = 0 }
     ];
 
     public ISeries[] InvoiceSparkline { get; set; } = [
-        new LineSeries<double> { Values = [50, 38, 44, 22, 32, 12, 24], Stroke = new SolidColorPaint(new SKColor(25, 118, 210)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(25, 118, 210, 40)), GeometrySize = 0 }
+        new LineSeries<double> { Values = [24, 12, 32, 22, 44, 38, 50], Stroke = new SolidColorPaint(new SKColor(25, 118, 210)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(25, 118, 210, 40)), GeometrySize = 0 }
     ];
 
     public ISeries[] AvgInvoiceSparkline { get; set; } = [
-        new LineSeries<double> { Values = [40, 28, 34, 16, 26, 10, 20], Stroke = new SolidColorPaint(new SKColor(249, 168, 37)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(249, 168, 37, 40)), GeometrySize = 0 }
+        new LineSeries<double> { Values = [20, 10, 26, 16, 34, 28, 40], Stroke = new SolidColorPaint(new SKColor(249, 168, 37)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(249, 168, 37, 40)), GeometrySize = 0 }
     ];
 
     public IEnumerable<ICartesianAxis> HiddenXAxes { get; set; } = new ICartesianAxis[] { new Axis { IsVisible = false } };

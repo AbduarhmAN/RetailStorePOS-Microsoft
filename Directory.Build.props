@@ -5,8 +5,8 @@
     <RetailStorePOSDescription>Retail store management software</RetailStorePOSDescription>
     <RetailStorePOSExecutableName>RetailStorePOS</RetailStorePOSExecutableName>
     <RetailStorePOSSetupBaseFilename>RetailStorePOS_Installer_v$(RetailStorePOSVersion)</RetailStorePOSSetupBaseFilename>
-    <RetailStorePOSWizardImageRelativePath>Retail Store POS\Nexill.RetailStorePOS\Assets\Nexill_164x314p.bmp</RetailStorePOSWizardImageRelativePath>
-    <RetailStorePOSWizardSmallImageRelativePath>Retail Store POS\Nexill.RetailStorePOS\Assets\Nexill_55x55p.bmp</RetailStorePOSWizardSmallImageRelativePath>
+    <RetailStorePOSWizardImageRelativePath>Nexill.RetailStorePOS\Assets\Nexill_164x314p.bmp</RetailStorePOSWizardImageRelativePath>
+    <RetailStorePOSWizardSmallImageRelativePath>Nexill.RetailStorePOS\Assets\Nexill_55x55p.bmp</RetailStorePOSWizardSmallImageRelativePath>
 
     <RetailStorePOSWinUiAssemblyName>Nexill.RetailStorePOS</RetailStorePOSWinUiAssemblyName>
     <RetailStorePOSWinUiTargetName>Nexill.RetailStorePOS</RetailStorePOSWinUiTargetName>
@@ -30,8 +30,8 @@
     <RetailStorePOSPrivacyContactEmail>contact@nextillretail.store</RetailStorePOSPrivacyContactEmail>
     <RetailStorePOSAppUserModelId>Nexill.RetailStorePOS</RetailStorePOSAppUserModelId>
 
-    <RetailStorePOSAppIcon>$(MSBuildThisFileDirectory)Retail Store POS\Nexill.RetailStorePOS\Assets\app_icon.ico</RetailStorePOSAppIcon>
-    <RetailStorePOSLicenseRelativePath>Retail Store POS\Nexill.RetailStorePOS\Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt</RetailStorePOSLicenseRelativePath>
+    <RetailStorePOSAppIcon>$(MSBuildThisFileDirectory)Nexill.RetailStorePOS\Assets\app_icon.ico</RetailStorePOSAppIcon>
+    <RetailStorePOSLicenseRelativePath>Nexill.RetailStorePOS\Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt</RetailStorePOSLicenseRelativePath>
   </PropertyGroup>
 
   <ItemGroup>

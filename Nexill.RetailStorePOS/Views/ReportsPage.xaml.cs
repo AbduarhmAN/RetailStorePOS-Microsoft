@@ -1,6 +1,4 @@
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Navigation;
-using RetailStorePOS.WinUiLogin.ViewModels;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
@@ -12,22 +10,24 @@ public class ProductVelocityItem
 
 public sealed partial class ReportsPage : Page
 {
-    public ReportsViewModel ViewModel { get; } = new();
-
     public ReportsPage()
     {
         InitializeComponent();
+        
+        // Default to loading the dashboard completely instantly
+        Loaded += (_, _) => ReportsContentFrame.Navigate(typeof(ReportsDashboardPage));
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
+    private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        base.OnNavigatedTo(e);
-        ViewModel.RefreshCommand.Execute(null);
+        if (args.SelectedItem is NavigationViewItem item)
+        {
+            string tag = item.Tag?.ToString() ?? "";
+            
+            if (tag == "Dashboard")
+                ReportsContentFrame.Navigate(typeof(ReportsDashboardPage));
+            else if (tag == "Receipts")
+                ReportsContentFrame.Navigate(typeof(ReportsReceiptsPage));
+        }
     }
-
-    public static string FormatDate(DateTime date) => date.ToString("MMM d, yyyy");
-    public static string FormatTime(DateTime date) => date.ToString("hh:mm tt");
-    public static string FormatCurrency(decimal amount) => amount.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
 }
-
-
