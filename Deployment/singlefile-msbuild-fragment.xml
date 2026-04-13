@@ -1,0 +1,34 @@
+<!-- BEGIN CODEX_SINGLEFILE_PATCH -->
+  <Target Name="StageWinUiRuntimeFilesForSingleFileBundle"
+          BeforeTargets="GenerateSingleFileBundle"
+          DependsOnTargets="PrepareForBundle"
+          Condition="'$(PublishSingleFile)' == 'true' and '$(WindowsPackageType)' == 'None' and '$(PublishDir)' != ''">
+    <PropertyGroup>
+      <_SingleFileBundleStageDir>$(IntermediateOutputPath)singlefile-bundle\</_SingleFileBundleStageDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_SingleFileBundleRuntimeFile Include="$(TargetDir)$(AssemblyName).pri" Condition="Exists('$(TargetDir)$(AssemblyName).pri')">
+        <RelativePath>$(AssemblyName).pri</RelativePath>
+      </_SingleFileBundleRuntimeFile>
+      <_SingleFileBundleRuntimeFile Include="$(TargetDir)*.xbf">
+        <RelativePath>%(Filename)%(Extension)</RelativePath>
+      </_SingleFileBundleRuntimeFile>
+      <_SingleFileBundleRuntimeFile Include="$(TargetDir)Views\**\*.xbf">
+        <RelativePath>Views\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+      </_SingleFileBundleRuntimeFile>
+    </ItemGroup>
+
+    <MakeDir Directories="$(_SingleFileBundleStageDir)" />
+
+    <Copy SourceFiles="@(_SingleFileBundleRuntimeFile)"
+          DestinationFiles="@(_SingleFileBundleRuntimeFile->'$(_SingleFileBundleStageDir)%(RelativePath)')"
+          SkipUnchangedFiles="true"
+          Condition="'@(_SingleFileBundleRuntimeFile)' != ''" />
+
+    <ItemGroup>
+      <_SingleFileBundleStagedRuntimeFile Include="@(_SingleFileBundleRuntimeFile->'$(_SingleFileBundleStageDir)%(RelativePath)')" KeepMetadata="RelativePath" />
+      <FilesToBundle Include="@(_SingleFileBundleStagedRuntimeFile)" KeepMetadata="RelativePath" />
+    </ItemGroup>
+  </Target>
+<!-- END CODEX_SINGLEFILE_PATCH -->

@@ -90,31 +90,6 @@
     <ProjectCapability Remove="TestContainer" />
   </ItemGroup>
 
-  <Target Name="IncludeGeneratedWinUiRuntimeFilesInPublish"
-          BeforeTargets="ComputeResolvedFilesToPublishList"
-          Condition="'$(PublishDir)' != '' and '$(PublishSingleFile)' != 'true'">
-    <ItemGroup>
-      <ResolvedFileToPublish Include="$(TargetDir)$(AssemblyName).pri"
-                             Condition="Exists('$(TargetDir)$(AssemblyName).pri')"
-                             Exclude="@(ResolvedFileToPublish)">
-        <RelativePath>$(AssemblyName).pri</RelativePath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </ResolvedFileToPublish>
-
-      <ResolvedFileToPublish Include="$(TargetDir)*.xbf"
-                             Exclude="@(ResolvedFileToPublish)">
-        <RelativePath>%(Filename)%(Extension)</RelativePath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </ResolvedFileToPublish>
-
-      <ResolvedFileToPublish Include="$(TargetDir)Views\**\*.xbf"
-                             Exclude="@(ResolvedFileToPublish)">
-        <RelativePath>Views\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </ResolvedFileToPublish>
-    </ItemGroup>
-  </Target>
-
   <Target Name="CopyWinUiPriToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishDir)' != '' and '$(PublishSingleFile)' != 'true'">
     <ItemGroup>
       <_GeneratedAppPri Include="$(TargetDir)$(AssemblyName).pri" Condition="Exists('$(TargetDir)$(AssemblyName).pri')" />
@@ -131,6 +106,7 @@
 
     <Copy SourceFiles="@(_GeneratedRuntimeAsset)" DestinationFiles="@(_GeneratedRuntimeAsset->'$(PublishDir)Assets\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="'@(_GeneratedRuntimeAsset)' != ''" />
   </Target>
+
 
 
 
