@@ -107,6 +107,134 @@ WHERE id = @product_id;";
         return GetSalesByDateRange(date, date);
     }
 
+    public IEnumerable<Sale> FindGlobalSales(string query, int limit = 200)
+    {
+        using var connection = _factory.OpenConnection();
+        using var command = connection.CreateCommand();
+
+        if (long.TryParse(query, out _))
+        {
+            // Numeric input: match receipts that START WITH the typed digits
+            command.CommandText = @"
+                SELECT id, receipt_number, subtotal_cents, tax_cents, total_cents, tendered_cents, change_cents, payment_type, cashier_name, created_at
+                FROM sales
+                WHERE CAST(receipt_number AS TEXT) LIKE @receiptPrefix
+                ORDER BY created_at DESC
+                LIMIT @limit;";
+            command.Parameters.AddWithValue("@receiptPrefix", query + "%");
+        }
+        else
+        {
+            // Text input: match cashier name prefix OR exact payment type
+            command.CommandText = @"
+                SELECT id, receipt_number, subtotal_cents, tax_cents, total_cents, tendered_cents, change_cents, payment_type, cashier_name, created_at
+                FROM sales
+                WHERE cashier_name LIKE @prefix OR payment_type LIKE @prefix
+                ORDER BY created_at DESC
+                LIMIT @limit;";
+        }
+
+        if (!command.Parameters.Contains("@receiptPrefix"))
+        {
+            command.Parameters.AddWithValue("@prefix", query + "%");
+        }
+        command.Parameters.AddWithValue("@limit", limit);
+
+        using var reader = command.ExecuteReader();
+        var sales = new List<Sale>();
+
+        while (reader.Read())
+        {
+            sales.Add(new Sale
+            {
+                Id = reader.GetInt64(0),
+                ReceiptNumber = reader.GetInt64(1),
+                Subtotal = MoneyUtils.FromCents(reader.GetInt64(2)),
+                Tax = MoneyUtils.FromCents(reader.GetInt64(3)),
+                Total = MoneyUtils.FromCents(reader.GetInt64(4)),
+                Tendered = MoneyUtils.FromCents(reader.GetInt64(5)),
+                Change = MoneyUtils.FromCents(reader.GetInt64(6)),
+                PaymentType = reader.GetString(7),
+                CashierName = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                CreatedAt = DateTime.Parse(reader.GetString(9)).ToLocalTime()
+            });
+        }
+
+        if (sales.Count == 0)
+        {
+            return sales;
+        }
+
+        var salesById = sales.ToDictionary(s => s.Id);
+        var saleIds = sales.Select(s => s.Id).ToArray();
+        var saleIdParameters = saleIds.Select((saleId, index) => $"@saleId{index}").ToArray();
+
+        using var checkCommand = connection.CreateCommand();
+        checkCommand.CommandText = "SELECT COUNT(*) FROM pragma_table_info('sale_items') WHERE name='item_cost_cents';";
+        var hasCostCol = Convert.ToInt64(checkCommand.ExecuteScalar()) > 0;
+
+        if (!hasCostCol)
+        {
+            using var alterCommand = connection.CreateCommand();
+            alterCommand.CommandText = "ALTER TABLE sale_items ADD COLUMN item_cost_cents INTEGER NOT NULL DEFAULT 0;";
+            alterCommand.ExecuteNonQuery();
+        }
+
+        using var itemCommand = connection.CreateCommand();
+        itemCommand.CommandText = $@"
+            SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot, item_cost_cents
+            FROM sale_items
+            WHERE sale_id IN ({string.Join(", ", saleIdParameters)})
+            ORDER BY sale_id, id;";
+
+        var saleIndex = 0;
+        foreach (var saleId in saleIds)
+        {
+            itemCommand.Parameters.AddWithValue(saleIdParameters[saleIndex++], saleId);
+        }
+
+        using var itemReader = itemCommand.ExecuteReader();
+        while (itemReader.Read())
+        {
+            var saleId = itemReader.GetInt64(0);
+            if (!salesById.TryGetValue(saleId, out var sale))
+            {
+                continue;
+            }
+
+            sale.Items.Add(new SaleItem
+            {
+                SaleId = saleId,
+                ProductId = itemReader.GetInt64(1),
+                Name = itemReader.GetString(2),
+                Barcode = itemReader.IsDBNull(3) ? null : itemReader.GetString(3),
+                Price = MoneyUtils.FromCents(itemReader.GetInt64(4)),
+                Quantity = (decimal)itemReader.GetDouble(5),
+                TaxRatePercent = (decimal)itemReader.GetDouble(6),
+                TaxAmount = MoneyUtils.FromCents(itemReader.GetInt64(7)),
+                LineTotal = MoneyUtils.FromCents(itemReader.GetInt64(8)),
+                TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9),
+                ItemCost = MoneyUtils.FromCents(itemReader.GetInt64(10))
+            });
+        }
+
+        foreach (var sale in sales)
+        {
+            if (sale.Items.Count == 0)
+            {
+                continue;
+            }
+
+            var itemTax = Math.Round(sale.Items.Sum(item => item.TaxAmount), 2, MidpointRounding.AwayFromZero);
+            if (itemTax > 0m && sale.Tax != itemTax)
+            {
+                sale.Tax = itemTax;
+            }
+        }
+
+        return sales;
+    }
+
     public IEnumerable<Sale> GetSalesByDateRange(DateTime fromDate, DateTime toDate)
     {
         // created_at is stored in UTC — convert local day boundaries to UTC
@@ -154,21 +282,6 @@ WHERE id = @product_id;";
 
         var salesById = sales.ToDictionary(s => s.Id);
         var saleIds = sales.Select(s => s.Id).ToArray();
-        var saleIdParameters = saleIds.Select((saleId, index) => $"@saleId{index}").ToArray();
-
-        using var itemCommand = connection.CreateCommand();
-        // Fallback item_cost_cents handling in case the column doesn't exist yet, but assuming we can select it if schema is right.
-        // We'll select price_cents as item_cost_cents if the schema hasn't been migrated, just as a dummy to avoid crashes if possible.
-        // Ideally the schema is updated.
-        itemCommand.CommandText = $@"
-            SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot,
-                   (SELECT name FROM pragma_table_info('sale_items') WHERE name='item_cost_cents') as HasCostCol,
-                   price_cents as default_cost
-            FROM sale_items
-            WHERE sale_id IN ({string.Join(", ", saleIdParameters)})
-            ORDER BY sale_id, id;";
-
-        // A proper way to handle dynamic schema columns in sqlite is to check if it exists or use PRAGMA, but for simplicity we assume we'll just try to select it via a safer query or run a quick alter table. Let's do a quick alter table if needed before query.
 
         using var checkCommand = connection.CreateCommand();
         checkCommand.CommandText = "SELECT COUNT(*) FROM pragma_table_info('sale_items') WHERE name='item_cost_cents';";
@@ -181,41 +294,49 @@ WHERE id = @product_id;";
             alterCommand.ExecuteNonQuery();
         }
 
-        itemCommand.CommandText = $@"
-            SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot, item_cost_cents
-            FROM sale_items
-            WHERE sale_id IN ({string.Join(", ", saleIdParameters)})
-            ORDER BY sale_id, id;";
+        // Dynamically unlock SQLite parameter thresholds based on the OS kernel
+        var chunkSize = Environment.OSVersion.Version.Build >= 22000 ? 15000 : 900;
 
-        var saleIndex = 0;
-        foreach (var saleId in saleIds)
+        foreach (var chunk in saleIds.Chunk(chunkSize))
         {
-            itemCommand.Parameters.AddWithValue(saleIdParameters[saleIndex++], saleId);
-        }
+            var chunkParameters = chunk.Select((id, index) => $"@saleId{index}").ToArray();
 
-        using var itemReader = itemCommand.ExecuteReader();
-        while (itemReader.Read())
-        {
-            var saleId = itemReader.GetInt64(0);
-            if (!salesById.TryGetValue(saleId, out var sale))
+            using var itemCommand = connection.CreateCommand();
+            itemCommand.CommandText = $@"
+                SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot, item_cost_cents
+                FROM sale_items
+                WHERE sale_id IN ({string.Join(", ", chunkParameters)})
+                ORDER BY sale_id, id;";
+
+            for (int i = 0; i < chunk.Length; i++)
             {
-                continue;
+                itemCommand.Parameters.AddWithValue(chunkParameters[i], chunk[i]);
             }
 
-            sale.Items.Add(new SaleItem
+            using var itemReader = itemCommand.ExecuteReader();
+            while (itemReader.Read())
             {
-                SaleId = saleId,
-                ProductId = itemReader.GetInt64(1),
-                Name = itemReader.GetString(2),
-                Barcode = itemReader.IsDBNull(3) ? null : itemReader.GetString(3),
-                Price = MoneyUtils.FromCents(itemReader.GetInt64(4)),
-                Quantity = (decimal)itemReader.GetDouble(5),
-                TaxRatePercent = (decimal)itemReader.GetDouble(6),
-                TaxAmount = MoneyUtils.FromCents(itemReader.GetInt64(7)),
-                LineTotal = MoneyUtils.FromCents(itemReader.GetInt64(8)),
-                TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9),
-                ItemCost = MoneyUtils.FromCents(itemReader.GetInt64(10))
-            });
+                var saleId = itemReader.GetInt64(0);
+                if (!salesById.TryGetValue(saleId, out var sale))
+                {
+                    continue;
+                }
+
+                sale.Items.Add(new SaleItem
+                {
+                    SaleId = saleId,
+                    ProductId = itemReader.GetInt64(1),
+                    Name = itemReader.GetString(2),
+                    Barcode = itemReader.IsDBNull(3) ? null : itemReader.GetString(3),
+                    Price = MoneyUtils.FromCents(itemReader.GetInt64(4)),
+                    Quantity = (decimal)itemReader.GetDouble(5),
+                    TaxRatePercent = (decimal)itemReader.GetDouble(6),
+                    TaxAmount = MoneyUtils.FromCents(itemReader.GetInt64(7)),
+                    LineTotal = MoneyUtils.FromCents(itemReader.GetInt64(8)),
+                    TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9),
+                    ItemCost = MoneyUtils.FromCents(itemReader.GetInt64(10))
+                });
+            }
         }
 
         foreach (var sale in sales)

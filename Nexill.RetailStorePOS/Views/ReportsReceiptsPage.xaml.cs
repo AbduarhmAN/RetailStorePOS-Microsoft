@@ -44,11 +44,11 @@ public sealed partial class ReportsReceiptsPage : Page
         }
     }
 
-    private void XReportDialog_PrintClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+    private async void XReportDialog_PrintClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         try
         {
-            var sales = LoginRuntime.Sales.GetSalesByDate(DateTime.Today);
+            var sales = await Task.Run(() => LoginRuntime.Sales.GetSalesByDate(DateTime.Today));
             var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
 
             using var printHelper = new XReportPrintHelper();

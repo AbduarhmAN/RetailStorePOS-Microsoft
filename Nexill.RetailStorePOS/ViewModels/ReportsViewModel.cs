@@ -51,7 +51,7 @@ public sealed class ReportsViewModel : ObservableObject
         StatusText = "Loading...";
     }
 
-    public ObservableCollection<Sale> Sales { get; } = new();
+    public ObservableCollection<Sale> Sales { get; private set; } = new();
 
     public RelayCommand RefreshCommand { get; }
     public RelayCommand ClearSearchCommand { get; }
@@ -104,7 +104,7 @@ public sealed class ReportsViewModel : ObservableObject
         {
             if (SetProperty(ref _searchText, value))
             {
-                ApplySearchFilter();
+                _ = ApplySearchFilterAsync();
             }
         }
     }
@@ -329,7 +329,7 @@ public sealed class ReportsViewModel : ObservableObject
             : $"{from:MMM d} - {to:MMM d, yyyy}";
     }
 
-    private void LoadReport()
+    private async void LoadReport()
     {
         try
         {
@@ -341,7 +341,8 @@ public sealed class ReportsViewModel : ObservableObject
                 (from, to) = (to, from);
             }
 
-            var repoSales = LoginRuntime.Sales.GetSalesByDateRange(from, to);
+            // Immediately decouple the heavy Entity Framework tracking from the Graphics Thread.
+            var repoSales = await Task.Run(() => LoginRuntime.Sales.GetSalesByDateRange(from, to).ToList());
 
             _rangeSales.Clear();
             _rangeSales.AddRange(repoSales.OrderByDescending(s => s.CreatedAt));
@@ -376,7 +377,7 @@ public sealed class ReportsViewModel : ObservableObject
             UpdateProductVelocity();
 
             UpdateCustomRangeLabel();
-            ApplySearchFilter();
+            _ = ApplySearchFilterAsync();
         }
         catch (Exception ex)
         {
@@ -417,92 +418,49 @@ public sealed class ReportsViewModel : ObservableObject
         }
     }
 
-    private void ApplySearchFilter()
+    private async Task ApplySearchFilterAsync()
     {
-        IEnumerable<Sale> scoped = _rangeSales;
         var query = SearchText?.Trim() ?? string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(query))
-        {
-            scoped = scoped.Where(s => MatchesSearch(s, query));
-        }
-
-        Sales.Clear();
-        foreach (var sale in scoped)
-        {
-            Sales.Add(sale);
-        }
-
-        VisibleTransactionsCount = Sales.Count;
-        HasNoVisibleTransactions = VisibleTransactionsCount == 0;
-        OnPropertyChanged(nameof(EmptyStateVisibility));
-        OnPropertyChanged(nameof(ReportChromeVisibility));
-        OnPropertyChanged(nameof(PageRowSpacing));
-
         var from = FromDate?.Date ?? DateTime.Today;
         var to = ToDate?.Date ?? DateTime.Today;
         var rangeText = from == to
             ? from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
             : $"{from:yyyy-MM-dd} to {to:yyyy-MM-dd}";
 
-        StatusText = $"{rangeText} | {VisibleTransactionsCount} of {TransactionsCount} transactions shown.";
-    }
-
-    private static bool MatchesSearch(Sale sale, string query)
-    {
-        var normalized = query.Trim();
-        if (string.IsNullOrWhiteSpace(normalized))
+        if (string.IsNullOrWhiteSpace(query))
         {
-            return true;
+            // Mode 1: Safe Date Bounded Calendar Scanning (RAM)
+            var scopedList = _rangeSales.ToList();
+            Sales = new ObservableCollection<Sale>(scopedList);
+            VisibleTransactionsCount = scopedList.Count;
+            StatusText = $"{rangeText} | {VisibleTransactionsCount} of {TransactionsCount} total transactions.";
+        }
+        else
+        {
+            // Mode 2: Global Database Search Protocol (SQLite)
+            StatusText = $"Executing Global Search across Database...";
+            
+            var globalResults = await Task.Run(() => LoginRuntime.Sales.FindGlobalSales(query, 200).ToList());
+            
+            Sales = new ObservableCollection<Sale>(globalResults);
+            VisibleTransactionsCount = globalResults.Count;
+            StatusText = $"Global Query Active | Found {VisibleTransactionsCount} exact matches.";
         }
 
-        var localTime = sale.CreatedAt.ToLocalTime();
-
-        if (normalized.Contains(':'))
-        {
-            return localTime
-                .ToString("HH:mm", CultureInfo.InvariantCulture)
-                .Contains(normalized, StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (normalized.Contains('-') || normalized.Contains('/'))
-        {
-            return localTime
-                .ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-                .Contains(normalized, StringComparison.OrdinalIgnoreCase)
-                   || localTime
-                       .ToString("dd/MM/yyyy", CultureInfo.InvariantCulture)
-                       .Contains(normalized, StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (normalized.Any(char.IsLetter))
-        {
-            var paymentMatch = sale.PaymentType?.Contains(normalized, StringComparison.OrdinalIgnoreCase) == true;
-            if (paymentMatch) return true;
-
-            return localTime
-                .ToString("ddd", CultureInfo.InvariantCulture)
-                .Contains(normalized, StringComparison.OrdinalIgnoreCase)
-                   || localTime
-                       .ToString("MMMM", CultureInfo.InvariantCulture)
-                       .Contains(normalized, StringComparison.OrdinalIgnoreCase);
-        }
-
-        if (long.TryParse(normalized, out var receiptNum))
-        {
-            return sale.ReceiptNumber == receiptNum || sale.ReceiptNumber.ToString().Contains(normalized);
-        }
-
-        return false;
+        OnPropertyChanged(nameof(Sales));
+        HasNoVisibleTransactions = VisibleTransactionsCount == 0;
+        OnPropertyChanged(nameof(EmptyStateVisibility));
+        OnPropertyChanged(nameof(ReportChromeVisibility));
+        OnPropertyChanged(nameof(PageRowSpacing));
     }
 
     public event EventHandler<string>? XReportGenerated;
 
-    private void GenerateXReport()
+    private async void GenerateXReport()
     {
         try
         {
-            var sales = LoginRuntime.Sales.GetSalesByDate(DateTime.Today);
+            var sales = await Task.Run(() => LoginRuntime.Sales.GetSalesByDate(DateTime.Today));
             var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
             var pdfPath = XReportHelper.GenerateXReport(sales, DateTime.Today, storeName);
             XReportGenerated?.Invoke(this, pdfPath);

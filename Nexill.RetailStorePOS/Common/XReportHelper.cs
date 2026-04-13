@@ -43,117 +43,141 @@ public static class XReportHelper
 
         try
         {
-            var file = Windows.Storage.StorageFile.GetFileFromPathAsync(pdfPath).AsTask().GetAwaiter().GetResult();
-            _ = Windows.System.Launcher.LaunchFileAsync(file);
+            // MSIX sandbox virtualizes AppData paths — copy the PDF to a real,
+            // user-accessible folder so the Windows shell can actually open it.
+            var exportFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                "Nexill Reports");
+            Directory.CreateDirectory(exportFolder);
+
+            var exportPath = Path.Combine(exportFolder, Path.GetFileName(pdfPath));
+            File.Copy(pdfPath, exportPath, overwrite: true);
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = exportPath,
+                UseShellExecute = true
+            });
             return true;
         }
         catch
         {
-            try
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = pdfPath,
-                    UseShellExecute = true
-                });
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            return false;
         }
     }
 
     private static byte[] BuildReportPdf(IEnumerable<Sale> sales, DateTime date, string storeName)
     {
-        var content = BuildReportContent(sales, date, storeName);
-        var contentBytes = Encoding.ASCII.GetBytes(content);
+        var content = BuildReportContent(sales, date, storeName, out var visibleLineCount);
+        var streamBytes = Encoding.ASCII.GetBytes(content);
 
-        // Calculate needed height based on number of lines
-        var lineCount = content.Split('\n').Length;
-        var pageHeight = Math.Max(842, lineCount * 12 + 50);
+        // Calculate page height from actual visible text lines, not PDF command count
+        var pageHeight = Math.Max(842, visibleLineCount * 12 + 50);
 
-        var objects = new[]
+        // Write raw bytes to a MemoryStream so every offset is physically exact
+        using var ms = new MemoryStream();
+
+        void Write(string text)
         {
-            "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n",
-            "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n",
-            $"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 227 {pageHeight}] /Resources << /Font << /F1 4 0 R /F2 6 0 R >> >> /Contents 5 0 R >>\nendobj\n",
-            "4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n",
-            $"5 0 obj\n<< /Length {contentBytes.Length} >>\nstream\n{content}\nendstream\nendobj\n",
-            "6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>\nendobj\n"
-        };
-
-        var pdf = new StringBuilder();
-        pdf.Append("%PDF-1.4\n");
-        pdf.Append("%Report\n");
-
-        var offsets = new List<int>(objects.Length);
-        foreach (var obj in objects)
-        {
-            offsets.Add(pdf.Length);
-            pdf.Append(obj);
+            var bytes = Encoding.ASCII.GetBytes(text);
+            ms.Write(bytes, 0, bytes.Length);
         }
 
-        var xrefOffset = pdf.Length;
-        pdf.Append("xref\n");
-        pdf.AppendFormat(CultureInfo.InvariantCulture, "0 {0}\n", objects.Length + 1);
-        pdf.Append("0000000000 65535 f \n");
+        // PDF Header
+        Write("%PDF-1.4\n");
+        Write("%\xe2\xe3\xcf\xd3\n");
+
+        // Track byte offsets for xref table
+        var offsets = new long[6];
+
+        // Object 1: Catalog
+        offsets[0] = ms.Position;
+        Write("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+
+        // Object 2: Pages
+        offsets[1] = ms.Position;
+        Write("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
+
+        // Object 3: Page
+        offsets[2] = ms.Position;
+        Write($"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 227 {pageHeight}] /Resources << /Font << /F1 4 0 R /F2 6 0 R >> >> /Contents 5 0 R >>\nendobj\n");
+
+        // Object 4: Font (Courier)
+        offsets[3] = ms.Position;
+        Write("4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n");
+
+        // Object 5: Content Stream (the actual report drawing commands)
+        offsets[4] = ms.Position;
+        Write($"5 0 obj\n<< /Length {streamBytes.Length} >>\nstream\n");
+        ms.Write(streamBytes, 0, streamBytes.Length);
+        Write("endstream\nendobj\n");
+
+        // Object 6: Font (Courier-Bold)
+        offsets[5] = ms.Position;
+        Write("6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>\nendobj\n");
+
+        // Cross-reference table
+        var xrefOffset = ms.Position;
+        Write("xref\n");
+        Write("0 7\n");
+        Write("0000000000 65535 f \n");
         foreach (var offset in offsets)
         {
-            pdf.AppendFormat(CultureInfo.InvariantCulture, "{0:0000000000} 00000 n \n", offset);
+            Write($"{offset:0000000000} 00000 n \n");
         }
 
-        pdf.Append("trailer\n");
-        pdf.AppendFormat(CultureInfo.InvariantCulture, "<< /Size {0} /Root 1 0 R >>\n", objects.Length + 1);
-        pdf.Append("startxref\n");
-        pdf.Append(xrefOffset.ToString(CultureInfo.InvariantCulture));
-        pdf.Append("\n%%EOF\n");
+        // Trailer
+        Write("trailer\n");
+        Write("<< /Size 7 /Root 1 0 R >>\n");
+        Write("startxref\n");
+        Write($"{xrefOffset}\n");
+        Write("%%EOF\n");
 
-        return Encoding.ASCII.GetBytes(pdf.ToString());
+        return ms.ToArray();
     }
 
-    private static string BuildReportContent(IEnumerable<Sale> sales, DateTime date, string storeName)
+    private static string BuildReportContent(IEnumerable<Sale> sales, DateTime date, string storeName, out int visibleLineCount)
     {
         var lines = BuildReportLines(sales, date, storeName).ToList();
+        visibleLineCount = lines.Count;
         var content = new StringBuilder();
 
-        content.AppendLine("BT");
-        content.AppendLine("/F1 7 Tf");
-        content.AppendLine("11 TL");
-        var startY = Math.Max(828, lines.Count * 12 + 20); // Adjust startY dynamically
-        content.AppendLine($"2 {startY} Td");
+        content.Append("BT\n");
+        content.Append("/F1 7 Tf\n");
+        content.Append("11 TL\n");
+        var startY = Math.Max(828, lines.Count * 12 + 20);
+        content.Append($"2 {startY} Td\n");
 
         foreach (var line in lines)
         {
             if (line.StartsWith("##BOLD##", StringComparison.Ordinal))
             {
-                content.AppendLine("/F2 7 Tf");
+                content.Append("/F2 7 Tf\n");
                 content.Append('(');
                 content.Append(EscapePdfText(line[8..]));
-                content.AppendLine(") Tj");
-                content.AppendLine("T*");
-                content.AppendLine("/F1 7 Tf");
+                content.Append(") Tj\n");
+                content.Append("T*\n");
+                content.Append("/F1 7 Tf\n");
             }
             else if (line.StartsWith("##BOLD10##", StringComparison.Ordinal))
             {
-                content.AppendLine("/F2 7 Tf");
+                content.Append("/F2 7 Tf\n");
                 content.Append('(');
                 content.Append(EscapePdfText(line[10..]));
-                content.AppendLine(") Tj");
-                content.AppendLine("T*");
-                content.AppendLine("/F1 7 Tf");
+                content.Append(") Tj\n");
+                content.Append("T*\n");
+                content.Append("/F1 7 Tf\n");
             }
             else
             {
                 content.Append('(');
                 content.Append(EscapePdfText(line));
-                content.AppendLine(") Tj");
-                content.AppendLine("T*");
+                content.Append(") Tj\n");
+                content.Append("T*\n");
             }
         }
 
-        content.AppendLine("ET");
+        content.Append("ET\n");
         return content.ToString();
     }
 
@@ -171,33 +195,29 @@ public static class XReportHelper
         yield return "##BOLD##" + FormatLine2Col("Receipt #", "Amount");
         yield return Separator;
 
-        decimal totalGross = 0; // The prompt said: Total Gross Sales (Total before discounts). BUT we only have Subtotal, Tax, Total. We will assume Subtotal is Gross if we don't have discount data at the receipt summary level.
-                                // Actually, let's use: Gross (Subtotal), Net (Subtotal), Total Cash (Cash payments Total).
-                                // Prompt: Total Gross Sales (Total before discounts) Total Net Sales (Total after discounts, before tax)
-                                // Let's compute Gross and Net properly if possible, else Subtotal for both.
-                                // Actually, in Sale item: Price vs LineTotal.
+        decimal totalGross = 0;
         decimal totalNet = 0;
+        decimal totalTax = 0;
         decimal totalCash = 0;
+        decimal totalCard = 0;
+        int transactionCount = 0;
 
         foreach (var sale in salesList)
         {
             yield return FormatLine2Col(sale.ReceiptNumber.ToString("D6"), sale.Total.ToString("C2", CultureInfo.CurrentCulture));
 
-            // Reconstruct Gross
-            decimal saleGross = 0;
-            foreach (var item in sale.Items)
-            {
-                // In SaleItem, Price is per unit, LineTotal is the final cost
-                saleGross += (item.Price * item.Quantity);
-            }
-            if (saleGross < sale.Subtotal) saleGross = sale.Subtotal; // fallback
-
-            totalGross += saleGross;
+            totalGross += sale.Total;
             totalNet += sale.Subtotal;
+            totalTax += sale.Tax;
+            transactionCount++;
 
             if (sale.PaymentType != null && sale.PaymentType.Equals("Cash", StringComparison.OrdinalIgnoreCase))
             {
                 totalCash += sale.Total;
+            }
+            else
+            {
+                totalCard += sale.Total;
             }
         }
 
@@ -210,9 +230,13 @@ public static class XReportHelper
         yield return string.Empty;
         yield return "##BOLD10##" + "SUMMARY";
         yield return Separator;
+        yield return FormatLine2Col("Transactions", transactionCount.ToString());
         yield return FormatLine2Col("Total Gross Sales", totalGross.ToString("C2", CultureInfo.CurrentCulture));
         yield return FormatLine2Col("Total Net Sales", totalNet.ToString("C2", CultureInfo.CurrentCulture));
-        yield return FormatLine2Col("Total Cash in Drawer", totalCash.ToString("C2", CultureInfo.CurrentCulture));
+        yield return FormatLine2Col("Total Tax Collected", totalTax.ToString("C2", CultureInfo.CurrentCulture));
+        yield return Separator;
+        yield return FormatLine2Col("Cash in Drawer", totalCash.ToString("C2", CultureInfo.CurrentCulture));
+        yield return FormatLine2Col("Card Payments", totalCard.ToString("C2", CultureInfo.CurrentCulture));
         yield return Separator;
         yield return string.Empty;
         yield return CenterText("End of Report");

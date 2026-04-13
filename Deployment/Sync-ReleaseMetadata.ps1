@@ -136,7 +136,7 @@ function Sync-IconAssets([string]$SourceIconPath, [string]$AssetsDirectory) {
     }
 }
 
-$appManifestPath = Join-Path $metadata.RepoRoot "Retail Store POS\Nexill.RetailStorePOS\app.manifest"
+$appManifestPath = Join-Path $metadata.RepoRoot "Nexill.RetailStorePOS\app.manifest"
 [xml]$appManifest = Get-Content -Path $appManifestPath -Raw
 $appNs = New-Object System.Xml.XmlNamespaceManager($appManifest.NameTable)
 $appNs.AddNamespace("asmv1", "urn:schemas-microsoft-com:asm.v1")
@@ -148,7 +148,7 @@ if (-not $assemblyIdentity) {
 $assemblyIdentity.SetAttribute("version", $metadata.AssemblyVersion)
 Save-Xml -Document $appManifest -Path $appManifestPath
 
-$packageManifestPath = Join-Path $metadata.RepoRoot "Retail Store POS\Nexill.RetailStorePOS\Package.appxmanifest"
+$packageManifestPath = Join-Path $metadata.RepoRoot "Nexill.RetailStorePOS\Package.appxmanifest"
 [xml]$packageManifest = Get-Content -Path $packageManifestPath -Raw
 $packageNs = New-Object System.Xml.XmlNamespaceManager($packageManifest.NameTable)
 $packageNs.AddNamespace("appx", "http://schemas.microsoft.com/appx/manifest/foundation/windows10")

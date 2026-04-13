@@ -387,6 +387,17 @@ WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key = 'cash_rounding_unit');
 ";
         command.ExecuteNonQuery();
 
+        // Migration 12: Global Search Indices
+        using (var searchIndexCmd = connection.CreateCommand())
+        {
+            searchIndexCmd.CommandText = @"
+CREATE INDEX IF NOT EXISTS idx_sales_receipt ON sales (receipt_number);
+CREATE INDEX IF NOT EXISTS idx_sales_cashier ON sales (cashier_name COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS idx_sales_created ON sales (created_at);
+CREATE INDEX IF NOT EXISTS idx_sales_payment ON sales (payment_type);";
+            searchIndexCmd.ExecuteNonQuery();
+        }
+
         // Run migrations for existing databases
         RunMigrations(connection);
     }

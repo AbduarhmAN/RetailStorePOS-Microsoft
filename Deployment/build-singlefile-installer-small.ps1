@@ -5,43 +5,21 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$repoRoot = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 $metadata = & (Join-Path $PSScriptRoot "Get-ReleaseMetadata.ps1")
 & (Join-Path $PSScriptRoot "Sync-ReleaseMetadata.ps1") -Quiet
 
-$projectPath = $metadata.WinUiProjectPath
-$innoScriptPath = Join-Path $PSScriptRoot "setup_script.iss"
+$runtimeIdentifier = "win-x64"
+$vtBuildScriptPath = Join-Path $PSScriptRoot "build-vt-singlefile.ps1"
+$innoScriptPath = Join-Path $PSScriptRoot "setup_singlefile_small.iss"
+$singleFileOutputPath = Join-Path (Join-Path $metadata.ArtifactsRoot "vt-singlefile") "$($metadata.Version)\$runtimeIdentifier"
+$singleFileExePath = Join-Path $singleFileOutputPath $metadata.WinUiExecutableName
+$smallSetupBaseFilename = "$($metadata.SetupBaseFilename)-SingleFile-Small"
 
-Write-Host "Publishing $($metadata.AppName) $($metadata.Version) for Uptodown/Inno Setup..." -ForegroundColor Cyan
+Write-Host "Building raw single-file artifact for small installer packaging..." -ForegroundColor Cyan
+& $vtBuildScriptPath -Configuration $Configuration
 
-dotnet publish $projectPath `
-    -c $Configuration `
-    -p:Platform=x64 `
-    -p:WindowsPackageType=None `
-    --self-contained true
-
-if ($LASTEXITCODE -ne 0) {
-    throw "WinUI publish failed."
-}
-
-$requiredPublishAssets = @(
-    "Assets\\Logo.png",
-    "Assets\\StoreLogo.png",
-    "Assets\\BrandLogo.webp",
-    "Assets\\Square150x150Logo.scale-200.png",
-    "Assets\\Square44x44Logo.scale-200.png",
-    "Assets\\Square44x44Logo.targetsize-24_altform-unplated.png",
-    "Assets\\Wide310x150Logo.scale-200.png",
-    "Assets\\SplashScreen.scale-200.png",
-    "Assets\\LockScreenLogo.scale-200.png",
-    "Assets\\app_icon.ico"
-)
-
-$missingPublishAssets = $requiredPublishAssets |
-    Where-Object { -not (Test-Path (Join-Path $metadata.PublishOutputPath $_)) }
-
-if ($missingPublishAssets.Count -gt 0) {
-    throw "Publish output is missing required runtime assets: $($missingPublishAssets -join ', ')"
+if (-not (Test-Path $singleFileExePath)) {
+    throw "Expected single-file executable was not found at '$singleFileExePath'."
 }
 
 $innoCandidates = @(
@@ -72,25 +50,25 @@ if (-not $isccPath) {
     throw "ISCC.exe was not found. Install Inno Setup 6, then rerun this script."
 }
 
-Write-Host "Building Inno Setup package..." -ForegroundColor Cyan
+Write-Host "Building size-optimized single-file installer..." -ForegroundColor Cyan
 $isccArguments = @(
     "/DMyAppName=$($metadata.AppName)",
     "/DMyAppVersion=$($metadata.Version)",
     "/DMyAppPublisher=$($metadata.BrandName)",
     "/DMyAppExeName=$($metadata.WinUiExecutableName)",
-    "/DMyOutputBaseFilename=$($metadata.SetupBaseFilename)",
+    "/DMyAppExeSourcePath=$singleFileExePath",
+    "/DMyOutputBaseFilename=$smallSetupBaseFilename",
     "/DMySetupIconFile=$($metadata.AppIconPath)",
     "/DMyLicenseFile=$($metadata.RenderedLicenseFilePath)",
     "/DMyWizardImageFile=$($metadata.WizardImagePath)",
     "/DMyWizardSmallImageFile=$($metadata.WizardSmallImagePath)",
-    "/DMyPublishDir=$($metadata.PublishOutputPath)",
-    "/O$($repoRoot)\artifacts\installer",
+    "/O$($metadata.ArtifactsRoot)\installer-singlefile-small",
     $innoScriptPath
 )
 & $isccPath @isccArguments
 
 if ($LASTEXITCODE -ne 0) {
-    throw "Inno Setup build failed."
+    throw "Size-optimized single-file installer build failed."
 }
 
-Write-Host "Installer output is under artifacts\\installer." -ForegroundColor Green
+Write-Host "Size-optimized single-file installer output is under artifacts\\installer-singlefile-small." -ForegroundColor Green

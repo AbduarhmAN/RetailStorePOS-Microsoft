@@ -70,6 +70,12 @@
     <Content Include="Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Assets\**\*;Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup Condition="'$(WindowsPackageType)'!='None'">
     <AppxManifest Include="Package.appxmanifest">
       <SubType>Designer</SubType>
@@ -84,7 +90,32 @@
     <ProjectCapability Remove="TestContainer" />
   </ItemGroup>
 
-  <Target Name="CopyWinUiPriToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
+  <Target Name="IncludeGeneratedWinUiRuntimeFilesInPublish"
+          BeforeTargets="ComputeResolvedFilesToPublishList"
+          Condition="'$(PublishDir)' != '' and '$(PublishSingleFile)' != 'true'">
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(TargetDir)$(AssemblyName).pri"
+                             Condition="Exists('$(TargetDir)$(AssemblyName).pri')"
+                             Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>$(AssemblyName).pri</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="$(TargetDir)*.xbf"
+                             Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="$(TargetDir)Views\**\*.xbf"
+                             Exclude="@(ResolvedFileToPublish)">
+        <RelativePath>Views\%(RecursiveDir)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyWinUiPriToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishDir)' != '' and '$(PublishSingleFile)' != 'true'">
     <ItemGroup>
       <_GeneratedAppPri Include="$(TargetDir)$(AssemblyName).pri" Condition="Exists('$(TargetDir)$(AssemblyName).pri')" />
       <_GeneratedRootXbf Include="$(TargetDir)*.xbf" />

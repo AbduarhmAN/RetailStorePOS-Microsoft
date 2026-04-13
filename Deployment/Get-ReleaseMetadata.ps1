@@ -53,6 +53,7 @@ function Get-AbsoluteRepoPath([string]$RelativePathPropertyName) {
 
 [pscustomobject]@{
     RepoRoot = $repoRoot
+    ArtifactsRoot = Join-Path $repoRoot "artifacts"
     BrandName = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSBrandName")
     AppName = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSProductName")
     ProductName = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSProductName")
@@ -73,15 +74,17 @@ function Get-AbsoluteRepoPath([string]$RelativePathPropertyName) {
     WinUiPackageDisplayName = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSWinUiPackageDisplayName")
     WinUiPackageDescription = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSWinUiPackageDescription")
     WinUiExecutableName = "$(Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSWinUiTargetName")).exe"
+    WinUiProjectDirectory = Join-Path $repoRoot "Nexill.RetailStorePOS"
+    WinUiProjectPath = Join-Path $repoRoot "Nexill.RetailStorePOS\Nexill.RetailStorePOS.csproj"
     SetupBaseFilename = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSSetupBaseFilename")
     StorePublishProfile = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSStorePublishProfile")
     UptodownPublishProfile = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSUptodownPublishProfile")
     PublishRuntimeIdentifier = Resolve-PropertyValue (Get-PropertyValue "RetailStorePOSPublishRuntimeIdentifier")
     AppIconPath = Get-AbsoluteRepoPath "RetailStorePOSAppIcon"
-    WinUiAssetsPath = Join-Path $repoRoot "Retail Store POS\Nexill.RetailStorePOS\Assets"
+    WinUiAssetsPath = Join-Path $repoRoot "Nexill.RetailStorePOS\Assets"
     LicenseFilePath = Get-AbsoluteRepoPath "RetailStorePOSLicenseRelativePath"
     RenderedLicenseFilePath = Join-Path $repoRoot "artifacts\release-metadata\retail_store_pos_terms_and_privacy_policy.txt"
     WizardImagePath = Get-AbsoluteRepoPath "RetailStorePOSWizardImageRelativePath"
     WizardSmallImagePath = Get-AbsoluteRepoPath "RetailStorePOSWizardSmallImageRelativePath"
-    PublishOutputPath = Join-Path $repoRoot "Retail Store POS\Nexill.RetailStorePOS\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\publish"
+    PublishOutputPath = Join-Path $repoRoot "Nexill.RetailStorePOS\bin\x64\Release\net8.0-windows10.0.19041.0\win-x64\publish"
 }

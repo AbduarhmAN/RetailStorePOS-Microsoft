@@ -11,10 +11,8 @@
     Background="Transparent">
 
     <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled"
-                      HorizontalScrollMode="Disabled">
-            <Grid Padding="24" RowSpacing="32">
+        <!-- Removed the outer ScrollViewer! It was breaking the UI Virtualization by giving the ListView infinite height -->
+        <Grid Padding="24" RowSpacing="{x:Bind ViewModel.PageRowSpacing, Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -22,6 +20,7 @@
 
             <!-- Inline Tools -->
             <Border Grid.Row="0"
+                Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneWay}"
                 Padding="16"
                 Background="#FCFDFD"
                 BorderBrush="{StaticResource BorderDivider}"
@@ -141,8 +140,8 @@
                           ShowsScrollingPlaceholders="False"
                           Background="Transparent"
                           BorderThickness="0"
-                          ScrollViewer.VerticalScrollMode="Disabled"
-                          ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                          ScrollViewer.VerticalScrollMode="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
                           ScrollViewer.HorizontalScrollMode="Disabled">
                         <ListView.Header>
                             <Grid Padding="16,8" BorderBrush="{StaticResource BorderDivider}" BorderThickness="0,0,0,1">
@@ -201,7 +200,6 @@
                 </Grid>
             </Border>
         </Grid>
-    </ScrollViewer>
 
         <ContentDialog x:Name="XReportDialog"
                        Title="X Report Ready"

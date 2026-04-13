@@ -12,7 +12,7 @@
             
             <!-- Force all controls, flyouts, and borders to be completely square -->
             <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
-            <CornerRadius x:Key="OverlayCornerRadius">0</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">2</CornerRadius>
 
             <!-- Notion Style Brushes -->
             <SolidColorBrush x:Key="PrimaryText" Color="#37352F" />

@@ -11,7 +11,7 @@ $metadata = & (Join-Path $PSScriptRoot "Get-ReleaseMetadata.ps1")
 # Push Publisher & Identity tags directly into the Microsoft Package.appxmanifest
 & (Join-Path $PSScriptRoot "Sync-ReleaseMetadata.ps1") -Quiet
 
-$projectPath = Join-Path $repoRoot "Retail Store POS\Nexill.RetailStorePOS\Nexill.RetailStorePOS.csproj"
+$projectPath = $metadata.WinUiProjectPath
 
 Write-Host "Publishing $($metadata.AppName) $($metadata.Version) for the Microsoft Store..." -ForegroundColor Cyan
 

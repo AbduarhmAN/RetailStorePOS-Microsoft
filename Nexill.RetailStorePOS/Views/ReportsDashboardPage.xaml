@@ -29,7 +29,7 @@
         <!-- KPI Value -->
         <Style x:Key="KpiValue" TargetType="TextBlock">
             <Setter Property="FontSize" Value="26"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontWeight" Value="Normal"/>
             <Setter Property="Foreground" Value="#1A1D23"/>
         </Style>
 
@@ -42,7 +42,7 @@
 
         <!-- Badge Green -->
         <Style x:Key="BadgeGreen" TargetType="Border">
-            <Setter Property="Background" Value="#fff"/>
+            <Setter Property="Background" Value="#E6F4EA"/>
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="8,3"/>
         </Style>
@@ -53,15 +53,302 @@
             <Setter Property="CornerRadius" Value="6"/>
             <Setter Property="Padding" Value="8,3"/>
         </Style>
+
+        <!-- Badge Neutral -->
+        <Style x:Key="BadgeNeutral" TargetType="Border">
+            <Setter Property="Background" Value="#F5F7FA"/>
+            <Setter Property="BorderBrush" Value="#D8DEE8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8,3"/>
+        </Style>
+
+        <LinearGradientBrush x:Key="SkeletonShimmerBrush" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#EEF2F6" Offset="0"/>
+            <GradientStop Color="#EEF2F6" Offset="0.18"/>
+            <GradientStop Color="#F7F9FB" Offset="0.32"/>
+            <GradientStop Color="#EEF2F6" Offset="0.46"/>
+            <GradientStop Color="#EEF2F6" Offset="1"/>
+        </LinearGradientBrush>
+
+        <Style x:Key="SkeletonCard" TargetType="Border" BasedOn="{StaticResource DashCard}">
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <Style x:Key="SkeletonBlock" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource SkeletonShimmerBrush}"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Height" Value="12"/>
+        </Style>
+
+        <Style x:Key="SkeletonCircle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource SkeletonShimmerBrush}"/>
+            <Setter Property="CornerRadius" Value="999"/>
+            <Setter Property="Width" Value="140"/>
+            <Setter Property="Height" Value="140"/>
+        </Style>
     </Page.Resources>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid>
+    <ScrollViewer x:Name="DashboardLoadingRoot" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Padding="24,20,24,24" RowSpacing="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Spacing="8">
+                    <Border Style="{StaticResource SkeletonBlock}" Width="220" Height="28"/>
+                    <Border Style="{StaticResource SkeletonBlock}" Width="280" Height="14"/>
+                </StackPanel>
+
+                <Border Grid.Column="1"
+                        Style="{StaticResource SkeletonBlock}"
+                        Width="132"
+                        Height="36"
+                        CornerRadius="8"
+                        VerticalAlignment="Center"/>
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource SkeletonCard}" Padding="10">
+                    <StackPanel Spacing="10">
+                        <Border Style="{StaticResource SkeletonBlock}" Width="96" Height="16"/>
+                        <Border Background="#EEF2F6" Height="1"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="84" Height="12"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource SkeletonCard}" Padding="10">
+                    <StackPanel Spacing="10">
+                        <Border Style="{StaticResource SkeletonBlock}" Width="118" Height="16"/>
+                        <Border Background="#EEF2F6" Height="1"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="74" Height="12"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource SkeletonCard}" Padding="10">
+                    <StackPanel Spacing="10">
+                        <Border Style="{StaticResource SkeletonBlock}" Width="110" Height="16"/>
+                        <Border Background="#EEF2F6" Height="1"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="96" Height="28" Margin="0,10,0,0"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="76" Height="12"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="3" Style="{StaticResource SkeletonCard}" Padding="10">
+                    <StackPanel Spacing="10">
+                        <Border Style="{StaticResource SkeletonBlock}" Width="130" Height="16"/>
+                        <Border Background="#EEF2F6" Height="1"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="114" Height="28" Margin="0,10,0,0"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Width="90" Height="12"/>
+                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid Grid.Row="2" ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="280"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0" RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource SkeletonCard}">
+                        <StackPanel Spacing="14">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="110" Height="16"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="20" CornerRadius="10"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="180" Height="24"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="210" Height="12"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Style="{StaticResource SkeletonCard}">
+                        <StackPanel Spacing="12">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="104" Height="16"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="136" Height="12"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="104" Height="12"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Grid.Column="1" RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource SkeletonCard}">
+                        <StackPanel Spacing="12">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="126" Height="16"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Spacing="6">
+                                    <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
+                                    <Border Style="{StaticResource SkeletonBlock}" Width="180" Height="5" CornerRadius="3"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="70" Height="14" Margin="12,0,0,0"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Spacing="6">
+                                    <Border Style="{StaticResource SkeletonBlock}" Width="132" Height="12"/>
+                                    <Border Style="{StaticResource SkeletonBlock}" Width="170" Height="5" CornerRadius="3"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="64" Height="14" Margin="12,0,0,0"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Spacing="6">
+                                    <Border Style="{StaticResource SkeletonBlock}" Width="108" Height="12"/>
+                                    <Border Style="{StaticResource SkeletonBlock}" Width="156" Height="5" CornerRadius="3"/>
+                                </StackPanel>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="72" Height="14" Margin="12,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Row="1" Style="{StaticResource SkeletonCard}">
+                        <StackPanel Spacing="12">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="150" Height="16"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="126" Height="12"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="112" Height="20" CornerRadius="6"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="118" Height="12"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="106" Height="20" CornerRadius="6"/>
+                            </Grid>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="134" Height="12"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="112" Height="20" CornerRadius="6"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <StackPanel Grid.Column="2" Spacing="16">
+                    <Border Style="{StaticResource SkeletonCard}">
+                        <StackPanel Spacing="10">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="108" Height="14"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="132" Height="28"/>
+                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="58" Height="20" CornerRadius="6"/>
+                            </Grid>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="124" Height="12"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource SkeletonCard}" MinHeight="360">
+                        <Grid RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Border Grid.Row="0" Style="{StaticResource SkeletonBlock}" Width="96" Height="16"/>
+                            <Border Grid.Row="1" Style="{StaticResource SkeletonCircle}" HorizontalAlignment="Center"/>
+                            <StackPanel Grid.Row="3" Spacing="8">
+                                <Border Style="{StaticResource SkeletonBlock}" Width="110" Height="12"/>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
+                                <Border Style="{StaticResource SkeletonBlock}" Width="126" Height="12"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+
+    <ScrollViewer x:Name="DashboardContentRoot" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
         <Grid Padding="24,20,24,24" RowSpacing="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header -->
                 <RowDefinition Height="Auto"/> <!-- 4 KPI Cards -->
-                <RowDefinition Height="Auto"/> <!-- Middle Row -->
-                <RowDefinition Height="Auto"/> <!-- Bottom Row -->
+                <RowDefinition Height="Auto"/> <!-- Main Content Row -->
+                <RowDefinition Height="Auto"/> <!-- Alerts Row -->
             </Grid.RowDefinitions>
 
             <!-- ═══════════════════════════════════════════════ -->
@@ -88,12 +375,14 @@
                             <TextBlock x:Name="TodayDateText" FontSize="13" Foreground="#1A1D23"/>
                         </StackPanel>
                     </Border>
+                    <!-- 
                     <Button Background="#1976D2" CornerRadius="8" Padding="12,7" BorderThickness="0">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <SymbolIcon Symbol="Repair" Foreground="White"/>
                             <TextBlock Text="Quick Actions" Foreground="White" FontSize="13"/>
                         </StackPanel>
                     </Button>
+                    -->
                 </StackPanel>
             </Grid>
 
@@ -112,24 +401,23 @@
                 <Border Grid.Column="0" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
                         <!-- BACKGROUND CHART LAYER -->
-                        <Grid Opacity="0.3" Margin="0,34,-10,-10" CornerRadius="0,0,12,0">
+                        <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" DrawMargin="{x:Null}"
                                                 Background="White"
                                       Series="{x:Bind SalesSparkline}" 
-                                      IsHitTestVisible="False"
-                                      MinHeight="72">
+                                      IsHitTestVisible="False">
                                 <lvc:CartesianChart.XAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MaxLimit="7"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.XAxes>
                                 <lvc:CartesianChart.YAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MinStep="100"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.YAxes>
                             </lvc:CartesianChart>
@@ -137,15 +425,23 @@
 
                         <!-- FOREGROUND TEXT LAYER -->
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Sales Today" Style="{StaticResource KpiLabel}" FontSize="18"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Sales Today" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Total revenue collected today including tax. Compared against yesterday's performance.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
                             <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
-
-                            <!-- Metrics -->
                             <StackPanel Spacing="6" Margin="0,16,0,8">
                                 <TextBlock x:Name="SalesTodayText" Style="{StaticResource KpiValue}"/>
-                                <Border Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
-                                    <TextBlock x:Name="SalesDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32" />
-                                </Border>
+                                <Canvas HorizontalAlignment="Left" Background="Transparent" Height="0">
+                                    <TextBlock x:Name="SalesDeltaText" FontSize="12" FontWeight="Normal" Foreground="#2E7D32" Canvas.Top="-6" />
+                                </Canvas>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -154,38 +450,48 @@
                 <!-- Card 2: Net Profit Today -->
                 <Border Grid.Column="1" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
-                        <Grid Opacity="0.3" Margin="0,34,-10,-10" CornerRadius="0,0,12,0">
+                        <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" DrawMargin="{x:Null}"
                                                 Background="White"
                                       Series="{x:Bind ProfitSparkline}" 
                                       IsHitTestVisible="False" 
-                                      MinHeight="72">
+                                      >
                                 <lvc:CartesianChart.XAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MaxLimit="7"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.XAxes>
                                 <lvc:CartesianChart.YAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MinStep="100"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.YAxes>
                             </lvc:CartesianChart>
                         </Grid>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Net Profit Today" Style="{StaticResource KpiLabel}" FontSize="18"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Net Profit Today" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Revenue minus cost of goods sold (COGS). Shows actual profit before overhead expenses.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
                             <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
 
                             <StackPanel Spacing="6" Margin="0,16,0,8">
                                 <TextBlock x:Name="ProfitTodayText" Style="{StaticResource KpiValue}"/>
-                                <Border Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
-                                    <TextBlock x:Name="ProfitDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                                </Border>
+                                <Canvas HorizontalAlignment="Left" Background="Transparent" Height="0">
+                                    <TextBlock x:Name="ProfitDeltaText" FontSize="12" FontWeight="Normal" Foreground="#2E7D32" Canvas.Top="-6" />
+                                </Canvas>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -194,38 +500,48 @@
                 <!-- Card 3: Invoice Count -->
                 <Border Grid.Column="2" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
-                        <Grid Opacity="0.3" Margin="0,34,-10,-10" CornerRadius="0,0,12,0">
+                        <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" DrawMargin="{x:Null}"
                                                 Background="White"
                                       Series="{x:Bind InvoiceSparkline}" 
                                       IsHitTestVisible="False" 
-                                      MinHeight="72">
+                                      >
                                 <lvc:CartesianChart.XAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MaxLimit="7"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.XAxes>
                                 <lvc:CartesianChart.YAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MinStep="100"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.YAxes>
                             </lvc:CartesianChart>
                         </Grid>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Invoice Count" Style="{StaticResource KpiLabel}" FontSize="18"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Invoice Count" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Total number of completed transactions today. Each receipt counts as one invoice.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
                             <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
 
                             <StackPanel Spacing="6" Margin="0,16,0,8">
                                 <TextBlock x:Name="InvoiceCountText" Style="{StaticResource KpiValue}"/>
-                                <Border Style="{StaticResource BadgeGreen}" HorizontalAlignment="Left">
-                                    <TextBlock x:Name="InvoiceDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                                </Border>
+                                <Canvas HorizontalAlignment="Left" Background="Transparent" Height="0">
+                                    <TextBlock x:Name="InvoiceDeltaText" FontSize="12" FontWeight="Normal" Foreground="#2E7D32" Canvas.Top="-6" />
+                                </Canvas>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -234,39 +550,49 @@
                 <!-- Card 4: Avg Invoice Value -->
                 <Border Grid.Column="3" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
-                        <Grid Opacity="0.3" Margin="0,34,-10,-10" CornerRadius="0,0,12,0">
+                        <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
                                 <ColumnDefinition Width="70*"/>
                             </Grid.ColumnDefinitions>
-                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                            <lvc:CartesianChart Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0" DrawMargin="{x:Null}"
                                                 Background="White"
                                       Series="{x:Bind AvgInvoiceSparkline}" 
                                       IsHitTestVisible="False" 
-                                      MinHeight="72">
+                                      >
                                 <lvc:CartesianChart.XAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MaxLimit="7"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.XAxes>
                                 <lvc:CartesianChart.YAxes>
                                     <lvc:AxesCollection>
-                                        <lvc:XamlAxis IsVisible="False" MinLimit="0"/>
+                                        <lvc:XamlAxis IsVisible="False" MinLimit="0" MinStep="100"/>
                                     </lvc:AxesCollection>
                                 </lvc:CartesianChart.YAxes>
                             </lvc:CartesianChart>
                         </Grid>
 
                         <StackPanel Spacing="6">
-                            <TextBlock Text="Avg. Invoice Value" Style="{StaticResource KpiLabel}" FontSize="18"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Avg. Invoice Value" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Average amount per transaction. Higher values indicate effective upselling or larger basket sizes.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
                             <Rectangle Height="1" Fill="#E2E8F0" HorizontalAlignment="Stretch" Margin="0,2,0,2"/>
 
                             <StackPanel Spacing="6" Margin="0,16,0,8">
                                 <TextBlock x:Name="AvgInvoiceText" Style="{StaticResource KpiValue}"/>
-                                <StackPanel Orientation="Horizontal" Spacing="6" Padding="0,3">
-                                    <TextBlock Text="Median:" FontSize="11" Foreground="#8F96A3" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="MedianText" FontSize="11" Foreground="#8F96A3" VerticalAlignment="Center"/>
-                                </StackPanel>
+                                <Canvas HorizontalAlignment="Left" Background="Transparent" Height="0">
+                                    <TextBlock Text="Median:" FontSize="12" FontWeight="Normal" Foreground="#8F96A3" Canvas.Top="-6"/>
+                                    <TextBlock x:Name="MedianText" FontSize="12" FontWeight="Normal" Foreground="#8F96A3" Canvas.Top="-6" Canvas.Left="48"/>
+                                </Canvas>
                             </StackPanel>
                         </StackPanel>
                     </Grid>
@@ -283,94 +609,234 @@
                     <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Sales vs Target Card -->
-                <Border Grid.Column="0" Style="{StaticResource DashCard}" Background="White">
-                    <Grid RowSpacing="14">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                <!-- Column 0: Sales vs Target + Critical Alerts -->
+                <Grid Grid.Column="0" RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Sales vs Target" Style="{StaticResource CardTitle}"/>
+                    <!-- Sales vs Target Card -->
+                    <Border Grid.Row="0" Style="{StaticResource DashCard}" Background="White">
+                        <Grid RowSpacing="14">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
 
-                        <!-- 3-layer bar: White bg | Grey yesterday | Blue today -->
-                        <Grid Grid.Row="1" Height="20" x:Name="SalesBarContainer">
-                            <!-- Layer 1: White background (full width) -->
-                            <Border Background="White"
-                                    BorderBrush="#E2E8F0"
-                                    BorderThickness="1"
-                                    CornerRadius="10"/>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Sales vs Target" Style="{StaticResource CardTitle}"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Compares today and yesterday against a fixed daily target of $10,000. The blue bar shows today, and the gray bar shows yesterday.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
 
-                            <!-- Layer 2: Grey bar = Yesterday's sales (45% of target) -->
-                            <Border x:Name="YesterdayBar"
-                                    Background="#CFD8DC"
-                                    CornerRadius="10"
-                                    HorizontalAlignment="Left"
-                                    Width="0"/>
-                            <!--  ↑ Width set in code-behind as % of container  -->
+                            <!-- 3-layer bar -->
+                            <Grid Grid.Row="1" Height="20" x:Name="SalesBarContainer">
+                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10"/>
+                                <Border x:Name="YesterdayBar" Background="#dbdbdb" CornerRadius="10,0,0,10" HorizontalAlignment="Left" Width="0"/>
+                                
+                                <!-- Today Bar Group (Bar + Pill locked to right edge) -->
+                                <Grid x:Name="TodayBar" HorizontalAlignment="Left" Width="0">
+                                    <!-- The actual blue bar -->
+                                    <Border Background="#1976D2" CornerRadius="10,0,0,10"/>
+                                    <!-- The pill locked to the right side -->
+                                    <Border Background="#0D47A1" CornerRadius="2" Width="4" Height="24" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Grid>
 
-                            <!-- Layer 3: Blue bar = Today's sales (53% of target) -->
-                            <Border x:Name="TodayBar"
-                                    Background="#1976D2"
-                                    CornerRadius="10"
-                                    HorizontalAlignment="Left"
-                                    Width="0"/>
-                            <!--  ↑ Width set in code-behind as % of container  -->
+                            <!-- Values Row -->
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="CurrentSalesText" FontSize="20" FontWeight="Bold" Foreground="#1A1D23"/>
+                                <Border Grid.Column="1" Margin="8,0" Style="{StaticResource BadgeRed}" VerticalAlignment="Center">
+                                    <TextBlock x:Name="SalesGapText" FontSize="11" FontWeight="SemiBold" Foreground="#C62828"/>
+                                </Border>
+                                <TextBlock Grid.Column="2" x:Name="TargetText" FontSize="16" FontWeight="SemiBold" Foreground="#8F96A3" VerticalAlignment="Center"/>
+                            </Grid>
+
+                            <TextBlock Grid.Row="3" x:Name="TargetSubText" FontSize="11" Foreground="#8F96A3"/>
                         </Grid>
+                    </Border>
 
-                        <!-- Values Row -->
-                        <Grid Grid.Row="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock x:Name="CurrentSalesText" FontSize="20" FontWeight="Bold" Foreground="#1A1D23"/>
-                            <Border Grid.Column="1" Margin="8,0" Style="{StaticResource BadgeRed}" VerticalAlignment="Center">
-                                <TextBlock x:Name="SalesGapText" FontSize="11" FontWeight="SemiBold" Foreground="#C62828"/>
-                            </Border>
-                            <TextBlock Grid.Column="2" x:Name="TargetText" FontSize="16" FontWeight="SemiBold" Foreground="#8F96A3" VerticalAlignment="Center"/>
+                    <!-- Critical Alerts -->
+                    <Border Grid.Row="1" Style="{StaticResource DashCard}" Background="White">
+                        <Grid RowSpacing="14">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Background="#FCE8E6" CornerRadius="4" Padding="4" Margin="0,0,8,0">
+                                    <SymbolIcon Symbol="Important" Foreground="#E53935"/>
+                                </Border>
+                                <TextBlock Grid.Column="1" Text="Critical Alerts" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
+                                <Button Grid.Column="2" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Current inventory alert counts by location. Shelf Low Stock means shelf quantity is above zero and at or below its minimum threshold. Warehouse Low Stock means warehouse quantity is above zero and at or below its minimum threshold. Shelf Empty and Warehouse Empty mean the quantity at that location is zero or below. Rows are counted by location, not by unique whole-store product status.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
+
+                            <ItemsControl Grid.Row="1" Grid.RowSpan="2" x:Name="CriticalAlertsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="local:DashboardAlertItem">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Name}"
+                                                       FontSize="13"
+                                                       Foreground="#1A1D23"
+                                                       VerticalAlignment="Center"/>
+                                            <Border Grid.Column="1"
+                                                    Background="{x:Bind BadgeBackground}"
+                                                    CornerRadius="6"
+                                                    Padding="8,3">
+                                                <TextBlock Text="{x:Bind CountText}"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{x:Bind BadgeForeground}"/>
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </Grid>
+                    </Border>
 
-                        <TextBlock Grid.Row="3" x:Name="TargetSubText" FontSize="11" Foreground="#8F96A3"/>
-                    </Grid>
-                </Border>
+                </Grid>
+                <!-- Column 1: Top Selling Products + Low Stock -->
+                <Grid Grid.Column="1" RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
 
-                <!-- Top Selling Products Card -->
-                <Border Grid.Column="1" Style="{StaticResource DashCard}" Background="White">
-                    <Grid RowSpacing="12">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
+                    <!-- Top Selling Products Card -->
+                    <Border Grid.Row="0" Style="{StaticResource DashCard}" Background="White">
+                        <Grid RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
 
-                        <TextBlock Grid.Row="0" Text="Top Selling Products" Style="{StaticResource CardTitle}"/>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Top Selling Products" Style="{StaticResource CardTitle}"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Top products ranked by revenue generated today. Progress bar shows each product's share of the combined revenue from the displayed products.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
 
-                        <ItemsControl Grid.Row="1" x:Name="TopProductsList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="local:DashboardProductItem">
-                                    <Grid Margin="0,0,0,10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel>
-                                            <TextBlock Text="{x:Bind Name}" FontSize="13" Foreground="#1A1D23"/>
-                                            <ProgressBar Value="{x:Bind Pct}" Minimum="0" Maximum="100"
-                                                         Height="5" CornerRadius="3" Margin="0,4,0,0"
-                                                         Background="#E8EAF0" Foreground="#1976D2"/>
-                                        </StackPanel>
-                                        <TextBlock Grid.Column="1" Text="{x:Bind Revenue}" FontSize="13"
-                                                   FontWeight="SemiBold" Foreground="#1A1D23"
-                                                   VerticalAlignment="Center" Margin="12,0,0,0"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Grid>
-                </Border>
+                            <ItemsControl Grid.Row="1" x:Name="TopProductsList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="local:DashboardProductItem">
+                                        <Grid Margin="0,0,0,10">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <TextBlock Text="{x:Bind Name}" FontSize="13" Foreground="#1A1D23"/>
+                                                <ProgressBar Value="{x:Bind Pct}" Minimum="0" Maximum="100"
+                                                             Height="5" CornerRadius="3" Margin="0,4,0,0"
+                                                             Background="#E8EAF0" Foreground="#1976D2"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1" Text="{x:Bind Revenue}" FontSize="13"
+                                                       FontWeight="SemiBold" Foreground="#1A1D23"
+                                                       VerticalAlignment="Center" Margin="12,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+
+                    <!-- Low Stock / Out of Stock -->
+                    <Border Grid.Row="1" Style="{StaticResource DashCard}" Background="White">
+                        <Grid RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Low Stock / Out of Stock" Style="{StaticResource CardTitle}"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Top products with the most urgent stock issues. Each product appears once using its worst active issue across shelf and warehouse. The location badge shows Shelf, Warehouse, or Shelf | Warehouse.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
+
+                            <ItemsControl Grid.Row="1" x:Name="LowStockList">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="local:DashboardStockItem">
+                                        <Grid Margin="0,0,0,8">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{x:Bind Name}" FontSize="13" Foreground="#1A1D23" VerticalAlignment="Center"/>
+                                            <Grid Grid.Column="1" Margin="0,0,12,0" VerticalAlignment="Center" Visibility="{x:Bind SimpleStatusVisibility}">
+                                                <TextBlock Text="{x:Bind StockStatus}" FontSize="12"
+                                                           Foreground="{x:Bind StatusBrush}"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                            <Border Grid.Column="2" Style="{StaticResource BadgeNeutral}" Visibility="{x:Bind BadgeVisible}">
+                                                <Grid>
+                                                    <TextBlock Text="{x:Bind BadgeText}"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#5F6775"
+                                                               Visibility="{x:Bind SimpleBadgeTextVisibility}"/>
+                                                    <StackPanel Orientation="Horizontal"
+                                                                Spacing="2"
+                                                                Visibility="{x:Bind DetailedStatusVisibility}"
+                                                                VerticalAlignment="Center">
+                                                        <TextBlock Text="{x:Bind PrimaryLabelText}" FontSize="11" FontWeight="SemiBold" Foreground="#5F6775" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{x:Bind PrimaryStatusText}" FontSize="11" FontWeight="SemiBold" Foreground="{x:Bind PrimaryStatusBrush}" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="|" FontSize="11" FontWeight="SemiBold" Foreground="#8F96A3" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{x:Bind SecondaryLabelText}" FontSize="11" FontWeight="SemiBold" Foreground="#5F6775" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{x:Bind SecondaryStatusText}" FontSize="11" FontWeight="SemiBold" Foreground="{x:Bind SecondaryStatusBrush}" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </Grid>
+                    </Border>
+
+                </Grid>
 
                 <!-- Right Column: Discounts + Stock Health -->
                 <StackPanel Grid.Column="2" Spacing="16">
@@ -384,15 +850,25 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Grid.Row="0" Text="Discounts Today" Style="{StaticResource KpiLabel}"/>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Discounts Today" Style="{StaticResource KpiLabel}"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Total discount amount applied across all transactions today. Badge compares today's applied discounts against the full discount amount from yesterday.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock x:Name="DiscountsTotalText" Style="{StaticResource KpiValue}"/>
-                                <Border Grid.Column="1" Style="{StaticResource BadgeGreen}" VerticalAlignment="Center">
-                                    <TextBlock x:Name="DiscountsDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
+                                <Border Grid.Column="1" Style="{StaticResource BadgeNeutral}" VerticalAlignment="Center">
+                                    <TextBlock x:Name="DiscountsDeltaText" FontSize="11" FontWeight="SemiBold" Foreground="#5F6775"/>
                                 </Border>
                             </Grid>
                             <TextBlock Grid.Row="2" x:Name="DiscountsCountText" FontSize="11" Foreground="#8F96A3"/>
@@ -400,15 +876,26 @@
                     </Border>
 
                     <!-- Stock Health Donut -->
-                    <Border Style="{StaticResource DashCard}" Background="White">
+                    <Border Style="{StaticResource DashCard}" Background="White" MinHeight="360">
                         <Grid RowSpacing="12">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Text="Stock Health" Style="{StaticResource CardTitle}"/>
+                            <Grid Grid.Row="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="Stock Health" Style="{StaticResource CardTitle}"/>
+                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="Whole-store inventory breakdown. Healthy means the product is above threshold in both shelf and warehouse. Low Stock means at least one location is at or below threshold, but the product is not completely out everywhere. Out of Stock means both shelf and warehouse are zero or below.">
+                                    <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
+                                </Button>
+                            </Grid>
 
                             <!-- Donut drawn in code-behind via Path+ArcSegment -->
                             <Grid Grid.Row="1" HorizontalAlignment="Center">
@@ -417,23 +904,24 @@
                                 <TextBlock x:Name="DonutCenterText"
                                            HorizontalAlignment="Center"
                                            VerticalAlignment="Center"
-                                           FontSize="15" FontWeight="Bold"
+                                           TextAlignment="Center"
+                                           FontSize="16" FontWeight="SemiBold"
                                            Foreground="#1A1D23"/>
                             </Grid>
 
                             <!-- Legend -->
-                            <StackPanel Grid.Row="2" Spacing="6">
+                            <StackPanel Grid.Row="3" Spacing="6">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Ellipse Width="10" Height="10" Fill="#1976D2" VerticalAlignment="Center"/>
-                                    <TextBlock Text="51%  Healthy" FontSize="12" Foreground="#1A1D23"/>
+                                    <TextBlock x:Name="HealthyLegendText" Text="0%  Healthy" FontSize="12" Foreground="#1A1D23"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Ellipse Width="10" Height="10" Fill="#F9A825" VerticalAlignment="Center"/>
-                                    <TextBlock Text="29%  Low Stock" FontSize="12" Foreground="#1A1D23"/>
+                                    <TextBlock x:Name="LowStockLegendText" Text="0%  Low Stock" FontSize="12" Foreground="#1A1D23"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <Ellipse Width="10" Height="10" Fill="#E53935" VerticalAlignment="Center"/>
-                                    <TextBlock Text="20%  Out of Stock" FontSize="12" Foreground="#1A1D23"/>
+                                    <TextBlock x:Name="OutOfStockLegendText" Text="0%  Out of Stock" FontSize="12" Foreground="#1A1D23"/>
                                 </StackPanel>
                             </StackPanel>
                         </Grid>
@@ -442,94 +930,31 @@
             </Grid>
 
             <!-- ═══════════════════════════════════════════════ -->
-            <!--  ROW 3: Bottom Cards (Critical Alerts | Low Stock) -->
+            <!--  ROW 3: Alerts and Inventory                    -->
             <!-- ═══════════════════════════════════════════════ -->
             <Grid Grid.Row="3" ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="50*"/>
+                    <ColumnDefinition Width="50*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Critical Alerts -->
-                <Border Grid.Column="0" Style="{StaticResource DashCard}" Background="White">
-                    <Grid RowSpacing="12">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
-                            <Border Background="#FCE8E6" CornerRadius="4" Padding="4">
-                                <SymbolIcon Symbol="Important" Foreground="#E53935"/>
-                            </Border>
-                            <TextBlock Text="Critical Alerts" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
-                        </StackPanel>
-
-                        <Grid Grid.Row="1">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="3 Out of Stock" FontSize="13" Foreground="#1A1D23"/>
-                            <Border Grid.Column="1" Margin="4,0" Style="{StaticResource BadgeRed}">
-                                <TextBlock Text="+2" FontSize="11" FontWeight="SemiBold" Foreground="#C62828"/>
-                            </Border>
-                            <TextBlock Grid.Column="2" Text="$920" FontSize="13" FontWeight="SemiBold" Foreground="#1A1D23"/>
-                        </Grid>
-
-                        <Grid Grid.Row="2">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="8 Low Stock" FontSize="13" Foreground="#1A1D23"/>
-                            <Border Grid.Column="1" Margin="4,0" Style="{StaticResource BadgeGreen}">
-                                <TextBlock Text="-5" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                            </Border>
-                            <TextBlock Grid.Column="2" Text="$920" FontSize="13" FontWeight="SemiBold" Foreground="#1A1D23"/>
-                        </Grid>
-                    </Grid>
-                </Border>
-
+                
                 <!-- Low Stock / Out of Stock -->
-                <Border Grid.Column="1" Style="{StaticResource DashCard}" Background="White">
-                    <Grid RowSpacing="12">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <TextBlock Grid.Row="0" Text="Low Stock / Out of Stock" Style="{StaticResource CardTitle}"/>
-
-                        <ItemsControl Grid.Row="1" x:Name="LowStockList">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="local:DashboardStockItem">
-                                    <Grid Margin="0,0,0,8">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{x:Bind Name}" FontSize="13" Foreground="#1A1D23" VerticalAlignment="Center"/>
-                                        <TextBlock Grid.Column="1" Text="{x:Bind StockStatus}" FontSize="12"
-                                                   Foreground="{x:Bind StatusBrush}" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                        <Border Grid.Column="2" Style="{StaticResource BadgeGreen}" Visibility="{x:Bind BadgeVisible}">
-                                            <TextBlock Text="{x:Bind BadgeText}" FontSize="11" FontWeight="SemiBold" Foreground="#2E7D32"/>
-                                        </Border>
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </Grid>
-                </Border>
+               
             </Grid>
-
-
-
         </Grid>
     </ScrollViewer>
+
+
+
+        <TeachingTip x:Name="CardInfoTip"
+                     Title="Dashboard Metric"
+                     PreferredPlacement="Right"
+                     IsLightDismissEnabled="True">
+            <TeachingTip.Resources>
+                <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+            </TeachingTip.Resources>
+        </TeachingTip>
+    </Grid>
 </Page>
