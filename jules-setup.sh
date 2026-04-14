@@ -272,5 +272,5 @@ echo "  dotnet ef --version     # Check EF tools version"
 
 # Reset git working tree to prevent Jules verification failure
 echo "Resetting git working tree..."
-git reset --hard HEAD >/dev/null 2>&1 || true
-git clean -fd >/dev/null 2>&1 || true
+git -C /app reset --hard HEAD
+git -C /app clean -fd
