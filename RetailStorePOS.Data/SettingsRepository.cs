@@ -17,6 +17,11 @@ public sealed class SettingsRepository
         return GetSetting("currency_code", "USD");
     }
 
+    public string GetRegionCode()
+    {
+        return GetSetting("region_code", RegionInfo.CurrentRegion.TwoLetterISORegionName);
+    }
+
     public void SetCurrencyCode(string currencyCode)
     {
         if (string.IsNullOrWhiteSpace(currencyCode))
@@ -25,6 +30,16 @@ public sealed class SettingsRepository
         }
 
         SetSetting("currency_code", currencyCode.Trim().ToUpperInvariant());
+    }
+
+    public void SetRegionCode(string regionCode)
+    {
+        if (string.IsNullOrWhiteSpace(regionCode))
+        {
+            throw new ArgumentException("Region code is required.", nameof(regionCode));
+        }
+
+        SetSetting("region_code", regionCode.Trim().ToUpperInvariant());
     }
 
     public TaxSettings GetTaxSettings()

@@ -118,15 +118,15 @@ public sealed class ReportsViewModel : ObservableObject
         private set => SetProperty(ref _rangeLabel, value);
     }
 
-    public string TotalSalesText => _totalSales.ToString("C2", CultureInfo.CurrentCulture);
-    public string NetSalesText => _netSales.ToString("C2", CultureInfo.CurrentCulture);
-    public string TaxCollectedText => _taxCollected.ToString("C2", CultureInfo.CurrentCulture);
-    public string GrossProfitText => _grossProfit.ToString("C2", CultureInfo.CurrentCulture);
+    public string TotalSalesText => CurrencyDisplayHelper.FormatConfiguredAmount(_totalSales);
+    public string NetSalesText => CurrencyDisplayHelper.FormatConfiguredAmount(_netSales);
+    public string TaxCollectedText => CurrencyDisplayHelper.FormatConfiguredAmount(_taxCollected);
+    public string GrossProfitText => CurrencyDisplayHelper.FormatConfiguredAmount(_grossProfit);
     public string ProfitMarginText => _profitMargin.ToString("P1", CultureInfo.CurrentCulture);
-    public string CashTotalText => _cashTotal.ToString("C2", CultureInfo.CurrentCulture);
-    public string CardTotalText => _cardTotal.ToString("C2", CultureInfo.CurrentCulture);
+    public string CashTotalText => CurrencyDisplayHelper.FormatConfiguredAmount(_cashTotal);
+    public string CardTotalText => CurrencyDisplayHelper.FormatConfiguredAmount(_cardTotal);
 
-    public string AverageSaleText => _averageSale.ToString("C2", CultureInfo.CurrentCulture);
+    public string AverageSaleText => CurrencyDisplayHelper.FormatConfiguredAmount(_averageSale);
 
     public SolidColorBrush TodayPresetBackground => IsTodayPreset ? new SolidColorBrush(Microsoft.UI.Colors.LightGray) : new SolidColorBrush(Microsoft.UI.Colors.Transparent);
     public SolidColorBrush Last7PresetBackground => IsLast7DaysPreset ? new SolidColorBrush(Microsoft.UI.Colors.LightGray) : new SolidColorBrush(Microsoft.UI.Colors.Transparent);

@@ -18,9 +18,9 @@ public sealed class ReceiptLineItem
 
     public string QuantityText => Quantity.ToString("0.##");
 
-    public string PriceText => $"{CurrencyCode} {Price:0.00}";
+    public string PriceText => RetailStorePOS.WinUiLogin.Common.CurrencyDisplayHelper.FormatAmount(Price, CurrencyCode);
 
-    public string LineTotalText => $"{CurrencyCode} {LineTotal:0.00}";
+    public string LineTotalText => RetailStorePOS.WinUiLogin.Common.CurrencyDisplayHelper.FormatAmount(LineTotal, CurrencyCode);
 
     public string CurrencyCode
     {

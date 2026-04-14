@@ -460,7 +460,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         }
     }
 
-    public string DiscountAmountText => _isDiscountPercentage ? $"{_discountAmount:0.##}%" : $"{_currencyCode} {_discountAmount:0.00}";
+    public string DiscountAmountText => _isDiscountPercentage ? $"{_discountAmount:0.##}%" : CurrencyDisplayHelper.FormatAmount(_discountAmount, _currencyCode);
 
     public bool IsDiscountPercentage
     {
@@ -1374,7 +1374,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
     private string FormatMoney(decimal amount)
     {
-        return $"{CurrencyCode} {amount:0.00}";
+        return CurrencyDisplayHelper.FormatAmount(amount, CurrencyCode);
     }
 
     private void SyncTenderedInputText()

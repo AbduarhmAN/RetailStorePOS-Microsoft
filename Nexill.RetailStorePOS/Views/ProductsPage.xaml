@@ -259,13 +259,7 @@
                                             <TextBlock Text="{x:Bind SelectedProductSkuText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     </Grid>
-                                    <Grid ColumnSpacing="12">
-                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                        <StackPanel Spacing="4" Grid.ColumnSpan="{x:Bind ProductValueColumnSpan, Mode=OneWay}">
-                                            <TextBlock Text="Unit" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            <TextBlock Text="{x:Bind SelectedProductUnitText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                        </StackPanel>
-                                    <StackPanel Grid.Column="1" Spacing="8" HorizontalAlignment="Left" Visibility="{x:Bind PriceVisibility, Mode=OneWay}">
+                                    <StackPanel Spacing="8" Visibility="{x:Bind PriceVisibility, Mode=OneWay}">
                                             <StackPanel Spacing="4">
                                                 <TextBlock Text="Cost price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBlock Text="{x:Bind SelectedProductCostPriceText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
@@ -274,8 +268,7 @@
                                                 <TextBlock Text="Sell price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBlock Text="{x:Bind SelectedProductPriceText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                             </StackPanel>
-                                        </StackPanel>
-                                    </Grid>
+                                    </StackPanel>
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="4">
@@ -351,11 +344,11 @@
                                         <StackPanel Grid.Column="1" Spacing="8" Visibility="{x:Bind PriceVisibility, Mode=OneWay}">
                                             <StackPanel Spacing="6">
                                                 <TextBlock Text="Cost price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                <NumberBox Text="{x:Bind Draft.CostPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                                <TextBox Text="{x:Bind Draft.CostPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                             <StackPanel Spacing="6">
                                                 <TextBlock Text="Sell price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                <NumberBox Text="{x:Bind Draft.PriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                                <TextBox Text="{x:Bind Draft.PriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                         </StackPanel>
                                     </Grid>
@@ -364,11 +357,11 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
                                             <TextBlock Text="Store quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            <NumberBox Text="{x:Bind Draft.QuantityStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                            <TextBox Text="{x:Bind Draft.QuantityStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
                                             <TextBlock Text="Warehouse quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            <NumberBox Text="{x:Bind Draft.QuantityWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                            <TextBox Text="{x:Bind Draft.QuantityWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
 
@@ -376,11 +369,11 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
                                             <TextBlock Text="Store threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            <NumberBox Text="{x:Bind Draft.MinThresholdStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                            <TextBox Text="{x:Bind Draft.MinThresholdStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
                                             <TextBlock Text="Warehouse threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            <NumberBox Text="{x:Bind Draft.MinThresholdWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                            <TextBox Text="{x:Bind Draft.MinThresholdWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
 
@@ -452,11 +445,11 @@
                                         <StackPanel Grid.Column="1" Spacing="8">
                                             <StackPanel Spacing="6">
                                                 <TextBlock Text="Cost price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                <NumberBox Text="{x:Bind Draft.CostPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                                <TextBox Text="{x:Bind Draft.CostPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                             <StackPanel Spacing="6">
                                                 <TextBlock Text="Sell price *" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                                <NumberBox Text="{x:Bind Draft.PriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                                <TextBox Text="{x:Bind Draft.PriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                         </StackPanel>
                                     </Grid>
@@ -465,11 +458,23 @@
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
                                             <TextBlock Text="Store quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            <NumberBox Text="{x:Bind Draft.QuantityStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                            <TextBox Text="{x:Bind Draft.QuantityStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
                                             <TextBlock Text="Warehouse quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                            <NumberBox Text="{x:Bind Draft.QuantityWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" SpinButtonPlacementMode="Hidden" AcceptsExpression="False" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                            <TextBox Text="{x:Bind Draft.QuantityWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Grid ColumnSpacing="12">
+                                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="Store threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBox Text="{x:Bind Draft.MinThresholdStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Spacing="6">
+                                            <TextBlock Text="Warehouse threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBox Text="{x:Bind Draft.MinThresholdWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
 

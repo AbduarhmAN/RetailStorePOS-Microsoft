@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Drawing.Text;
-using System.Globalization;
 using System.Linq;
 using RetailStorePOS.Data.Models;
 
@@ -71,9 +70,9 @@ public sealed class XReportPrintHelper : IDisposable
         float titleSize = Math.Max(14f * scale, 9f);
         float normalSize = Math.Max(10f * scale, 7f);
 
-        using var fontNormal = new Font("Courier New", normalSize, FontStyle.Regular);
-        using var fontBold = new Font("Courier New", normalSize, FontStyle.Bold);
-        using var fontTitle = new Font("Courier New", titleSize, FontStyle.Bold);
+        using var fontNormal = new Font("Segoe UI", normalSize, FontStyle.Regular);
+        using var fontBold = new Font("Segoe UI", normalSize, FontStyle.Bold);
+        using var fontTitle = new Font("Segoe UI", titleSize, FontStyle.Bold);
 
         float lineHeight = g.MeasureString("X", fontNormal).Height + 2;
         float safeBottom = pageBottom - lineHeight * 2;
@@ -152,7 +151,7 @@ public sealed class XReportPrintHelper : IDisposable
         foreach (var sale in salesList)
         {
             yield return new(LineStyle.TwoColumn, sale.ReceiptNumber.ToString("D6"),
-                sale.Total.ToString("C2", CultureInfo.CurrentCulture));
+                CurrencyDisplayHelper.FormatConfiguredAmount(sale.Total));
 
             decimal saleGross = 0;
             foreach (var item in sale.Items)
@@ -179,9 +178,9 @@ public sealed class XReportPrintHelper : IDisposable
         yield return new(LineStyle.Empty);
         yield return new(LineStyle.Bold, "SUMMARY");
         yield return new(LineStyle.Separator);
-        yield return new(LineStyle.TwoColumn, "Total Gross Sales", totalGross.ToString("C2", CultureInfo.CurrentCulture));
-        yield return new(LineStyle.TwoColumn, "Total Net Sales", totalNet.ToString("C2", CultureInfo.CurrentCulture));
-        yield return new(LineStyle.TwoColumn, "Total Cash in Drawer", totalCash.ToString("C2", CultureInfo.CurrentCulture));
+        yield return new(LineStyle.TwoColumn, "Total Gross Sales", CurrencyDisplayHelper.FormatConfiguredAmount(totalGross));
+        yield return new(LineStyle.TwoColumn, "Total Net Sales", CurrencyDisplayHelper.FormatConfiguredAmount(totalNet));
+        yield return new(LineStyle.TwoColumn, "Total Cash in Drawer", CurrencyDisplayHelper.FormatConfiguredAmount(totalCash));
         yield return new(LineStyle.Separator);
         yield return new(LineStyle.Empty);
         yield return new(LineStyle.Centered, "End of Report");

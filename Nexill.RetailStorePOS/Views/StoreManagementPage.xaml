@@ -30,7 +30,7 @@
                     CornerRadius="3"
                     Content="Save" 
                     Style="{StaticResource AccentButtonStyle}" 
-                    Command="{x:Bind ViewModel.SaveStoreSettingsCommand}"/>
+                    Click="SaveStoreSettingsButton_Click"/>
         </Grid>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -44,30 +44,17 @@
                         
                         <StackPanel Spacing="4">
                             <TextBlock Text="Store Name"/>
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox Text="{x:Bind ViewModel.StoreName, Mode=TwoWay}" 
-                                         IsReadOnly="{x:Bind local:StoreManagementPage.InverseBool(ViewModel.IsStoreNameUnlocked), Mode=OneWay}" CornerRadius="3"/>
-                                <ToggleButton Grid.Column="1" Content="&#xE72E;" FontFamily="Segoe Fluent Icons" 
-                                              IsChecked="{x:Bind ViewModel.IsStoreNameUnlocked, Mode=TwoWay}" ToolTipService.ToolTip="Unlock field for editing" CornerRadius="2"/>
-                            </Grid>
+                            <TextBox Text="{x:Bind ViewModel.StoreName, Mode=TwoWay}"
+                                     CornerRadius="3"/>
                         </StackPanel>
 
                         <StackPanel Spacing="4">
                             <TextBlock Text="Store Address"/>
-                            <Grid ColumnSpacing="8">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox Text="{x:Bind ViewModel.StoreAddress, Mode=TwoWay}" MinHeight="80" AcceptsReturn="True" TextWrapping="Wrap" CornerRadius="3"
-                                         IsReadOnly="{x:Bind local:StoreManagementPage.InverseBool(ViewModel.IsStoreAddressUnlocked), Mode=OneWay}"/>
-                                <ToggleButton Grid.Column="1" Content="&#xE72E;" FontFamily="Segoe Fluent Icons" VerticalAlignment="Top" CornerRadius="2"
-                                              IsChecked="{x:Bind ViewModel.IsStoreAddressUnlocked, Mode=TwoWay}" ToolTipService.ToolTip="Unlock field for editing"/>
-                            </Grid>
+                            <TextBox Text="{x:Bind ViewModel.StoreAddress, Mode=TwoWay}"
+                                     MinHeight="80"
+                                     AcceptsReturn="True"
+                                     TextWrapping="Wrap"
+                                     CornerRadius="3"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -76,11 +63,37 @@
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
                     <StackPanel Spacing="16">
                         <TextBlock Text="Checkout Defaults" FontWeight="SemiBold" FontSize="16"/>
-                        
-                        <StackPanel Spacing="4">
-                            <TextBlock Text="Currency Code"/>
-                            <TextBox Text="{x:Bind ViewModel.CurrencyCode, Mode=TwoWay}" Width="120" HorizontalAlignment="Left" CornerRadius="3"/>
-                        </StackPanel>
+
+                        <Grid ColumnSpacing="12" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Region"/>
+                                <ComboBox ItemsSource="{x:Bind ViewModel.RegionOptions, Mode=OneWay}"
+                                          SelectedItem="{x:Bind ViewModel.SelectedRegionOption, Mode=TwoWay}"
+                                          DisplayMemberPath="DisplayName"
+                                          Width="280"
+                                          HorizontalAlignment="Left"
+                                          CornerRadius="3"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1" Spacing="4">
+                                <TextBlock Text="Currency"/>
+                                <ComboBox ItemsSource="{x:Bind ViewModel.CurrencyOptions, Mode=OneWay}"
+                                          SelectedItem="{x:Bind ViewModel.SelectedCurrencyOption, Mode=TwoWay}"
+                                          DisplayMemberPath="DisplayName"
+                                          MinWidth="320"
+                                          HorizontalAlignment="Stretch"
+                                          CornerRadius="3"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="{x:Bind ViewModel.CurrencySelectionPreviewText, Mode=OneWay}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 

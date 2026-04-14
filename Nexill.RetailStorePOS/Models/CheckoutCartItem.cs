@@ -92,11 +92,11 @@ public sealed class CheckoutCartItem : ObservableObject
 
     public string QuantityText => Quantity.ToString("0.##");
 
-    public string PriceText => $"{_currencyCode} {Price:0.00}";
+    public string PriceText => CurrencyDisplayHelper.FormatAmount(Price, _currencyCode);
 
-    public string OriginalPriceText => $"{_currencyCode} {OriginalPrice:0.00}";
+    public string OriginalPriceText => CurrencyDisplayHelper.FormatAmount(OriginalPrice, _currencyCode);
 
-    public string LineTotalText => $"{_currencyCode} {LineTotal:0.00}";
+    public string LineTotalText => CurrencyDisplayHelper.FormatAmount(LineTotal, _currencyCode);
 
     public string TaxSnapshotJson => BuildTaxSnapshotJson();
 
@@ -110,13 +110,16 @@ public sealed class CheckoutCartItem : ObservableObject
 
     public void UpdateCurrencyCode(string currencyCode)
     {
-        var normalized = string.IsNullOrWhiteSpace(currencyCode) ? "USD" : currencyCode.Trim().ToUpperInvariant();
-        if (_currencyCode == normalized)
+        var normalizedCurrencyCode = string.IsNullOrWhiteSpace(currencyCode)
+            ? "USD"
+            : currencyCode.Trim().ToUpperInvariant();
+
+        if (_currencyCode == normalizedCurrencyCode)
         {
             return;
         }
 
-        _currencyCode = normalized;
+        _currencyCode = normalizedCurrencyCode;
         OnPropertyChanged(nameof(PriceText));
         OnPropertyChanged(nameof(OriginalPriceText));
         OnPropertyChanged(nameof(LineTotalText));

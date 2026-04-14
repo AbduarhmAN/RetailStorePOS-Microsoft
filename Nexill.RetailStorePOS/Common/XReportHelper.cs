@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -12,8 +14,9 @@ namespace RetailStorePOS.WinUiLogin.Common;
 
 public static class XReportHelper
 {
-    private const int ReceiptWidth = 48; // chars per line — Courier 7pt on 80mm (227pt) page
-    private const string Separator = "------------------------------------------------";
+    private const float PdfPageWidthPoints = 227f;
+    private const int ImageWidthPixels = 1080;
+    private const int ImageMarginPixels = 48;
 
     public static string GetReportPdfPath(DateTime date)
     {
@@ -68,132 +71,166 @@ public static class XReportHelper
 
     private static byte[] BuildReportPdf(IEnumerable<Sale> sales, DateTime date, string storeName)
     {
-        var content = BuildReportContent(sales, date, storeName, out var visibleLineCount);
-        var streamBytes = Encoding.ASCII.GetBytes(content);
+        var lines = BuildReportLines(sales, date, storeName).ToList();
+        var imageBytes = RenderReportImage(lines, out var imageWidth, out var imageHeight);
+        return BuildImagePdf(imageBytes, imageWidth, imageHeight);
+    }
 
-        // Calculate page height from actual visible text lines, not PDF command count
-        var pageHeight = Math.Max(842, visibleLineCount * 12 + 50);
+    private static byte[] RenderReportImage(IReadOnlyList<ReportLine> lines, out int imageWidth, out int imageHeight)
+    {
+        imageWidth = ImageWidthPixels;
+        var contentWidth = imageWidth - (ImageMarginPixels * 2);
 
-        // Write raw bytes to a MemoryStream so every offset is physically exact
+        using var measureBitmap = new Bitmap(1, 1);
+        using var measureGraphics = Graphics.FromImage(measureBitmap);
+        measureGraphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+
+        using var titleFont = new Font("Segoe UI", 24f, FontStyle.Bold, GraphicsUnit.Pixel);
+        using var boldFont = new Font("Segoe UI", 17f, FontStyle.Bold, GraphicsUnit.Pixel);
+        using var normalFont = new Font("Segoe UI", 16f, FontStyle.Regular, GraphicsUnit.Pixel);
+
+        var normalLineHeight = measureGraphics.MeasureString("Ag", normalFont).Height + 8f;
+        var boldLineHeight = measureGraphics.MeasureString("Ag", boldFont).Height + 8f;
+        var titleLineHeight = measureGraphics.MeasureString("Ag", titleFont).Height + 12f;
+
+        var estimatedHeight = (int)Math.Ceiling((ImageMarginPixels * 2)
+            + lines.Sum(line => line.Style switch
+            {
+                LineStyle.Separator => 18f,
+                LineStyle.Empty => normalLineHeight * 0.7f,
+                LineStyle.TitleBold => titleLineHeight,
+                LineStyle.Bold => boldLineHeight,
+                _ => normalLineHeight
+            })
+            + 24f);
+
+        imageHeight = Math.Max(estimatedHeight, 400);
+
+        using var bitmap = new Bitmap(imageWidth, imageHeight);
+        using var graphics = Graphics.FromImage(bitmap);
+        graphics.Clear(Color.White);
+        graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+        graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+        float y = ImageMarginPixels;
+        float left = ImageMarginPixels;
+        float right = imageWidth - ImageMarginPixels;
+
+        foreach (var line in lines)
+        {
+            switch (line.Style)
+            {
+                case LineStyle.Separator:
+                    y += 4f;
+                    graphics.DrawLine(Pens.Black, left, y, right, y);
+                    y += 12f;
+                    break;
+
+                case LineStyle.TitleBold:
+                    DrawCentered(graphics, line.Text, titleFont, Brushes.Black, ref y, left, contentWidth);
+                    break;
+
+                case LineStyle.Bold:
+                    DrawLeft(graphics, line.Text, boldFont, Brushes.Black, ref y, left);
+                    break;
+
+                case LineStyle.Centered:
+                    DrawCentered(graphics, line.Text, normalFont, Brushes.Black, ref y, left, contentWidth);
+                    break;
+
+                case LineStyle.TwoColumn:
+                    DrawLeftRight(graphics, line.Text, line.RightText ?? string.Empty, normalFont, Brushes.Black, ref y, left, right);
+                    break;
+
+                case LineStyle.TwoColumnBold:
+                    DrawLeftRight(graphics, line.Text, line.RightText ?? string.Empty, boldFont, Brushes.Black, ref y, left, right);
+                    break;
+
+                case LineStyle.Empty:
+                    y += normalLineHeight * 0.7f;
+                    break;
+
+                default:
+                    DrawLeft(graphics, line.Text, normalFont, Brushes.Black, ref y, left);
+                    break;
+            }
+        }
+
+        using var imageStream = new MemoryStream();
+        bitmap.Save(imageStream, ImageFormat.Jpeg);
+        return imageStream.ToArray();
+    }
+
+    private static byte[] BuildImagePdf(byte[] jpegBytes, int imageWidth, int imageHeight)
+    {
+        var pageWidth = PdfPageWidthPoints;
+        var pageHeight = Math.Max(200f, pageWidth * imageHeight / imageWidth);
+        var imageDrawCommand = $"q\n{pageWidth.ToString(System.Globalization.CultureInfo.InvariantCulture)} 0 0 {pageHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)} 0 0 cm\n/Im1 Do\nQ\n";
+        var contentBytes = Encoding.ASCII.GetBytes(imageDrawCommand);
+
         using var ms = new MemoryStream();
 
-        void Write(string text)
+        static void WriteAscii(Stream stream, string text)
         {
             var bytes = Encoding.ASCII.GetBytes(text);
-            ms.Write(bytes, 0, bytes.Length);
+            stream.Write(bytes, 0, bytes.Length);
         }
 
-        // PDF Header
-        Write("%PDF-1.4\n");
-        Write("%\xe2\xe3\xcf\xd3\n");
+        WriteAscii(ms, "%PDF-1.4\n");
+        WriteAscii(ms, "%\xe2\xe3\xcf\xd3\n");
 
-        // Track byte offsets for xref table
-        var offsets = new long[6];
+        var offsets = new long[5];
 
-        // Object 1: Catalog
         offsets[0] = ms.Position;
-        Write("1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
+        WriteAscii(ms, "1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n");
 
-        // Object 2: Pages
         offsets[1] = ms.Position;
-        Write("2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
+        WriteAscii(ms, "2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n");
 
-        // Object 3: Page
         offsets[2] = ms.Position;
-        Write($"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 227 {pageHeight}] /Resources << /Font << /F1 4 0 R /F2 6 0 R >> >> /Contents 5 0 R >>\nendobj\n");
+        WriteAscii(ms, $"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 {pageWidth.ToString(System.Globalization.CultureInfo.InvariantCulture)} {pageHeight.ToString(System.Globalization.CultureInfo.InvariantCulture)}] /Resources << /XObject << /Im1 4 0 R >> >> /Contents 5 0 R >>\nendobj\n");
 
-        // Object 4: Font (Courier)
         offsets[3] = ms.Position;
-        Write("4 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>\nendobj\n");
+        WriteAscii(ms, $"4 0 obj\n<< /Type /XObject /Subtype /Image /Width {imageWidth} /Height {imageHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length {jpegBytes.Length} >>\nstream\n");
+        ms.Write(jpegBytes, 0, jpegBytes.Length);
+        WriteAscii(ms, "\nendstream\nendobj\n");
 
-        // Object 5: Content Stream (the actual report drawing commands)
         offsets[4] = ms.Position;
-        Write($"5 0 obj\n<< /Length {streamBytes.Length} >>\nstream\n");
-        ms.Write(streamBytes, 0, streamBytes.Length);
-        Write("endstream\nendobj\n");
+        WriteAscii(ms, $"5 0 obj\n<< /Length {contentBytes.Length} >>\nstream\n");
+        ms.Write(contentBytes, 0, contentBytes.Length);
+        WriteAscii(ms, "endstream\nendobj\n");
 
-        // Object 6: Font (Courier-Bold)
-        offsets[5] = ms.Position;
-        Write("6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>\nendobj\n");
-
-        // Cross-reference table
         var xrefOffset = ms.Position;
-        Write("xref\n");
-        Write("0 7\n");
-        Write("0000000000 65535 f \n");
+        WriteAscii(ms, "xref\n");
+        WriteAscii(ms, "0 6\n");
+        WriteAscii(ms, "0000000000 65535 f \n");
         foreach (var offset in offsets)
         {
-            Write($"{offset:0000000000} 00000 n \n");
+            WriteAscii(ms, $"{offset:0000000000} 00000 n \n");
         }
 
-        // Trailer
-        Write("trailer\n");
-        Write("<< /Size 7 /Root 1 0 R >>\n");
-        Write("startxref\n");
-        Write($"{xrefOffset}\n");
-        Write("%%EOF\n");
+        WriteAscii(ms, "trailer\n");
+        WriteAscii(ms, "<< /Size 6 /Root 1 0 R >>\n");
+        WriteAscii(ms, "startxref\n");
+        WriteAscii(ms, $"{xrefOffset}\n");
+        WriteAscii(ms, "%%EOF\n");
 
         return ms.ToArray();
     }
 
-    private static string BuildReportContent(IEnumerable<Sale> sales, DateTime date, string storeName, out int visibleLineCount)
-    {
-        var lines = BuildReportLines(sales, date, storeName).ToList();
-        visibleLineCount = lines.Count;
-        var content = new StringBuilder();
-
-        content.Append("BT\n");
-        content.Append("/F1 7 Tf\n");
-        content.Append("11 TL\n");
-        var startY = Math.Max(828, lines.Count * 12 + 20);
-        content.Append($"2 {startY} Td\n");
-
-        foreach (var line in lines)
-        {
-            if (line.StartsWith("##BOLD##", StringComparison.Ordinal))
-            {
-                content.Append("/F2 7 Tf\n");
-                content.Append('(');
-                content.Append(EscapePdfText(line[8..]));
-                content.Append(") Tj\n");
-                content.Append("T*\n");
-                content.Append("/F1 7 Tf\n");
-            }
-            else if (line.StartsWith("##BOLD10##", StringComparison.Ordinal))
-            {
-                content.Append("/F2 7 Tf\n");
-                content.Append('(');
-                content.Append(EscapePdfText(line[10..]));
-                content.Append(") Tj\n");
-                content.Append("T*\n");
-                content.Append("/F1 7 Tf\n");
-            }
-            else
-            {
-                content.Append('(');
-                content.Append(EscapePdfText(line));
-                content.Append(") Tj\n");
-                content.Append("T*\n");
-            }
-        }
-
-        content.Append("ET\n");
-        return content.ToString();
-    }
-
-    private static IEnumerable<string> BuildReportLines(IEnumerable<Sale> sales, DateTime date, string storeName)
+    private static IEnumerable<ReportLine> BuildReportLines(IEnumerable<Sale> sales, DateTime date, string storeName)
     {
         var salesList = sales.OrderBy(s => s.CreatedAt).ToList();
 
-        yield return Separator;
-        yield return "##BOLD10##" + CenterText(storeName);
-        yield return CenterText("X REPORT (DAILY READ)");
-        yield return CenterText($"Date: {date:MM/dd/yyyy}");
-        yield return Separator;
-        yield return string.Empty;
+        yield return new(LineStyle.Separator);
+        yield return new(LineStyle.TitleBold, storeName);
+        yield return new(LineStyle.Centered, "X REPORT (DAILY READ)");
+        yield return new(LineStyle.Centered, $"Date: {date:MM/dd/yyyy}");
+        yield return new(LineStyle.Separator);
+        yield return new(LineStyle.Empty);
 
-        yield return "##BOLD##" + FormatLine2Col("Receipt #", "Amount");
-        yield return Separator;
+        yield return new(LineStyle.TwoColumnBold, "Receipt #", "Amount");
+        yield return new(LineStyle.Separator);
 
         decimal totalGross = 0;
         decimal totalNet = 0;
@@ -204,7 +241,7 @@ public static class XReportHelper
 
         foreach (var sale in salesList)
         {
-            yield return FormatLine2Col(sale.ReceiptNumber.ToString("D6"), sale.Total.ToString("C2", CultureInfo.CurrentCulture));
+            yield return new(LineStyle.TwoColumn, sale.ReceiptNumber.ToString("D6"), CurrencyDisplayHelper.FormatConfiguredAmount(sale.Total));
 
             totalGross += sale.Total;
             totalNet += sale.Subtotal;
@@ -223,69 +260,48 @@ public static class XReportHelper
 
         if (!salesList.Any())
         {
-            yield return CenterText("NO TRANSACTIONS");
+            yield return new(LineStyle.Centered, "NO TRANSACTIONS");
         }
 
-        yield return Separator;
-        yield return string.Empty;
-        yield return "##BOLD10##" + "SUMMARY";
-        yield return Separator;
-        yield return FormatLine2Col("Transactions", transactionCount.ToString());
-        yield return FormatLine2Col("Total Gross Sales", totalGross.ToString("C2", CultureInfo.CurrentCulture));
-        yield return FormatLine2Col("Total Net Sales", totalNet.ToString("C2", CultureInfo.CurrentCulture));
-        yield return FormatLine2Col("Total Tax Collected", totalTax.ToString("C2", CultureInfo.CurrentCulture));
-        yield return Separator;
-        yield return FormatLine2Col("Cash in Drawer", totalCash.ToString("C2", CultureInfo.CurrentCulture));
-        yield return FormatLine2Col("Card Payments", totalCard.ToString("C2", CultureInfo.CurrentCulture));
-        yield return Separator;
-        yield return string.Empty;
-        yield return CenterText("End of Report");
+        yield return new(LineStyle.Separator);
+        yield return new(LineStyle.Empty);
+        yield return new(LineStyle.Bold, "SUMMARY");
+        yield return new(LineStyle.Separator);
+        yield return new(LineStyle.TwoColumn, "Transactions", transactionCount.ToString());
+        yield return new(LineStyle.TwoColumn, "Total Gross Sales", CurrencyDisplayHelper.FormatConfiguredAmount(totalGross));
+        yield return new(LineStyle.TwoColumn, "Total Net Sales", CurrencyDisplayHelper.FormatConfiguredAmount(totalNet));
+        yield return new(LineStyle.TwoColumn, "Total Tax Collected", CurrencyDisplayHelper.FormatConfiguredAmount(totalTax));
+        yield return new(LineStyle.Separator);
+        yield return new(LineStyle.TwoColumn, "Cash in Drawer", CurrencyDisplayHelper.FormatConfiguredAmount(totalCash));
+        yield return new(LineStyle.TwoColumn, "Card Payments", CurrencyDisplayHelper.FormatConfiguredAmount(totalCard));
+        yield return new(LineStyle.Separator);
+        yield return new(LineStyle.Empty);
+        yield return new(LineStyle.Centered, "End of Report");
     }
 
-    private static string CenterText(string text)
+    private static void DrawCentered(Graphics graphics, string text, Font font, Brush brush, ref float y, float left, float width)
     {
-        if (text.Length >= ReceiptWidth) return text;
-        var pad = (ReceiptWidth - text.Length) / 2;
-        return new string(' ', pad) + text;
+        var size = graphics.MeasureString(text, font, (int)width);
+        var x = left + ((width - size.Width) / 2f);
+        graphics.DrawString(text, font, brush, x, y);
+        y += size.Height + 4f;
     }
 
-    private static string FormatLine2Col(string left, string right)
+    private static void DrawLeft(Graphics graphics, string text, Font font, Brush brush, ref float y, float left)
     {
-        var gap = ReceiptWidth - left.Length - right.Length;
-        if (gap < 1) gap = 1;
-        return left + new string(' ', gap) + right;
+        graphics.DrawString(text, font, brush, left, y);
+        y += graphics.MeasureString(text, font).Height + 4f;
     }
 
-    private static string EscapePdfText(string value)
+    private static void DrawLeftRight(Graphics graphics, string leftText, string rightText, Font font, Brush brush, ref float y, float left, float right)
     {
-        if (string.IsNullOrEmpty(value))
-        {
-            return string.Empty;
-        }
-
-        var normalized = value.Normalize(NormalizationForm.FormKD);
-        var output = new StringBuilder(normalized.Length);
-
-        foreach (var ch in normalized)
-        {
-            if (ch is '(' or ')' or '\\')
-            {
-                output.Append('\\').Append(ch);
-            }
-            else if (ch >= 32 && ch <= 126)
-            {
-                output.Append(ch);
-            }
-            else if (char.IsWhiteSpace(ch))
-            {
-                output.Append(' ');
-            }
-            else
-            {
-                output.Append('?');
-            }
-        }
-
-        return output.ToString();
+        graphics.DrawString(leftText, font, brush, left, y);
+        var rightSize = graphics.MeasureString(rightText, font);
+        graphics.DrawString(rightText, font, brush, right - rightSize.Width, y);
+        y += Math.Max(graphics.MeasureString(leftText, font).Height, rightSize.Height) + 4f;
     }
+
+    private enum LineStyle { Normal, Separator, TitleBold, Bold, Centered, TwoColumn, TwoColumnBold, Empty }
+
+    private sealed record ReportLine(LineStyle Style, string Text = "", string? RightText = null);
 }

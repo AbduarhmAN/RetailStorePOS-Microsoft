@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using RetailStorePOS.Data.Models;
 using RetailStorePOS.WinUiLogin.Common;
 
@@ -11,8 +12,11 @@ public sealed class SettingsViewModel : ObservableObject
     private string _storeName = string.Empty;
     private string _storeAddress = string.Empty;
     private string _currencyCode = "USD";
+    private RegionOption? _selectedRegionOption;
+    private CurrencyOption? _selectedCurrencyOption;
     private bool _taxEnabled;
     private bool _isLoading;
+    private bool _isSynchronizingCurrencySelections;
     private decimal _taxRatePercent;
     private string _statusMessage = string.Empty;
 
@@ -21,10 +25,6 @@ public sealed class SettingsViewModel : ObservableObject
     private decimal _quickCash1 = 5m;
     private decimal _quickCash2 = 10m;
     private decimal _quickCash3 = 20m;
-
-    // Security locks for Store Details
-    private bool _isStoreNameUnlocked;
-    private bool _isStoreAddressUnlocked;
 
     // Navigation selections
     private bool _isStoreManagementSelected;
@@ -36,6 +36,7 @@ public sealed class SettingsViewModel : ObservableObject
         SaveCommand = new RelayCommand(SaveSettings, () => CanManageSettings);
         SaveStoreSettingsCommand = new RelayCommand(SaveSettings, () => CanManageSettings);
         ReloadCommand = new RelayCommand(LoadSettings);
+        BuildRegionAndCurrencyOptions();
 
         LoadSettings();
         LoadTaxData();
@@ -92,6 +93,8 @@ public sealed class SettingsViewModel : ObservableObject
     public ObservableCollection<TaxRule> TaxRules { get; } = new();
     public ObservableCollection<TaxGroup> TaxGroups { get; } = new();
     public ObservableCollection<TaxAuthority> TaxAuthorities { get; } = new();
+    public ObservableCollection<RegionOption> RegionOptions { get; } = new();
+    public ObservableCollection<CurrencyOption> CurrencyOptions { get; } = new();
 
     public System.Collections.Generic.IReadOnlyList<System.Collections.Generic.KeyValuePair<string, string>> RoundingStrategies { get; } = new System.Collections.Generic.List<System.Collections.Generic.KeyValuePair<string, string>>
     {
@@ -183,35 +186,84 @@ public sealed class SettingsViewModel : ObservableObject
         set => SetQuickCashAmount(ref _quickCash3, ConvertToQuickCashAmount(value), nameof(QuickCash3), nameof(QuickCash3Value));
     }
 
-    public bool IsStoreNameUnlocked
-    {
-        get => _isStoreNameUnlocked;
-        set
-        {
-            if (SetProperty(ref _isStoreNameUnlocked, value) && !value)
-            {
-                SaveSettings(); // Auto-save when re-locked
-            }
-        }
-    }
-
-    public bool IsStoreAddressUnlocked
-    {
-        get => _isStoreAddressUnlocked;
-        set
-        {
-            if (SetProperty(ref _isStoreAddressUnlocked, value) && !value)
-            {
-                SaveSettings(); // Auto-save when re-locked
-            }
-        }
-    }
-
     public string CurrencyCode
     {
         get => _currencyCode;
-        set { if (SetProperty(ref _currencyCode, value)) SaveSettings(); }
+        set
+        {
+            var normalized = NormalizeCurrencyCode(value);
+            if (SetProperty(ref _currencyCode, normalized))
+            {
+                SyncSelectedCurrencyFromCode(normalized);
+                OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
+                OnPropertyChanged(nameof(CurrencySelectionPreviewText));
+            }
+        }
     }
+
+    public RegionOption? SelectedRegionOption
+    {
+        get => _selectedRegionOption;
+        set
+        {
+            if (SetProperty(ref _selectedRegionOption, value))
+            {
+                if (!_isSynchronizingCurrencySelections && value is not null)
+                {
+                    ApplyRegionSelection(value);
+                }
+
+                OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
+                OnPropertyChanged(nameof(CurrencySelectionPreviewText));
+            }
+        }
+    }
+
+    public CurrencyOption? SelectedCurrencyOption
+    {
+        get => _selectedCurrencyOption;
+        set
+        {
+            if (SetProperty(ref _selectedCurrencyOption, value))
+            {
+                if (!_isSynchronizingCurrencySelections && value is not null)
+                {
+                    ApplyCurrencySelection(value);
+                }
+
+                OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
+                OnPropertyChanged(nameof(CurrencySelectionPreviewText));
+            }
+        }
+    }
+
+    public string CurrencySelectionPreviewText
+    {
+        get
+        {
+            if (SelectedRegionOption is null && SelectedCurrencyOption is null)
+            {
+                return "Region and currency selection preview unavailable.";
+            }
+
+            if (SelectedRegionOption is null)
+            {
+                return $"Active store currency: {ActiveCurrencyCodeDisplay}.";
+            }
+
+            var regionText = SelectedRegionOption.DisplayName;
+            var defaultCurrencyText = SelectedRegionOption.DefaultCurrencyDisplayName;
+
+            if (SelectedCurrencyOption is null)
+            {
+                return $"Default currency for {regionText}: {defaultCurrencyText}. Active store currency: {ActiveCurrencyCodeDisplay}.";
+            }
+
+            return $"Default currency for {regionText}: {defaultCurrencyText}. Active store currency: {SelectedCurrencyOption.DisplayName}.";
+        }
+    }
+
+    public string ActiveCurrencyCodeDisplay => SelectedCurrencyOption?.LocalizedCode ?? CurrencyCode;
 
     public bool TaxEnabled
     {
@@ -247,21 +299,13 @@ public sealed class SettingsViewModel : ObservableObject
         _isLoading = true;
         try
         {
-            StoreName = LoginRuntime.Settings.GetStoreName() ?? string.Empty;
-            StoreAddress = LoginRuntime.Settings.GetStoreAddress() ?? string.Empty;
-            CurrencyCode = LoginRuntime.Settings.GetCurrencyCode() ?? "USD";
-            var tax = LoginRuntime.Settings.GetTaxSettings();
-            TaxEnabled = tax.Enabled;
-            TaxRatePercent = tax.RatePercent;
+            LoadStoreManagementSettingsCore();
             
             _selectedRoundingStrategy = LoginRuntime.Settings.GetTaxRoundingStrategy();
             _selectedCashRoundingUnit = LoginRuntime.Settings.GetCashRoundingUnit();
             OnPropertyChanged(nameof(SelectedRoundingStrategy));
             OnPropertyChanged(nameof(SelectedCashRoundingUnit));
             
-            IsStoreNameUnlocked = false;
-            IsStoreAddressUnlocked = false;
-
             var prefs = await LoginRuntime.LocalPreferences.LoadPreferencesAsync();
 
             MainWindow.Current?.DispatcherQueue.TryEnqueue(() =>
@@ -379,15 +423,13 @@ public sealed class SettingsViewModel : ObservableObject
         {
             LoginRuntime.Settings.SetStoreName(StoreName ?? string.Empty);
             LoginRuntime.Settings.SetStoreAddress(StoreAddress ?? string.Empty);
+            LoginRuntime.Settings.SetRegionCode(SelectedRegionOption?.Code ?? RegionInfo.CurrentRegion.TwoLetterISORegionName);
             LoginRuntime.Settings.SetCurrencyCode(CurrencyCode);
             LoginRuntime.Settings.SetTaxSettings(new TaxSettings
             {
                 Enabled = TaxEnabled,
                 RatePercent = TaxRatePercent
             });
-
-            IsStoreNameUnlocked = false;
-            IsStoreAddressUnlocked = false;
 
             StatusMessage = $"Settings saved successfully at {DateTime.Now:t}";
         }
@@ -396,6 +438,20 @@ public sealed class SettingsViewModel : ObservableObject
             StatusMessage = "Failed to save settings.";
             LoginRuntime.ReportException(ex, "SettingsViewModel.SaveSettings");
         }
+    }
+
+    private void LoadStoreManagementSettingsCore()
+    {
+        StoreName = LoginRuntime.Settings.GetStoreName() ?? string.Empty;
+        StoreAddress = LoginRuntime.Settings.GetStoreAddress() ?? string.Empty;
+
+        var regionCode = NormalizeRegionCode(LoginRuntime.Settings.GetRegionCode());
+        var currencyCode = NormalizeCurrencyCode(LoginRuntime.Settings.GetCurrencyCode());
+        ApplyLoadedRegionAndCurrency(regionCode, currencyCode);
+
+        var tax = LoginRuntime.Settings.GetTaxSettings();
+        TaxEnabled = tax.Enabled;
+        TaxRatePercent = tax.RatePercent;
     }
 
     private void SetQuickCashAmount(ref decimal field, decimal value, string amountPropertyName, string valuePropertyName)
@@ -494,6 +550,283 @@ public sealed class SettingsViewModel : ObservableObject
         return Math.Round(value, 2, MidpointRounding.AwayFromZero);
     }
 
+    private void BuildRegionAndCurrencyOptions()
+    {
+        if (RegionOptions.Count > 0 || CurrencyOptions.Count > 0)
+        {
+            return;
+        }
+
+        var regionsByCode = new Dictionary<string, RegionOption>(StringComparer.OrdinalIgnoreCase);
+        foreach (var culture in CultureInfo.GetCultures(CultureTypes.SpecificCultures))
+        {
+            try
+            {
+                var region = new RegionInfo(culture.Name);
+                var regionCode = NormalizeRegionCode(region.TwoLetterISORegionName);
+                if (regionsByCode.ContainsKey(regionCode))
+                {
+                    continue;
+                }
+
+                regionsByCode[regionCode] = new RegionOption(
+                    regionCode,
+                    region.EnglishName,
+                    region.NativeName,
+                    NormalizeCurrencyCode(region.ISOCurrencySymbol),
+                    region.CurrencySymbol,
+                    region.CurrencyEnglishName,
+                    region.CurrencyNativeName);
+            }
+            catch (ArgumentException)
+            {
+            }
+        }
+
+        foreach (var region in regionsByCode.Values.OrderBy(item => item.EnglishName, StringComparer.CurrentCultureIgnoreCase))
+        {
+            RegionOptions.Add(region);
+        }
+
+        var currenciesByCode = new Dictionary<string, CurrencyOption>(StringComparer.OrdinalIgnoreCase);
+        foreach (var region in RegionOptions)
+        {
+            if (currenciesByCode.ContainsKey(region.DefaultCurrencyCode))
+            {
+                continue;
+            }
+
+            currenciesByCode[region.DefaultCurrencyCode] = new CurrencyOption(
+                region.DefaultCurrencyCode,
+                region.CurrencySymbol,
+                region.CurrencyEnglishName,
+                region.CurrencyNativeName);
+        }
+
+        foreach (var currency in currenciesByCode.Values.OrderBy(item => item.Code, StringComparer.OrdinalIgnoreCase))
+        {
+            CurrencyOptions.Add(currency);
+        }
+    }
+
+    public void RestoreStoreManagementDraft()
+    {
+        var wasLoading = _isLoading;
+        _isLoading = true;
+
+        try
+        {
+            LoadStoreManagementSettingsCore();
+            StatusMessage = "Store changes canceled. Restored last saved values.";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = "Unable to restore the last saved store values.";
+            LoginRuntime.ReportException(ex, "SettingsViewModel.RestoreStoreManagementDraft");
+        }
+        finally
+        {
+            _isLoading = wasLoading;
+        }
+    }
+
+    private void ApplyLoadedRegionAndCurrency(string? regionCode, string? currencyCode)
+    {
+        var fallbackRegionCode = NormalizeRegionCode(RegionInfo.CurrentRegion.TwoLetterISORegionName);
+        var resolvedRegion = FindRegionOption(regionCode)
+            ?? FindRegionOption(fallbackRegionCode)
+            ?? RegionOptions.FirstOrDefault();
+
+        var resolvedCurrencyCode = NormalizeCurrencyCode(currencyCode);
+        if (string.IsNullOrWhiteSpace(resolvedCurrencyCode))
+        {
+            resolvedCurrencyCode = resolvedRegion?.DefaultCurrencyCode ?? NormalizeCurrencyCode(RegionInfo.CurrentRegion.ISOCurrencySymbol);
+        }
+
+        var resolvedCurrency = FindCurrencyOption(resolvedCurrencyCode)
+            ?? (resolvedRegion is null ? null : FindCurrencyOption(resolvedRegion.DefaultCurrencyCode))
+            ?? CurrencyOptions.FirstOrDefault();
+
+        _isSynchronizingCurrencySelections = true;
+        try
+        {
+            _selectedRegionOption = resolvedRegion;
+            _selectedCurrencyOption = resolvedCurrency;
+            _currencyCode = resolvedCurrency?.Code ?? resolvedCurrencyCode ?? "USD";
+        }
+        finally
+        {
+            _isSynchronizingCurrencySelections = false;
+        }
+
+        OnPropertyChanged(nameof(SelectedRegionOption));
+        OnPropertyChanged(nameof(SelectedCurrencyOption));
+        OnPropertyChanged(nameof(CurrencyCode));
+        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
+        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
+    }
+
+    private void ApplyRegionSelection(RegionOption region)
+    {
+        var matchingCurrency = FindCurrencyOption(region.DefaultCurrencyCode);
+
+        _isSynchronizingCurrencySelections = true;
+        try
+        {
+            _selectedCurrencyOption = matchingCurrency;
+            _currencyCode = matchingCurrency?.Code ?? region.DefaultCurrencyCode;
+        }
+        finally
+        {
+            _isSynchronizingCurrencySelections = false;
+        }
+
+        OnPropertyChanged(nameof(SelectedCurrencyOption));
+        OnPropertyChanged(nameof(CurrencyCode));
+        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
+        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
+    }
+
+    private void ApplyCurrencySelection(CurrencyOption currency)
+    {
+        _isSynchronizingCurrencySelections = true;
+        try
+        {
+            _currencyCode = currency.Code;
+        }
+        finally
+        {
+            _isSynchronizingCurrencySelections = false;
+        }
+
+        OnPropertyChanged(nameof(CurrencyCode));
+        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
+        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
+    }
+
+    private void SyncSelectedCurrencyFromCode(string currencyCode)
+    {
+        if (_isSynchronizingCurrencySelections)
+        {
+            return;
+        }
+
+        var matchingCurrency = FindCurrencyOption(currencyCode);
+
+        _isSynchronizingCurrencySelections = true;
+        try
+        {
+            _selectedCurrencyOption = matchingCurrency;
+        }
+        finally
+        {
+            _isSynchronizingCurrencySelections = false;
+        }
+
+        OnPropertyChanged(nameof(SelectedCurrencyOption));
+        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
+        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
+    }
+
+    private RegionOption? FindRegionOption(string? regionCode)
+    {
+        var normalized = NormalizeRegionCode(regionCode);
+        return RegionOptions.FirstOrDefault(option => string.Equals(option.Code, normalized, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private CurrencyOption? FindCurrencyOption(string? currencyCode)
+    {
+        var normalized = NormalizeCurrencyCode(currencyCode);
+        return CurrencyOptions.FirstOrDefault(option => string.Equals(option.Code, normalized, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string NormalizeCurrencyCode(string? currencyCode)
+    {
+        return string.IsNullOrWhiteSpace(currencyCode)
+            ? string.Empty
+            : currencyCode.Trim().ToUpperInvariant();
+    }
+
+    private static string NormalizeRegionCode(string? regionCode)
+    {
+        return string.IsNullOrWhiteSpace(regionCode)
+            ? string.Empty
+            : regionCode.Trim().ToUpperInvariant();
+    }
+
+}
+
+public sealed class RegionOption
+{
+    public RegionOption(string code, string englishName, string nativeName, string defaultCurrencyCode, string currencySymbol, string currencyEnglishName, string currencyNativeName)
+    {
+        Code = code;
+        EnglishName = englishName;
+        NativeName = nativeName;
+        DefaultCurrencyCode = defaultCurrencyCode;
+        CurrencySymbol = currencySymbol;
+        CurrencyEnglishName = currencyEnglishName;
+        CurrencyNativeName = currencyNativeName;
+    }
+
+    public string Code { get; }
+    public string EnglishName { get; }
+    public string NativeName { get; }
+    public string DefaultCurrencyCode { get; }
+    public string CurrencySymbol { get; }
+    public string CurrencyEnglishName { get; }
+    public string CurrencyNativeName { get; }
+    public string DisplayName => string.Equals(EnglishName, NativeName, StringComparison.CurrentCulture)
+        ? EnglishName
+        : $"{EnglishName} ({NativeName})";
+
+    public string DefaultCurrencyDisplayName => CurrencyOption.BuildDisplayName(DefaultCurrencyCode, CurrencySymbol, CurrencyEnglishName, CurrencyNativeName);
+}
+
+public sealed class CurrencyOption
+{
+    public CurrencyOption(string code, string symbol, string englishName, string nativeName)
+    {
+        Code = code;
+        Symbol = symbol;
+        EnglishName = englishName;
+        NativeName = nativeName;
+    }
+
+    public string Code { get; }
+    public string Symbol { get; }
+    public string EnglishName { get; }
+    public string NativeName { get; }
+    public string LocalizedCode => ResolveLocalizedCode(Code, Symbol, NativeName);
+    public string DisplayName => BuildDisplayName(Code, Symbol, EnglishName, NativeName);
+
+    internal static string BuildDisplayName(string code, string symbol, string englishName, string nativeName)
+    {
+        var localizedCode = ResolveLocalizedCode(code, symbol, nativeName);
+        if (string.IsNullOrWhiteSpace(nativeName))
+        {
+            return string.IsNullOrWhiteSpace(englishName)
+                ? localizedCode
+                : $"{localizedCode} - {englishName}";
+        }
+
+        return $"{localizedCode} - {nativeName}";
+    }
+
+    private static string ResolveLocalizedCode(string code, string symbol, string nativeName)
+    {
+        if (!string.IsNullOrWhiteSpace(symbol) && !string.Equals(symbol, code, StringComparison.OrdinalIgnoreCase))
+        {
+            return symbol.Trim();
+        }
+
+        if (!string.IsNullOrWhiteSpace(nativeName))
+        {
+            return nativeName.Trim();
+        }
+
+        return code;
+    }
 }
 
 

@@ -146,7 +146,7 @@ public sealed partial class ReportsDashboardPage : Page
         var pacingYesterdaySales = yesterdaySales.Where(s => s.CreatedAt.TimeOfDay <= currentTime).ToList();
         var yesterdayPacingTotal = pacingYesterdaySales.Sum(s => s.Total);
 
-        SalesTodayText.Text = todayTotal.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+        SalesTodayText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayTotal);
 
         double salesDelta = 0;
         if (yesterdayPacingTotal > 0)
@@ -211,7 +211,7 @@ public sealed partial class ReportsDashboardPage : Page
         // ── NET PROFIT (Subtotal - COGS, tax excluded) ─────
         var todayProfit = todaySales.Sum(s => s.Subtotal - s.Items.Sum(i => i.ItemCost * i.Quantity));
 
-        ProfitTodayText.Text = todayProfit.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+        ProfitTodayText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayProfit);
 
         // Show profit margin % instead of redundant "vs yesterday" delta
         if (todayTotal > 0)
@@ -255,7 +255,7 @@ public sealed partial class ReportsDashboardPage : Page
 
         // ── AVG INVOICE VALUE + MEDIAN ───────────────────────
         var avgInvoice = todayInvoiceCount > 0 ? todayTotal / todayInvoiceCount : 0m;
-        AvgInvoiceText.Text = avgInvoice.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+        AvgInvoiceText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(avgInvoice);
 
         if (todayInvoiceCount > 0)
         {
@@ -264,11 +264,11 @@ public sealed partial class ReportsDashboardPage : Page
             var median = sortedTotals.Count % 2 == 0
                 ? (sortedTotals[mid - 1] + sortedTotals[mid]) / 2
                 : sortedTotals[mid];
-            MedianText.Text = median.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+            MedianText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(median);
         }
         else
         {
-            MedianText.Text = "$0.00";
+            MedianText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(0m);
         }
 
         // ── SALES VS TARGET ────────────────────────────────
@@ -278,13 +278,13 @@ public sealed partial class ReportsDashboardPage : Page
             ? (double)((todayTotal - dailyTargetAmount) / dailyTargetAmount) * 100.0
             : 0;
 
-        CurrentSalesText.Text = todayTotal.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+        CurrentSalesText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayTotal);
         SalesGapText.Text = $"{gapPct:+0.#;-0.#}% vs target";
         SalesGapText.Foreground = gapPct >= 0
             ? new SolidColorBrush(Color.FromArgb(255, 46, 125, 50))
             : new SolidColorBrush(Color.FromArgb(255, 198, 40, 40));
-        TargetText.Text = dailyTargetAmount.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
-        TargetSubText.Text = $"YESTERDAY: {yesterdayFullTotal:C2}  ·  TARGET: {dailyTargetAmount:C2}";
+        TargetText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(dailyTargetAmount);
+        TargetSubText.Text = $"YESTERDAY: {CurrencyDisplayHelper.FormatConfiguredAmount(yesterdayFullTotal)}  ·  TARGET: {CurrencyDisplayHelper.FormatConfiguredAmount(dailyTargetAmount)}";
 
         var todayBarPct = dailyTargetAmount > 0
             ? Math.Min(1.0, Math.Max(0, (double)(todayTotal / dailyTargetAmount)))
@@ -315,7 +315,7 @@ public sealed partial class ReportsDashboardPage : Page
                 ? 100.0
                 : 0.0;
 
-        DiscountsTotalText.Text = todayDiscountAmount.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+        DiscountsTotalText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayDiscountAmount);
         DiscountsDeltaText.Text = discountsDeltaPct == 0
             ? "0%"
             : $"{discountsDeltaPct:+0.#;-0.#}%";
@@ -387,7 +387,7 @@ public sealed partial class ReportsDashboardPage : Page
                 ? topProducts.Select(item => new DashboardProductItem
                 {
                     Name = item.Name,
-                    Revenue = item.Revenue.ToString("C2", System.Globalization.CultureInfo.CurrentCulture),
+                    Revenue = CurrencyDisplayHelper.FormatConfiguredAmount(item.Revenue),
                     Pct = topProductsTotalRevenue > 0
                         ? Math.Min(100, Math.Max(0, (double)(item.Revenue / topProductsTotalRevenue) * 100.0))
                         : 0
@@ -397,7 +397,7 @@ public sealed partial class ReportsDashboardPage : Page
                     new DashboardProductItem
                     {
                         Name = "No products sold today",
-                        Revenue = 0m.ToString("C2", System.Globalization.CultureInfo.CurrentCulture),
+                        Revenue = CurrencyDisplayHelper.FormatConfiguredAmount(0m),
                         Pct = 0
                     }
                 });

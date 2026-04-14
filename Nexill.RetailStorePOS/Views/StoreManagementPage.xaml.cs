@@ -27,7 +27,36 @@ public sealed partial class StoreManagementPage : Page
         }
     }
 
-    public static bool InverseBool(bool val) => !val;
+    private async void SaveStoreSettingsButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (XamlRoot is null || !ViewModel.CanManageSettings)
+        {
+            return;
+        }
+
+        var confirm = new ContentDialog
+        {
+            Title = "Save store changes",
+            Content = "Save the current store management changes? If you cancel, the page will restore the last saved values.",
+            PrimaryButtonText = "Save",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot
+        };
+
+        if (await confirm.ShowAsync() == ContentDialogResult.Primary)
+        {
+            if (ViewModel.SaveStoreSettingsCommand.CanExecute(null))
+            {
+                ViewModel.SaveStoreSettingsCommand.Execute(null);
+            }
+
+            return;
+        }
+
+        ViewModel.RestoreStoreManagementDraft();
+        Bindings.Update();
+    }
 
     private async void ResetAppDataButton_Click(object sender, RoutedEventArgs e)
     {

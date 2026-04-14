@@ -149,7 +149,10 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     }
 
     public bool CanSaveSelectedProduct => HasSelection && IsEditingSelectedProduct && HasPendingChanges() && IsDraftValid();
-    public bool CanSaveNewProduct => IsAddingProduct && !string.IsNullOrWhiteSpace(Draft.Name) && Draft.TryGetPrice(out _);
+    public bool CanSaveNewProduct => IsAddingProduct
+        && !string.IsNullOrWhiteSpace(Draft.Name)
+        && Draft.TryGetPrice(out var price)
+        && price >= 0;
     public bool CanExecuteSelectedProductAction => IsAddingProduct
         ? CanSaveNewProduct
         : (HasSelection && !IsEditingSelectedProduct) || CanSaveSelectedProduct;
@@ -227,10 +230,10 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     public string SelectedProductUnitText => FormatText(SelectedProduct?.Product.Unit);
     public string SelectedProductPriceText => SelectedProduct is null
         ? "—"
-        : SelectedProduct.Product.Price.ToString("C2");
+        : ProductPriceFormatter.Format(SelectedProduct.Product.Price);
     public string SelectedProductCostPriceText => SelectedProduct is null
         ? "—"
-        : SelectedProduct.Product.CostPrice.ToString("C2");
+        : ProductPriceFormatter.Format(SelectedProduct.Product.CostPrice);
     public string SelectedProductTaxText 
     {
         get 
@@ -271,19 +274,19 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
     public string SelectedProductStoreQuantityText => SelectedProduct is null
         ? "—"
-        : SelectedProduct.Product.QuantityStore.ToString("N2");
+        : FormatNumberWithUnit(SelectedProduct.Product.QuantityStore, SelectedProduct.Product.Unit);
     public string SelectedProductWarehouseQuantityText => SelectedProduct is null
         ? "—"
-        : SelectedProduct.Product.QuantityWarehouse.ToString("N2");
+        : FormatNumberWithUnit(SelectedProduct.Product.QuantityWarehouse, SelectedProduct.Product.Unit);
     public string SelectedProductTotalQuantityText => SelectedProduct is null
         ? "—"
-        : SelectedProduct.Product.TotalQuantity.ToString("N2");
+        : ProductPriceFormatter.FormatNumber(SelectedProduct.Product.TotalQuantity);
     public string SelectedProductStoreThresholdText => SelectedProduct is null
         ? "—"
-        : SelectedProduct.Product.MinThresholdStore.ToString("N2");
+        : FormatNumberWithUnit(SelectedProduct.Product.MinThresholdStore, SelectedProduct.Product.Unit);
     public string SelectedProductWarehouseThresholdText => SelectedProduct is null
         ? "—"
-        : SelectedProduct.Product.MinThresholdWarehouse.ToString("N2");
+        : FormatNumberWithUnit(SelectedProduct.Product.MinThresholdWarehouse, SelectedProduct.Product.Unit);
     public string SelectedProductPurchasedAtText => SelectedProduct is null
         ? "—"
         : FormatDate(SelectedProduct.Product.PurchasedAt);
@@ -1180,12 +1183,20 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
     private static string FormatDate(DateTime? value)
     {
-        return value.HasValue ? value.Value.ToLocalTime().ToString("d", CultureInfo.CurrentCulture) : "—";
+        return value.HasValue ? ProductPriceFormatter.FormatDate(value.Value.ToLocalTime()) : "—";
     }
 
     private static string FormatDateTime(DateTime? value)
     {
-        return value.HasValue ? value.Value.ToLocalTime().ToString("g", CultureInfo.CurrentCulture) : "—";
+        return value.HasValue ? ProductPriceFormatter.FormatDateTime(value.Value.ToLocalTime()) : "—";
+    }
+
+    private static string FormatNumberWithUnit(decimal value, string? unit)
+    {
+        var formattedValue = ProductPriceFormatter.FormatNumber(value);
+        return string.IsNullOrWhiteSpace(unit)
+            ? formattedValue
+            : $"{formattedValue} {unit.Trim()}";
     }
 
     private static string BuildInventoryAlertText(Product product)
@@ -1373,12 +1384,29 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
     private string _quantityWarehouseText = string.Empty;
     private string _minThresholdStoreText = "5";
     private string _minThresholdWarehouseText = "10";
+    private decimal _priceValue;
+    private decimal _costPriceValue;
+    private decimal _quantityStoreValue;
+    private decimal _quantityWarehouseValue;
+    private decimal _minThresholdStoreValue;
+    private decimal _minThresholdWarehouseValue;
+    private bool _isPriceValid;
+    private bool _isCostPriceValid;
+    private bool _isQuantityStoreValid;
+    private bool _isQuantityWarehouseValid;
+    private bool _isMinThresholdStoreValid;
+    private bool _isMinThresholdWarehouseValid;
     private DateTimeOffset _purchasedAtDate = DateTimeOffset.Now;
     private DateTimeOffset _initialPurchasedAtDate = DateTimeOffset.Now;
     private long _taxCategoryId = 1;
     private long _taxGroupId = 1;
 
     public event PropertyChangedEventHandler? PropertyChanged;
+
+    public ProductEditDraft()
+    {
+        RefreshNumericState();
+    }
 
     public string Name
     {
@@ -1407,37 +1435,37 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
     public string PriceText
     {
         get => _priceText;
-        set => SetProperty(ref _priceText, NormalizeDigits(value));
+        set => SetNumericText(ref _priceText, value, ApplyPriceText);
     }
 
     public string CostPriceText
     {
         get => _costPriceText;
-        set => SetProperty(ref _costPriceText, NormalizeDigits(value));
+        set => SetNumericText(ref _costPriceText, value, ApplyCostPriceText);
     }
 
     public string QuantityStoreText
     {
         get => _quantityStoreText;
-        set => SetProperty(ref _quantityStoreText, NormalizeDigits(value));
+        set => SetNumericText(ref _quantityStoreText, value, ApplyStoreQuantityText);
     }
 
     public string QuantityWarehouseText
     {
         get => _quantityWarehouseText;
-        set => SetProperty(ref _quantityWarehouseText, NormalizeDigits(value));
+        set => SetNumericText(ref _quantityWarehouseText, value, ApplyWarehouseQuantityText);
     }
 
     public string MinThresholdStoreText
     {
         get => _minThresholdStoreText;
-        set => SetProperty(ref _minThresholdStoreText, NormalizeDigits(value));
+        set => SetNumericText(ref _minThresholdStoreText, value, ApplyStoreThresholdText);
     }
 
     public string MinThresholdWarehouseText
     {
         get => _minThresholdWarehouseText;
-        set => SetProperty(ref _minThresholdWarehouseText, NormalizeDigits(value));
+        set => SetNumericText(ref _minThresholdWarehouseText, value, ApplyWarehouseThresholdText);
     }
 
     public DateTimeOffset PurchasedAtDate
@@ -1524,32 +1552,37 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
 
     public bool TryGetStoreQuantity(out decimal quantity)
     {
-        return TryParseLocalizedDecimal(QuantityStoreText, out quantity);
+        quantity = _quantityStoreValue;
+        return _isQuantityStoreValid;
     }
 
     public bool TryGetWarehouseQuantity(out decimal quantity)
     {
-        return TryParseLocalizedDecimal(QuantityWarehouseText, out quantity);
+        quantity = _quantityWarehouseValue;
+        return _isQuantityWarehouseValid;
     }
 
     public bool TryGetStoreThreshold(out decimal threshold)
     {
-        return TryParseLocalizedDecimal(MinThresholdStoreText, out threshold);
+        threshold = _minThresholdStoreValue;
+        return _isMinThresholdStoreValid;
     }
 
     public bool TryGetWarehouseThreshold(out decimal threshold)
     {
-        return TryParseLocalizedDecimal(MinThresholdWarehouseText, out threshold);
+        threshold = _minThresholdWarehouseValue;
+        return _isMinThresholdWarehouseValid;
     }
 
     public bool TryGetPrice(out decimal price)
     {
-        return TryParseLocalizedDecimal(PriceText, out price);
+        price = _priceValue;
+        return _isPriceValid;
     }
 
     public string GetTraceSummary()
     {
-        return $"name='{Name}', barcode='{Barcode}', sku='{Sku}', unit='{Unit}', price='{PriceText}', cost='{CostPriceText}', qtyStore='{QuantityStoreText}', qtyWarehouse='{QuantityWarehouseText}', minStore='{MinThresholdStoreText}', minWarehouse='{MinThresholdWarehouseText}', purchasedAt='{PurchasedAtDate:O}', initialPurchasedAt='{InitialPurchasedAtDate:O}', taxCategoryId={TaxCategoryId}";
+        return $"name='{Name}', barcode='{Barcode}', sku='{Sku}', unit='{Unit}', price='{PriceText}' valid={_isPriceValid} parsed={_priceValue}, cost='{CostPriceText}' valid={_isCostPriceValid} parsed={_costPriceValue}, qtyStore='{QuantityStoreText}' valid={_isQuantityStoreValid} parsed={_quantityStoreValue}, qtyWarehouse='{QuantityWarehouseText}' valid={_isQuantityWarehouseValid} parsed={_quantityWarehouseValue}, minStore='{MinThresholdStoreText}' valid={_isMinThresholdStoreValid} parsed={_minThresholdStoreValue}, minWarehouse='{MinThresholdWarehouseText}' valid={_isMinThresholdWarehouseValid} parsed={_minThresholdWarehouseValue}, purchasedAt='{PurchasedAtDate:O}', initialPurchasedAt='{InitialPurchasedAtDate:O}', taxCategoryId={TaxCategoryId}";
     }
 
     private void TraceDraftState(string stage)
@@ -1559,35 +1592,81 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
 
     public bool TryGetCostPrice(out decimal price)
     {
-        return TryParseLocalizedDecimal(CostPriceText, out price);
+        price = _costPriceValue;
+        return _isCostPriceValid;
     }
 
-    private static string NormalizeDigits(string? text)
+    private void RefreshNumericState()
     {
-        if (string.IsNullOrEmpty(text)) return string.Empty;
-        var sb = new System.Text.StringBuilder(text.Length);
-        foreach (var c in text)
+        ApplyPriceText(_priceText);
+        ApplyCostPriceText(_costPriceText);
+        ApplyStoreQuantityText(_quantityStoreText);
+        ApplyWarehouseQuantityText(_quantityWarehouseText);
+        ApplyStoreThresholdText(_minThresholdStoreText);
+        ApplyWarehouseThresholdText(_minThresholdWarehouseText);
+    }
+
+    private void ApplyPriceText(string? text)
+    {
+        ApplyParsedDecimal(text, ref _priceValue, ref _isPriceValid);
+    }
+
+    private void ApplyCostPriceText(string? text)
+    {
+        ApplyParsedDecimal(text, ref _costPriceValue, ref _isCostPriceValid);
+    }
+
+    private void ApplyStoreQuantityText(string? text)
+    {
+        ApplyParsedDecimal(text, ref _quantityStoreValue, ref _isQuantityStoreValid);
+    }
+
+    private void ApplyWarehouseQuantityText(string? text)
+    {
+        ApplyParsedDecimal(text, ref _quantityWarehouseValue, ref _isQuantityWarehouseValid);
+    }
+
+    private void ApplyStoreThresholdText(string? text)
+    {
+        ApplyParsedDecimal(text, ref _minThresholdStoreValue, ref _isMinThresholdStoreValid);
+    }
+
+    private void ApplyWarehouseThresholdText(string? text)
+    {
+        ApplyParsedDecimal(text, ref _minThresholdWarehouseValue, ref _isMinThresholdWarehouseValid);
+    }
+
+    private static void ApplyParsedDecimal(string? text, ref decimal parsedValue, ref bool isValid)
+    {
+        if (string.IsNullOrWhiteSpace(text))
         {
-            var d = char.GetNumericValue(c);
-            if (d >= 0 && d <= 9)
-            {
-                sb.Append((char)('0' + (int)d));
-            }
-            else if (c == '.' || c == ',')
-            {
-                sb.Append(c);
-            }
-            else if (c == '\u066B')
-            {
-                sb.Append('.');
-            }
+            parsedValue = 0m;
+            isValid = false;
+            return;
         }
-        return sb.ToString();
+
+        if (NumericInputNormalization.TryParseDecimal(text, out var value))
+        {
+            parsedValue = value;
+            isValid = true;
+            return;
+        }
+
+        parsedValue = 0m;
+        isValid = false;
     }
 
-    private static bool TryParseLocalizedDecimal(string? text, out decimal value)
+    private void SetNumericText(ref string field, string? value, Action<string?> applyParsedValue, [CallerMemberName] string? propertyName = null)
     {
-        return NumericInputNormalization.TryParseDecimal(text, out value);
+        var nextValue = value ?? string.Empty;
+        var changed = !string.Equals(field, nextValue, StringComparison.Ordinal);
+        field = nextValue;
+        applyParsedValue(nextValue);
+
+        if (changed)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     private bool SetProperty<T>(ref T field, T value, [CallerMemberName] string? propertyName = null)

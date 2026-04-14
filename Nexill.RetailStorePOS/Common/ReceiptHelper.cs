@@ -223,7 +223,7 @@ public static class ReceiptHelper
         yield return FormatLine2Col("Subtotal", FormatCurrency(receipt.Subtotal, currencyCode));
         yield return FormatLine2Col("Tax", FormatCurrency(receipt.Tax, currencyCode));
         yield return string.Empty;
-        yield return "##BOLD10##" + FormatLine2Col($"Total {currencyCode}", FormatCurrency(receipt.Total, currencyCode));
+        yield return "##BOLD10##" + FormatLine2Col($"Total {CurrencyDisplayHelper.ResolveDisplayCode(currencyCode)}", FormatCurrency(receipt.Total, currencyCode));
         yield return string.Empty;
         yield return Separator;
         yield return FormatLine2Col("Tendered", FormatCurrency(receipt.Tendered, currencyCode));
@@ -236,7 +236,7 @@ public static class ReceiptHelper
     }
 
     private static string FormatCurrency(decimal amount, string currencyCode) =>
-        $"{currencyCode} {amount:0.00}";
+        CurrencyDisplayHelper.FormatAmount(amount, currencyCode);
 
     private static string CenterText(string text)
     {

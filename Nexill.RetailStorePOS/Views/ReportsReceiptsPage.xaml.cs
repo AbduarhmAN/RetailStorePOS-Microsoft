@@ -24,7 +24,7 @@ public sealed partial class ReportsReceiptsPage : Page
 
     public static string FormatDate(DateTime date) => date.ToString("MMM d, yyyy");
     public static string FormatTime(DateTime date) => date.ToString("hh:mm tt");
-    public static string FormatCurrency(decimal amount) => amount.ToString("C2", System.Globalization.CultureInfo.CurrentCulture);
+    public static string FormatCurrency(decimal amount) => CurrencyDisplayHelper.FormatConfiguredAmount(amount);
 
     private string? _latestXReportPdfPath;
 

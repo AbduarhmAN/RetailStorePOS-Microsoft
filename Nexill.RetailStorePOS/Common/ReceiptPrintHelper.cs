@@ -176,7 +176,7 @@ public sealed class ReceiptPrintHelper : IDisposable
             DrawLeftRight(g, ref y, "Tax", FormatMoney(_receipt.Tax, _currencyCode), fontNormal, left, right);
 
             y += lineHeight / 2f;
-            DrawLeftRight(g, ref y, "Total " + (_currencyCode ?? ""), FormatMoney(_receipt.Total, _currencyCode), fontBigBold, left, right);
+            DrawLeftRight(g, ref y, "Total " + CurrencyDisplayHelper.ResolveDisplayCode(_currencyCode), FormatMoney(_receipt.Total, _currencyCode), fontBigBold, left, right);
             y += lineHeight / 2f;
 
             DrawLine(g, ref y, left, right);
@@ -271,7 +271,7 @@ public sealed class ReceiptPrintHelper : IDisposable
 
     private static string FormatMoney(decimal amount, string? currencyCode)
     {
-        return $"{currencyCode} {amount:0.00}";
+        return CurrencyDisplayHelper.FormatAmount(amount, currencyCode);
     }
 
     private static string Truncate(string value, int maxLength)
