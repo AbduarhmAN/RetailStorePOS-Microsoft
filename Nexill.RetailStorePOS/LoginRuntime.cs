@@ -1,3 +1,4 @@
+using System.Reflection;
 using RetailStorePOS.App.Services;
 using RetailStorePOS.Data;
 using RetailStorePOS.Data.Repositories;
@@ -48,10 +49,13 @@ public static class LoginRuntime
         LocalPreferences = new LocalPreferencesService();
 
         // Use the same fallback URL logic just in case it hasn't seeded, but usually the installer does it
-        SecureStorageService.SeedIfNeeded(
-            "https://avuzwbmiiavbuaxmnitp.supabase.co",
-            "sb_publishable_A7KJ9QwfYBS6fkVqES9g7w_gtubrVNX"
-        );
+        var supabaseUrl = GetAssemblyMetadata("RetailStorePOSSupabaseUrl");
+        var supabaseKey = GetAssemblyMetadata("RetailStorePOSSupabaseKey");
+
+        if (!string.IsNullOrWhiteSpace(supabaseUrl) && !string.IsNullOrWhiteSpace(supabaseKey))
+        {
+            SecureStorageService.SeedIfNeeded(supabaseUrl, supabaseKey);
+        }
 
         Telemetry = new TelemetryService(LocalPreferences, ConnectionFactory);
         try
@@ -95,6 +99,13 @@ public static class LoginRuntime
     {
         ProductSearch.RefreshIndex();
         ProductsUpdated?.Invoke(null, EventArgs.Empty);
+    }
+
+    private static string? GetAssemblyMetadata(string key)
+    {
+        return typeof(LoginRuntime).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .FirstOrDefault(attr => attr.Key == key)?.Value;
     }
 
     public static async Task ResetFreshStartAsync()
