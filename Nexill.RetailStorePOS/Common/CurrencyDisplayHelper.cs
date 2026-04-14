@@ -17,6 +17,7 @@ internal static class CurrencyDisplayHelper
         }
         catch
         {
+            // Fallback to USD if settings retrieval fails.
             return "USD";
         }
     }
@@ -57,6 +58,7 @@ internal static class CurrencyDisplayHelper
             }
             catch (ArgumentException)
             {
+                // Some cultures might not have an associated RegionInfo; skip them.
             }
         }
 
@@ -104,6 +106,7 @@ internal static class CurrencyDisplayHelper
         }
         catch
         {
+            // Return null if region code retrieval fails.
             return null;
         }
     }
@@ -116,6 +119,7 @@ internal static class CurrencyDisplayHelper
         }
         catch (ArgumentException)
         {
+            // Invalid region code; return null.
             return null;
         }
     }
@@ -153,11 +157,15 @@ internal static class CurrencyDisplayHelper
                 return CultureInfo.CreateSpecificCulture(languageTag);
             }
         }
-        catch (CultureNotFoundException)
+        catch (CultureNotFoundException ex)
         {
+            // The preferred language tag is not a valid culture; fall back to CurrentCulture.
+            StartupTrace.Write($"CurrencyDisplayHelper.ResolveDisplayCulture: CultureNotFoundException: {ex.Message}");
         }
-        catch (ArgumentException)
+        catch (ArgumentException ex)
         {
+            // The preferred language tag is invalid; fall back to CurrentCulture.
+            StartupTrace.Write($"CurrencyDisplayHelper.ResolveDisplayCulture: ArgumentException: {ex.Message}");
         }
 
         return CultureInfo.CurrentCulture;
