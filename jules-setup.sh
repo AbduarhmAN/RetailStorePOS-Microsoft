@@ -42,12 +42,12 @@ setup_project_deps() {
             if find . -maxdepth 2 -name "*.sln" | head -1 | read -r sln_file; then
                 echo "Found solution file: $sln_file"
                 echo "Restoring solution packages..."
-                dotnet restore "$sln_file" --verbosity quiet
+                dotnet restore "$sln_file" -p:EnableWindowsTargeting=true --verbosity quiet
                 echo "✅ Solution packages restored"
             elif find . -maxdepth 2 -name "*.csproj" -o -name "*.fsproj" -o -name "*.vbproj" | head -1 | read -r proj_file; then
                 echo "Found project file: $proj_file"
                 echo "Restoring project packages..."
-                dotnet restore "$proj_file" --verbosity quiet
+                dotnet restore "$proj_file" -p:EnableWindowsTargeting=true --verbosity quiet
                 echo "✅ Project packages restored"
             else
                 echo "ℹ️ No .NET project or solution files found"
@@ -269,3 +269,8 @@ echo "Quick start commands:"
 echo "  dotnet --version        # Check .NET version"
 echo "  dotnet new --list       # List project templates"
 echo "  dotnet ef --version     # Check EF tools version"
+
+# Reset git working tree to prevent Jules verification failure
+echo "Resetting git working tree..."
+git reset --hard HEAD >/dev/null 2>&1 || true
+git clean -fd >/dev/null 2>&1 || true
