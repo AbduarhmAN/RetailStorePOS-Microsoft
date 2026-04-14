@@ -91,9 +91,6 @@
                             </StackPanel>
                         </Grid>
 
-                        <TextBlock Text="{x:Bind ViewModel.CurrencySelectionPreviewText, Mode=OneWay}"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                   TextWrapping="Wrap"/>
                     </StackPanel>
                 </Border>
 

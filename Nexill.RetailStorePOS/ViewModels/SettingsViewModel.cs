@@ -195,8 +195,6 @@ public sealed class SettingsViewModel : ObservableObject
             if (SetProperty(ref _currencyCode, normalized))
             {
                 SyncSelectedCurrencyFromCode(normalized);
-                OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
-                OnPropertyChanged(nameof(CurrencySelectionPreviewText));
             }
         }
     }
@@ -212,9 +210,6 @@ public sealed class SettingsViewModel : ObservableObject
                 {
                     ApplyRegionSelection(value);
                 }
-
-                OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
-                OnPropertyChanged(nameof(CurrencySelectionPreviewText));
             }
         }
     }
@@ -230,40 +225,9 @@ public sealed class SettingsViewModel : ObservableObject
                 {
                     ApplyCurrencySelection(value);
                 }
-
-                OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
-                OnPropertyChanged(nameof(CurrencySelectionPreviewText));
             }
         }
     }
-
-    public string CurrencySelectionPreviewText
-    {
-        get
-        {
-            if (SelectedRegionOption is null && SelectedCurrencyOption is null)
-            {
-                return "Region and currency selection preview unavailable.";
-            }
-
-            if (SelectedRegionOption is null)
-            {
-                return $"Active store currency: {ActiveCurrencyCodeDisplay}.";
-            }
-
-            var regionText = SelectedRegionOption.DisplayName;
-            var defaultCurrencyText = SelectedRegionOption.DefaultCurrencyDisplayName;
-
-            if (SelectedCurrencyOption is null)
-            {
-                return $"Default currency for {regionText}: {defaultCurrencyText}. Active store currency: {ActiveCurrencyCodeDisplay}.";
-            }
-
-            return $"Default currency for {regionText}: {defaultCurrencyText}. Active store currency: {SelectedCurrencyOption.DisplayName}.";
-        }
-    }
-
-    public string ActiveCurrencyCodeDisplay => SelectedCurrencyOption?.LocalizedCode ?? CurrencyCode;
 
     public bool TaxEnabled
     {
@@ -662,8 +626,6 @@ public sealed class SettingsViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedRegionOption));
         OnPropertyChanged(nameof(SelectedCurrencyOption));
         OnPropertyChanged(nameof(CurrencyCode));
-        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
-        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
     }
 
     private void ApplyRegionSelection(RegionOption region)
@@ -683,8 +645,6 @@ public sealed class SettingsViewModel : ObservableObject
 
         OnPropertyChanged(nameof(SelectedCurrencyOption));
         OnPropertyChanged(nameof(CurrencyCode));
-        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
-        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
     }
 
     private void ApplyCurrencySelection(CurrencyOption currency)
@@ -700,8 +660,6 @@ public sealed class SettingsViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(CurrencyCode));
-        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
-        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
     }
 
     private void SyncSelectedCurrencyFromCode(string currencyCode)
@@ -724,8 +682,6 @@ public sealed class SettingsViewModel : ObservableObject
         }
 
         OnPropertyChanged(nameof(SelectedCurrencyOption));
-        OnPropertyChanged(nameof(ActiveCurrencyCodeDisplay));
-        OnPropertyChanged(nameof(CurrencySelectionPreviewText));
     }
 
     private RegionOption? FindRegionOption(string? regionCode)
