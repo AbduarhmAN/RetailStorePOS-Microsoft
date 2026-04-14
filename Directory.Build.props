@@ -17,8 +17,8 @@
     <RetailStorePOSWinUiPackageDisplayName>Retail Store POS</RetailStorePOSWinUiPackageDisplayName>
     <RetailStorePOSWinUiPackageDescription>Retail store management software</RetailStorePOSWinUiPackageDescription>
 
-    <RetailStorePOSVersion>1.2.3</RetailStorePOSVersion>
-    <RetailStorePOSAssemblyVersion>1.2.3.0</RetailStorePOSAssemblyVersion>
+    <RetailStorePOSVersion>1.3.0</RetailStorePOSVersion>
+    <RetailStorePOSAssemblyVersion>1.3.0.0</RetailStorePOSAssemblyVersion>
 
     <AssemblyVersion>$(RetailStorePOSAssemblyVersion)</AssemblyVersion>
     <FileVersion>$(RetailStorePOSAssemblyVersion)</FileVersion>
