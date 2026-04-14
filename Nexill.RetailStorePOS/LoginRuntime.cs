@@ -118,7 +118,7 @@ public static class LoginRuntime
             // Additional tiny delay to let the OS fully flush the handle
             await Task.Delay(150);
 
-            await Task.Run(DeleteAppDataRoot).ConfigureAwait(false);
+            await DeleteAppDataRootAsync().ConfigureAwait(false);
         }
         catch
         {
@@ -160,19 +160,19 @@ public static class LoginRuntime
         }
     }
 
-    private static void DeleteAppDataRoot()
+    private static async Task DeleteAppDataRootAsync()
     {
         var activeRoot = AppDataPaths.GetRootFolder();
-        DeleteDirectory(activeRoot);
+        await DeleteDirectoryAsync(activeRoot);
 
         var tempRoot = Path.Combine(Path.GetTempPath(), "RetailStorePOS");
         if (!string.Equals(tempRoot, activeRoot, StringComparison.OrdinalIgnoreCase))
         {
-            DeleteDirectory(tempRoot);
+            await DeleteDirectoryAsync(tempRoot);
         }
     }
 
-    private static void DeleteDirectory(string rootFolder)
+    private static async Task DeleteDirectoryAsync(string rootFolder)
     {
         if (string.IsNullOrWhiteSpace(rootFolder) || !Directory.Exists(rootFolder))
         {
@@ -192,11 +192,11 @@ public static class LoginRuntime
             }
             catch (IOException)
             {
-                Thread.Sleep(ResetRetryDelayMilliseconds);
+                await Task.Delay(ResetRetryDelayMilliseconds);
             }
             catch (UnauthorizedAccessException)
             {
-                Thread.Sleep(ResetRetryDelayMilliseconds);
+                await Task.Delay(ResetRetryDelayMilliseconds);
             }
         }
 
