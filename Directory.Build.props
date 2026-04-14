@@ -30,6 +30,9 @@
     <RetailStorePOSPrivacyContactEmail>contact@nextillretail.store</RetailStorePOSPrivacyContactEmail>
     <RetailStorePOSAppUserModelId>Nexill.RetailStorePOS</RetailStorePOSAppUserModelId>
 
+    <RetailStorePOSSupabaseUrl>$(SUPABASE_URL)</RetailStorePOSSupabaseUrl>
+    <RetailStorePOSSupabaseKey>$(SUPABASE_KEY)</RetailStorePOSSupabaseKey>
+
     <RetailStorePOSAppIcon>$(MSBuildThisFileDirectory)Nexill.RetailStorePOS\Assets\app_icon.ico</RetailStorePOSAppIcon>
     <RetailStorePOSLicenseRelativePath>Nexill.RetailStorePOS\Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt</RetailStorePOSLicenseRelativePath>
   </PropertyGroup>
@@ -54,6 +57,14 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>RetailStorePOSAppUserModelId</_Parameter1>
       <_Parameter2>$(RetailStorePOSAppUserModelId)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RetailStorePOSSupabaseUrl</_Parameter1>
+      <_Parameter2>$(RetailStorePOSSupabaseUrl)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RetailStorePOSSupabaseKey</_Parameter1>
+      <_Parameter2>$(RetailStorePOSSupabaseKey)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 </Project>
