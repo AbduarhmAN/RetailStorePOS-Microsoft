@@ -11,6 +11,7 @@ using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Views;
 using Windows.Graphics;
 using WinRT.Interop;
+using RetailStorePOS.App.Services;
 
 namespace RetailStorePOS.WinUiLogin;
 
@@ -33,6 +34,8 @@ public sealed partial class MainWindow : Window
     private const int WS_THICKFRAME = 0x00040000;
     public static new MainWindow? Current { get; private set; }
 
+
+
     private AppWindow? _appWindow;
     private bool _isFirstRunTutorialQueued;
     private bool _isFirstRunTutorialRunning;
@@ -41,6 +44,12 @@ public sealed partial class MainWindow : Window
     private bool _isSettingsSubNavigationTipArmed;
     private int _firstRunTutorialStepIndex = -1;
     private TutorialStep[]? _firstRunTutorialSteps;
+
+    // Prerequisite fields
+    private readonly PrerequisiteBootstrapService _prerequisiteService = new();
+    private IReadOnlyList<PrerequisiteDefinition>? _missingPrerequisites;
+    private bool _prerequisiteFlowActive;
+
 
     public MainWindow()
     {
@@ -69,16 +78,44 @@ public sealed partial class MainWindow : Window
             };
             pbTimer.Start();
 
+            // Check prerequisites first
+            _missingPrerequisites = await _prerequisiteService.GetMissingPrerequisitesAsync();
+            if (_missingPrerequisites.Count > 0)
+            {
+                pbTimer.Stop();
+                _prerequisiteFlowActive = true;
+                ShowPrerequisitePanel();
+                return; // Normal startup paused until prerequisites are handled
+            }
+
+            await CompleteNormalStartup(pbTimer);
+        }
+        catch (Exception ex)
+        {
+            SplashStatusTitle.Text = "Startup Error";
+            SplashStatusDetail.Text = ex.Message;
+        }
+    }
+
+    private async Task CompleteNormalStartup(DispatcherTimer? pbTimer)
+    {
+        try
+        {
+            if (pbTimer != null && !pbTimer.IsEnabled)
+            {
+                pbTimer.Start();
+            }
+
             // Run the heavy database and runtime initialization off the UI thread
             await Task.Run(() => LoginRuntime.Initialize());
             
             // Snap progress bar to 100% and pause to let user see it
-            pbTimer.Stop();
+            if (pbTimer != null) pbTimer.Stop();
             SplashProgressBar.Value = 100;
             await Task.Delay(300);
 
             // Hide the window completely so resizing doesn't flash on screen
-            _appWindow.Hide();
+            if (_appWindow != null) _appWindow.Hide();
 
             // Prepare the main app UI invisibly
             RootGrid.RequestedTheme = ElementTheme.Light;
@@ -99,7 +136,7 @@ public sealed partial class MainWindow : Window
             await Task.Delay(150);
 
             // Pop the window back up on screen
-            _appWindow.Show();
+            if (_appWindow != null) _appWindow.Show();
 
             // Fade IN the main login screen
             var fadeInAnim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
@@ -123,6 +160,137 @@ public sealed partial class MainWindow : Window
             SplashStatusTitle.Text = "Startup Error";
             SplashStatusDetail.Text = ex.Message;
         }
+    }
+
+    private void ShowPrerequisitePanel()
+    {
+        SplashBottomBar.Visibility = Visibility.Collapsed;
+        PrerequisitePanel.Visibility = Visibility.Visible;
+        PrerequisiteListPanel.Children.Clear();
+
+        if (_missingPrerequisites is not null)
+        {
+            foreach (var req in _missingPrerequisites)
+            {
+                var tb = new TextBlock
+                {
+                    Text = "• " + req.DisplayName,
+                    Foreground = new SolidColorBrush(Microsoft.UI.ColorHelper.FromArgb(255, 75, 85, 99)),
+                    Margin = new Thickness(0, 0, 0, 4)
+                };
+                PrerequisiteListPanel.Children.Add(tb);
+            }
+        }
+    }
+
+    private void ExitPrerequisiteFlowButton_Click(object sender, RoutedEventArgs e)
+    {
+        Application.Current.Exit();
+    }
+
+    private async void InstallPrerequisitesButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Re-evaluate to prevent re-installing successful items on retry
+        _missingPrerequisites = await _prerequisiteService.GetMissingPrerequisitesAsync();
+
+        if (_missingPrerequisites is null || _missingPrerequisites.Count == 0) return;
+
+        ExitPrerequisiteFlowButton.IsEnabled = false;
+        InstallPrerequisitesButton.IsEnabled = false;
+        PrerequisiteDownloadProgressBar.Value = 0;
+
+        foreach (var req in _missingPrerequisites)
+        {
+            PrerequisiteStatusTitle.Text = $"Downloading {req.DisplayName}";
+            PrerequisiteStatusDetail.Text = "Please wait while the installer is downloaded.";
+            PrerequisiteDownloadProgressText.Text = "Starting download...";
+            PrerequisiteDownloadProgressBar.Value = 0;
+
+            try
+            {
+                var cachePath = _prerequisiteService.GetInstallerCachePath(req);
+                var progress = new Progress<PrerequisiteDownloadProgress>(p =>
+                {
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        PrerequisiteDownloadProgressBar.Value = p.Percent;
+                        var mbDownloaded = p.DownloadedBytes / 1024.0 / 1024.0;
+                        if (p.TotalBytes.HasValue)
+                        {
+                            var mbTotal = p.TotalBytes.Value / 1024.0 / 1024.0;
+                            PrerequisiteDownloadProgressText.Text = $"{mbDownloaded:F1} MB of {mbTotal:F1} MB ({p.Percent}%)";
+                        }
+                        else
+                        {
+                            PrerequisiteDownloadProgressText.Text = $"{mbDownloaded:F1} MB downloaded";
+                        }
+                    });
+                });
+
+                await _prerequisiteService.DownloadInstallerAsync(req, cachePath, progress, CancellationToken.None);
+
+                PrerequisiteStatusTitle.Text = $"Installing {req.DisplayName}";
+                PrerequisiteStatusDetail.Text = "You may be prompted for administrator approval.";
+                PrerequisiteDownloadProgressText.Text = "Running installer...";
+                PrerequisiteDownloadProgressBar.IsIndeterminate = true;
+
+                var result = await _prerequisiteService.InstallPrerequisiteAsync(req, cachePath, CancellationToken.None);
+
+                PrerequisiteDownloadProgressBar.IsIndeterminate = false;
+
+                if (!result.Success)
+                {
+                    PrerequisiteStatusTitle.Text = "Installation failed";
+                    PrerequisiteStatusDetail.Text = result.ErrorMessage ?? "An unknown error occurred.";
+                    PrerequisiteDownloadProgressText.Text = "";
+                    ExitPrerequisiteFlowButton.IsEnabled = true;
+                    InstallPrerequisitesButton.IsEnabled = true;
+                    InstallPrerequisitesButton.Content = "Retry";
+                    return;
+                }
+
+                if (result.RequiresRestart)
+                {
+                    PrerequisiteStatusTitle.Text = "Restart required";
+                    PrerequisiteStatusDetail.Text = result.ErrorMessage ?? "Please restart your computer.";
+                    PrerequisiteDownloadProgressText.Text = "";
+                    ExitPrerequisiteFlowButton.IsEnabled = true;
+                    ExitPrerequisiteFlowButton.Content = "Exit to Restart";
+                    return;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                PrerequisiteDownloadProgressBar.IsIndeterminate = false;
+                PrerequisiteStatusTitle.Text = "Download failed";
+                PrerequisiteStatusDetail.Text = ex.Message;
+                PrerequisiteDownloadProgressText.Text = "";
+                ExitPrerequisiteFlowButton.IsEnabled = true;
+                InstallPrerequisitesButton.IsEnabled = true;
+                InstallPrerequisitesButton.Content = "Retry";
+                return;
+            }
+        }
+
+        // All succeeded
+        PrerequisiteStatusTitle.Text = "All components installed";
+        PrerequisiteStatusDetail.Text = "Resuming startup...";
+        PrerequisiteDownloadProgressText.Text = "Done";
+        PrerequisiteDownloadProgressBar.Value = 100;
+
+        await Task.Delay(1000); // Give user a moment to see success
+
+        PrerequisitePanel.Visibility = Visibility.Collapsed;
+        SplashBottomBar.Visibility = Visibility.Visible;
+
+        _prerequisiteFlowActive = false;
+
+        var pbTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(15) };
+        pbTimer.Tick += (s, args) => {
+            if (SplashProgressBar.Value < 95) SplashProgressBar.Value += 1.5;
+        };
+        await CompleteNormalStartup(pbTimer);
     }
 
     private void TransitionToAppWindow()
