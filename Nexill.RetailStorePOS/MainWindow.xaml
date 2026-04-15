@@ -137,7 +137,8 @@
                      Fill="#10000080" />
 
             <!-- Centered branding -->
-            <StackPanel HorizontalAlignment="Center"
+            <StackPanel x:Name="SplashBrandPanel"
+                        HorizontalAlignment="Center"
                         VerticalAlignment="Center"
                         Spacing="18">
                 <Border Width="72" Height="72"
@@ -159,7 +160,9 @@
             </StackPanel>
 
             <!-- Bottom bar -->
-            <Grid VerticalAlignment="Bottom" Margin="32,0,32,28">
+            <Grid x:Name="SplashBottomBar"
+                  VerticalAlignment="Bottom"
+                  Margin="32,0,32,28">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="10" />
@@ -205,6 +208,109 @@
                              Foreground="#E9D5FF"
                              Background="#4338CA" />
             </Grid>
+
+            <Border x:Name="PrerequisitePanel"
+                    Visibility="Collapsed"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    MaxWidth="520"
+                    CornerRadius="18"
+                    Padding="24"
+                    Background="#F9FAFB"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1">
+                <Grid RowSpacing="18">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0"
+                                Spacing="6">
+                        <TextBlock x:Name="PrerequisitePanelTitle"
+                                   Text="Microsoft components required"
+                                   FontSize="24"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111827" />
+                        <TextBlock x:Name="PrerequisitePanelDetail"
+                                   Text="Retail Store POS needs these Microsoft components before it can continue."
+                                   TextWrapping="Wrap"
+                                   Foreground="#4B5563" />
+                    </StackPanel>
+
+                    <Border Grid.Row="1"
+                            Padding="16"
+                            CornerRadius="14"
+                            Background="#F3F4F6"
+                            BorderBrush="#E5E7EB"
+                            BorderThickness="1">
+                        <StackPanel x:Name="PrerequisiteListPanel"
+                                    Spacing="12" />
+                    </Border>
+
+                    <StackPanel Grid.Row="2"
+                                Spacing="8">
+                        <TextBlock x:Name="PrerequisiteStatusTitle"
+                                   Text="Waiting for confirmation"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="#111827" />
+                        <TextBlock x:Name="PrerequisiteStatusDetail"
+                                   Text="Selected items will be downloaded from Microsoft and installed one by one."
+                                   TextWrapping="Wrap"
+                                   Foreground="#6B7280" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="3"
+                                Spacing="8">
+                        <ProgressBar x:Name="PrerequisiteDownloadProgressBar"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="0"
+                                     Height="8"
+                                     CornerRadius="8"
+                                     Foreground="#4F46E5"
+                                     Background="#E5E7EB" />
+                        <TextBlock x:Name="PrerequisiteDownloadProgressText"
+                                   Text="No download started."
+                                   Foreground="#6B7280" />
+                    </StackPanel>
+
+                    <Grid Grid.Row="4"
+                          ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="If everything is already installed, this screen will not appear again."
+                                   VerticalAlignment="Center"
+                                   TextWrapping="Wrap"
+                                   Foreground="#6B7280" />
+
+                        <Button x:Name="ExitPrerequisiteFlowButton"
+                                Grid.Column="1"
+                                Content="Exit"
+                                Click="ExitPrerequisiteFlowButton_Click"
+                                Padding="20,10"
+                                CornerRadius="10" />
+
+                        <Button x:Name="InstallPrerequisitesButton"
+                                Grid.Column="2"
+                                Content="Install selected"
+                                Click="InstallPrerequisitesButton_Click"
+                                Padding="20,10"
+                                CornerRadius="10"
+                                Background="#312E81"
+                                Foreground="White" />
+                    </Grid>
+                </Grid>
+            </Border>
         </Grid>
     </Grid>
 </Window>

@@ -17,7 +17,12 @@ if (-not $propertyGroup) {
 $repoRoot = Split-Path -Parent $PropsPath
 
 function Get-PropertyValue([string]$Name) {
-    $value = $propertyGroup.$Name
+    $property = $propertyGroup.PSObject.Properties[$Name]
+    if ($null -eq $property) {
+        return ""
+    }
+
+    $value = $property.Value
     if ([string]::IsNullOrWhiteSpace($value)) {
         return ""
     }
