@@ -37,15 +37,15 @@ public sealed class ReportsViewModel : ObservableObject
 
     public ReportsViewModel()
     {
-        RefreshCommand = new RelayCommand(LoadReport);
+        RefreshCommand = new AsyncRelayCommand(LoadReport);
         ClearSearchCommand = new RelayCommand(ClearSearch);
         SetTodayRangeCommand = new RelayCommand(() => SetTodayRange());
         SetLast7DaysRangeCommand = new RelayCommand(SetLast7DaysRange);
         SetLast30DaysRangeCommand = new RelayCommand(SetLast30DaysRange);
         OpenReceiptFolderCommand = new RelayCommand(OpenReceiptFolder);
-        ReprintReceiptCommand = new RelayCommand<Sale>(ReprintReceipt);
+        ReprintReceiptCommand = new AsyncRelayCommand<Sale>(ReprintReceipt);
         ToggleTransactionsViewCommand = new RelayCommand(ToggleTransactionsView);
-        GenerateXReportCommand = new RelayCommand(GenerateXReport);
+        GenerateXReportCommand = new AsyncRelayCommand(GenerateXReport);
 
         SetTodayRange(loadReport: false);
         StatusText = "Loading...";
@@ -53,15 +53,15 @@ public sealed class ReportsViewModel : ObservableObject
 
     public ObservableCollection<Sale> Sales { get; private set; } = new();
 
-    public RelayCommand RefreshCommand { get; }
+    public AsyncRelayCommand RefreshCommand { get; }
     public RelayCommand ClearSearchCommand { get; }
     public RelayCommand SetTodayRangeCommand { get; }
     public RelayCommand SetLast7DaysRangeCommand { get; }
     public RelayCommand SetLast30DaysRangeCommand { get; }
     public RelayCommand OpenReceiptFolderCommand { get; }
-    public RelayCommand<Sale> ReprintReceiptCommand { get; }
+    public AsyncRelayCommand<Sale> ReprintReceiptCommand { get; }
     public RelayCommand ToggleTransactionsViewCommand { get; }
-    public RelayCommand GenerateXReportCommand { get; }
+    public AsyncRelayCommand GenerateXReportCommand { get; }
 
     public DateTimeOffset? FromDate
     {
@@ -75,7 +75,7 @@ public sealed class ReportsViewModel : ObservableObject
                     ToDate = value.Value;
                 }
                 ClearPresets();
-                LoadReport();
+                _ = LoadReport();
             }
         }
     }
@@ -92,7 +92,7 @@ public sealed class ReportsViewModel : ObservableObject
                     FromDate = value.Value;
                 }
                 ClearPresets();
-                LoadReport();
+                _ = LoadReport();
             }
         }
     }
@@ -234,7 +234,7 @@ public sealed class ReportsViewModel : ObservableObject
         IsTransactionsExpanded = !IsTransactionsExpanded;
     }
 
-    private async void ReprintReceipt(Sale? sale)
+    private async Task ReprintReceipt(Sale? sale)
     {
         if (sale is null) return;
         try
@@ -313,7 +313,7 @@ public sealed class ReportsViewModel : ObservableObject
         RangeLabel = label;
         if (loadReport)
         {
-            LoadReport();
+            _ = LoadReport();
         }
     }
 
@@ -329,7 +329,7 @@ public sealed class ReportsViewModel : ObservableObject
             : $"{from:MMM d} - {to:MMM d, yyyy}";
     }
 
-    private async void LoadReport()
+    private async Task LoadReport()
     {
         try
         {
@@ -456,7 +456,7 @@ public sealed class ReportsViewModel : ObservableObject
 
     public event EventHandler<string>? XReportGenerated;
 
-    private async void GenerateXReport()
+    private async Task GenerateXReport()
     {
         try
         {

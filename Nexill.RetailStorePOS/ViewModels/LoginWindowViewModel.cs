@@ -23,8 +23,8 @@ public sealed class LoginWindowViewModel : ObservableObject
         _authService = authService;
         IsSetupMode = authService.NeedsSetup;
 
-        LoginPasswordCommand = new RelayCommand(LoginWithPassword);
-        LoginPinCommand = new RelayCommand(LoginWithPin);
+        LoginPasswordCommand = new AsyncRelayCommand(LoginWithPassword);
+        LoginPinCommand = new AsyncRelayCommand(LoginWithPin);
 
         foreach (var user in _authService.GetActiveStaff())
         {
@@ -38,9 +38,9 @@ public sealed class LoginWindowViewModel : ObservableObject
 
     public bool HasStaff => Staff.Count > 0;
 
-    public RelayCommand LoginPasswordCommand { get; }
+    public AsyncRelayCommand LoginPasswordCommand { get; }
 
-    public RelayCommand LoginPinCommand { get; }
+    public AsyncRelayCommand LoginPinCommand { get; }
 
     public bool IsSetupMode { get; }
 
@@ -109,7 +109,7 @@ public sealed class LoginWindowViewModel : ObservableObject
         private set => SetProperty(ref _isAuthenticated, value);
     }
 
-    private async void LoginWithPassword()
+    private async Task LoginWithPassword()
     {
         try
         {
@@ -144,7 +144,7 @@ public sealed class LoginWindowViewModel : ObservableObject
         }
     }
 
-    private async void LoginWithPin()
+    private async Task LoginWithPin()
     {
         try
         {

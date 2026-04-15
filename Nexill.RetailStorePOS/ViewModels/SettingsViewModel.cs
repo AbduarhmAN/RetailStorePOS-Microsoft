@@ -35,10 +35,10 @@ public sealed class SettingsViewModel : ObservableObject
     {
         SaveCommand = new RelayCommand(SaveSettings, () => CanManageSettings);
         SaveStoreSettingsCommand = new RelayCommand(SaveSettings, () => CanManageSettings);
-        ReloadCommand = new RelayCommand(LoadSettings);
+        ReloadCommand = new AsyncRelayCommand(LoadSettings);
         BuildRegionAndCurrencyOptions();
 
-        LoadSettings();
+        _ = LoadSettings();
         LoadTaxData();
 
         // Default selection based on whether the user can manage store settings
@@ -46,7 +46,7 @@ public sealed class SettingsViewModel : ObservableObject
 
         LoginRuntime.Auth.LoginStateChanged += (_, _) =>
         {
-            LoadSettings();
+            _ = LoadSettings();
             LoadTaxData();
             ResetSectionSelection();
             OnPropertyChanged(nameof(CanManageSettings));
@@ -145,7 +145,7 @@ public sealed class SettingsViewModel : ObservableObject
         {
             if (SetProperty(ref _isDarkMode, value))
             {
-                SaveLocalPreferences();
+                _ = SaveLocalPreferences();
             }
         }
     }
@@ -255,9 +255,9 @@ public sealed class SettingsViewModel : ObservableObject
 
     public RelayCommand SaveCommand { get; }
     public RelayCommand SaveStoreSettingsCommand { get; }
-    public RelayCommand ReloadCommand { get; }
+    public AsyncRelayCommand ReloadCommand { get; }
 
-    private async void LoadSettings()
+    private async Task LoadSettings()
     {
         if (_isLoading) return;
         _isLoading = true;
@@ -303,7 +303,7 @@ public sealed class SettingsViewModel : ObservableObject
         }
     }
 
-    private async void SaveLocalPreferences()
+    private async Task SaveLocalPreferences()
     {
         try
         {
@@ -429,7 +429,7 @@ public sealed class SettingsViewModel : ObservableObject
         field = normalized;
         OnPropertyChanged(amountPropertyName);
         OnPropertyChanged(valuePropertyName);
-        SaveLocalPreferences();
+        _ = SaveLocalPreferences();
     }
 
     private void SetTaxRatePercent(decimal value)
