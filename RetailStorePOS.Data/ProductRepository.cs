@@ -111,6 +111,55 @@ LIMIT 1;";
         return MapProduct(reader);
     }
 
+    public List<Product> GetByIds(IEnumerable<long> ids)
+    {
+        var idList = ids.ToList();
+        if (idList.Count == 0)
+        {
+            return new List<Product>();
+        }
+
+        using var connection = _factory.OpenConnection();
+        using var command = connection.CreateCommand();
+
+        var placeholders = string.Join(",", idList.Select((_, i) => $"@id{i}"));
+        command.CommandText = $@"
+SELECT p.id,
+       p.sku,
+       p.name,
+       p.barcode,
+       p.unit,
+       p.price_cents,
+       p.cost_price_cents,
+       p.tax_category_id,
+       COALESCE(p.quantity_store, p.quantity, 0) as quantity_store,
+       COALESCE(p.quantity_warehouse, 0) as quantity_warehouse,
+       COALESCE(p.min_threshold_store, 5) as min_threshold_store,
+       COALESCE(p.min_threshold_warehouse, 10) as min_threshold_warehouse,
+       p.purchased_at,
+       p.last_sale_at,
+       p.cashier_name,
+       COALESCE(tc.rate_percent, 0) as tax_rate,
+       p.tax_group_id
+FROM products p
+LEFT JOIN tax_categories tc ON p.tax_category_id = tc.id
+WHERE p.id IN ({placeholders});";
+
+        for (int i = 0; i < idList.Count; i++)
+        {
+            command.Parameters.AddWithValue($"@id{i}", idList[i]);
+        }
+
+        using var reader = command.ExecuteReader();
+        var results = new List<Product>();
+        while (reader.Read())
+        {
+            results.Add(MapProduct(reader));
+        }
+
+        return results;
+    }
+
     public Product? GetById(long id)
     {
         using var connection = _factory.OpenConnection();

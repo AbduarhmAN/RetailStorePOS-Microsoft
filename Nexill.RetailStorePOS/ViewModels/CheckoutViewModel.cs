@@ -1052,11 +1052,11 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         var lowStockNames = new List<string>();
         var outOfStockNames = new List<string>();
 
-        foreach (var item in soldItems)
-        {
-            var product = _productRepository.GetById(item.ProductId);
-            if (product is null) continue;
+        var productIds = soldItems.Select(i => i.ProductId).Distinct().ToList();
+        var products = _productRepository.GetByIds(productIds);
 
+        foreach (var product in products)
+        {
             if (product.QuantityStore <= 0)
             {
                 outOfStockNames.Add(product.Name);
