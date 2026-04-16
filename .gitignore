@@ -67,3 +67,10 @@ Desktop.ini
 ## Keep deployment scripts tracked
 ![Dd]eployment/
 ![Dd]eployment/*
+/.gemini/commands
+/node_modules
+/.specify
+/specs/001-fix-dashboard-charts
+/GEMINI.md
+/package-lock.json
+/package.json
