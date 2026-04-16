@@ -266,7 +266,7 @@ public static class NumericInputNormalization
         string body,
         string sign,
         char? decimalSeparator,
-        HashSet<char> groupSeparators,
+        System.Buffers.SearchValues<char> groupSeparators,
         int[] cultureGroupSizes,
         out string normalizedText,
         out decimal value)
@@ -324,7 +324,7 @@ public static class NumericInputNormalization
 
     private static bool TryNormalizeIntegerPart(
         string raw,
-        HashSet<char> groupSeparators,
+        System.Buffers.SearchValues<char> groupSeparators,
         int[] cultureGroupSizes,
         bool allowEmpty,
         out string digits)
@@ -476,61 +476,79 @@ public static class NumericInputNormalization
         return segments[0].Length >= 1 && segments[0].Length <= leftmostMaxLength;
     }
 
-    private static HashSet<char> BuildCurrentGroupSeparatorSet(CultureInfo culture)
-    {
-        return BuildGroupSeparatorSet(
-            culture.NumberFormat.NumberGroupSeparator,
-            culture.NumberFormat.CurrencyGroupSeparator,
-            " ",
-            NoBreakSpace.ToString(),
-            NarrowNoBreakSpace.ToString());
-    }
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, Lazy<System.Buffers.SearchValues<char>>> s_currentGroupSeparatorsCache = new();
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, Lazy<System.Buffers.SearchValues<char>>> s_flexibleGroupSeparatorsCache = new();
 
-    private static HashSet<char> BuildFlexibleGroupSeparatorSet(CultureInfo culture, char? decimalSeparator)
+    private static System.Buffers.SearchValues<char> BuildCurrentGroupSeparatorSet(CultureInfo culture)
     {
-        var groupSeparators = BuildGroupSeparatorSet(
-            culture.NumberFormat.NumberGroupSeparator,
-            culture.NumberFormat.CurrencyGroupSeparator,
-            " ",
-            NoBreakSpace.ToString(),
-            NarrowNoBreakSpace.ToString(),
-            ArabicGroupSeparator.ToString(),
-            ".",
-            ",");
-
-        if (decimalSeparator.HasValue)
+        return s_currentGroupSeparatorsCache.GetOrAdd(culture.Name, _ => new Lazy<System.Buffers.SearchValues<char>>(() =>
         {
-            groupSeparators.Remove(decimalSeparator.Value);
-        }
-
-        return groupSeparators;
+            return BuildGroupSeparatorSet(
+                culture.NumberFormat.NumberGroupSeparator,
+                culture.NumberFormat.CurrencyGroupSeparator,
+                " ",
+                NoBreakSpace.ToString(),
+                NarrowNoBreakSpace.ToString());
+        })).Value;
     }
 
-    private static HashSet<char> BuildGroupSeparatorSet(params string[] separators)
+    private static System.Buffers.SearchValues<char> BuildFlexibleGroupSeparatorSet(CultureInfo culture, char? decimalSeparator)
+    {
+        var cacheKey = decimalSeparator.HasValue ? $"{culture.Name}_{decimalSeparator.Value}" : culture.Name;
+        return s_flexibleGroupSeparatorsCache.GetOrAdd(cacheKey, _ => new Lazy<System.Buffers.SearchValues<char>>(() =>
+        {
+            var characters = new HashSet<char>();
+            var separators = new string[] {
+                culture.NumberFormat.NumberGroupSeparator,
+                culture.NumberFormat.CurrencyGroupSeparator,
+                " ",
+                NoBreakSpace.ToString(),
+                NarrowNoBreakSpace.ToString(),
+                ArabicGroupSeparator.ToString(),
+                ".",
+                ","
+            };
+
+            foreach (var separator in separators)
+            {
+                if (string.IsNullOrEmpty(separator)) continue;
+                foreach (var character in separator)
+                {
+                    characters.Add(character);
+                }
+            }
+
+            if (decimalSeparator.HasValue)
+            {
+                characters.Remove(decimalSeparator.Value);
+            }
+
+            var charArray = new char[characters.Count];
+            characters.CopyTo(charArray);
+            return System.Buffers.SearchValues.Create(charArray);
+        })).Value;
+    }
+
+    private static System.Buffers.SearchValues<char> BuildGroupSeparatorSet(params string[] separators)
     {
         var characters = new HashSet<char>();
-        foreach (var separator in separators.Where(value => !string.IsNullOrEmpty(value)))
+        foreach (var separator in separators)
         {
+            if (string.IsNullOrEmpty(separator)) continue;
             foreach (var character in separator)
             {
                 characters.Add(character);
             }
         }
 
-        return characters;
+        var charArray = new char[characters.Count];
+        characters.CopyTo(charArray);
+        return System.Buffers.SearchValues.Create(charArray);
     }
 
-    private static bool ContainsSeparator(string text, HashSet<char> separators)
+    private static bool ContainsSeparator(string text, System.Buffers.SearchValues<char> separators)
     {
-        foreach (var character in text)
-        {
-            if (separators.Contains(character))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return text.AsSpan().IndexOfAny(separators) >= 0;
     }
 
     private static char FirstSeparatorCharacter(string separator, char fallback)
