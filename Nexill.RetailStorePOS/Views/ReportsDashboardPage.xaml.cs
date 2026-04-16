@@ -68,6 +68,18 @@ public sealed partial class ReportsDashboardPage : Page
     private DispatcherTimer? _donutAnimTimer;
     private DateTime _donutAnimStart;
 
+    /// Awaitable wrapper: the returned Task only completes AFTER the action has run on the UI thread.
+    private Task EnqueueOnUI(Action action)
+    {
+        var tcs = new TaskCompletionSource();
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try { action(); tcs.SetResult(); }
+            catch (Exception ex) { tcs.SetException(ex); }
+        });
+        return tcs.Task;
+    }
+
     public ReportsDashboardPage()
     {
         this.InitializeComponent();
@@ -276,7 +288,7 @@ public sealed partial class ReportsDashboardPage : Page
         var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
         var yesterdayPacingMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayPacingEndUtc));
 
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var todayTotal = todayMetrics.Revenue;
             var yesterdayPacingTotal = yesterdayPacingMetrics.Revenue;
@@ -303,7 +315,7 @@ public sealed partial class ReportsDashboardPage : Page
     private async Task LoadProfitCardAsync(DateTime todayStartUtc, DateTime todayEndUtc)
     {
         var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var todayTotal = todayMetrics.Revenue;
             var todayProfit = todayMetrics.Profit;
@@ -328,7 +340,7 @@ public sealed partial class ReportsDashboardPage : Page
     {
         var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
         var yesterdayPacingMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayPacingEndUtc));
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var todayInvoiceCount = todayMetrics.InvoiceCount;
             var yesterdayPacingInvoiceCount = yesterdayPacingMetrics.InvoiceCount;
@@ -355,7 +367,7 @@ public sealed partial class ReportsDashboardPage : Page
     private async Task LoadAvgInvoiceCardAsync(DateTime todayStartUtc, DateTime todayEndUtc)
     {
         var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var avgInvoice = todayMetrics.InvoiceCount > 0 ? todayMetrics.Revenue / todayMetrics.InvoiceCount : 0m;
             AvgInvoiceText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(avgInvoice);
@@ -369,7 +381,7 @@ public sealed partial class ReportsDashboardPage : Page
     {
         var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
         var yesterdayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayEndUtc));
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var todayTotal = todayMetrics.Revenue;
             var yesterdayFullTotal = yesterdayMetrics.Revenue;
@@ -394,13 +406,67 @@ public sealed partial class ReportsDashboardPage : Page
 
     private void SalesBarContainer_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        UpdateSalesBar(_todayBarPct, _yesterdayBarPct);
+        if (!_salesBarAnimated) return;
+        double w = SalesBarContainer.ActualWidth;
+        if (w <= 0) return;
+        YesterdayBar.Width = w * _yesterdayBarPct;
+        TodayBar.Width = w * _todayBarPct;
+    }
+
+    private bool _salesBarAnimated;
+    private DispatcherTimer? _salesBarAnimTimer;
+    private DateTime _salesBarAnimStart;
+
+    private void UpdateSalesBar(double todayPct, double yesterdayPct)
+    {
+        double containerWidth = SalesBarContainer.ActualWidth;
+        if (containerWidth <= 0) return;
+
+        _salesBarAnimated = true;
+
+        // Reset bars to 0
+        YesterdayBar.Width = 0;
+        TodayBar.Width = 0;
+
+        _salesBarAnimStart = DateTime.UtcNow;
+        _salesBarAnimTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
+        _salesBarAnimTimer.Tick += (s, e) =>
+        {
+            double w = SalesBarContainer.ActualWidth;
+            if (w <= 0) return;
+
+            double elapsed = (DateTime.UtcNow - _salesBarAnimStart).TotalMilliseconds;
+
+            // Phase 1 (0-2s): Yesterday bar animates alone
+            double yesterdayProgress = Math.Min(1.0, elapsed / 2000.0);
+            double yesterdayEased = 1.0 - Math.Pow(1.0 - yesterdayProgress, 3);
+            YesterdayBar.Width = w * yesterdayPct * yesterdayEased;
+
+            // Phase 2 (2s-5s): Today bar starts after yesterday finishes
+            if (elapsed > 2000.0)
+            {
+                double todayElapsed = elapsed - 2000.0;
+                double todayProgress = Math.Min(1.0, todayElapsed / 3000.0);
+                double todayEased = 1.0 - Math.Pow(1.0 - todayProgress, 3);
+                TodayBar.Width = w * todayPct * todayEased;
+            }
+
+            // Stop when both are done
+            if (elapsed >= 5000.0)
+            {
+                _salesBarAnimTimer?.Stop();
+                _salesBarAnimTimer = null;
+                YesterdayBar.Width = w * yesterdayPct;
+                TodayBar.Width = w * todayPct;
+            }
+        };
+        _salesBarAnimTimer.Start();
     }
 
     private async Task LoadTopProductsCardAsync(DateTime todayStartUtc, DateTime todayEndUtc)
     {
         var topProducts = await Task.Run(() => LoginRuntime.Sales.GetTopProducts(todayStartUtc, todayEndUtc, 5));
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var topProductsTotalRevenue = topProducts.Sum(item => item.Revenue);
             TopProductsList.ItemsSource = new ObservableCollection<DashboardProductItem>(
@@ -436,7 +502,7 @@ public sealed partial class ReportsDashboardPage : Page
     {
         var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
         var yesterdayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayEndUtc));
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var todayDiscountAmount = todayMetrics.DiscountAmount;
             var yesterdayDiscountAmount = yesterdayMetrics.DiscountAmount;
@@ -455,7 +521,7 @@ public sealed partial class ReportsDashboardPage : Page
     private async Task LoadSparklinesAsync(DateTime pastWeekStartUtc, DateTime todayEndUtc)
     {
         var pastWeekSparklines = await Task.Run(() => LoginRuntime.Sales.GetDailySparklines(pastWeekStartUtc, todayEndUtc));
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var numDays = 7;
             var salesSparkData   = new double[numDays + 1];
@@ -497,7 +563,7 @@ public sealed partial class ReportsDashboardPage : Page
     {
         var products = await Task.Run(() => LoginRuntime.Products.GetAll().ToList());
         
-        DispatcherQueue.TryEnqueue(() =>
+        await EnqueueOnUI(() =>
         {
             var alertGreenBackground = new SolidColorBrush(Color.FromArgb(255, 232, 245, 233));
             var alertGreenForeground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
@@ -653,42 +719,6 @@ public sealed partial class ReportsDashboardPage : Page
         };
     }
 
-    private void UpdateSalesBar(double todayPct, double yesterdayPct)
-    {
-        double containerWidth = SalesBarContainer.ActualWidth;
-        if (containerWidth <= 0) return;
-
-        // Animation for yesterday: 2 seconds
-        var yesterdayAnim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
-        {
-            From = 0,
-            To = containerWidth * yesterdayPct,
-            Duration = new Duration(TimeSpan.FromSeconds(2)),
-            EnableDependentAnimation = true
-        };
-
-        // Animation for today: 3 seconds
-        var todayAnim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
-        {
-            From = 0,
-            To = containerWidth * todayPct,
-            Duration = new Duration(TimeSpan.FromSeconds(3)),
-            EnableDependentAnimation = true
-        };
-
-        var yesterdayStoryboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
-        yesterdayStoryboard.Children.Add(yesterdayAnim);
-        Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(yesterdayAnim, YesterdayBar);
-        Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(yesterdayAnim, "Width");
-        
-        var todayStoryboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
-        todayStoryboard.Children.Add(todayAnim);
-        Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(todayAnim, TodayBar);
-        Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(todayAnim, "Width");
-
-        yesterdayStoryboard.Begin();
-        todayStoryboard.Begin();
-    }
 
     private static bool IsDiscountSaleItem(SaleItem item)
     {
