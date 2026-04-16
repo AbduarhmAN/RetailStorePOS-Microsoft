@@ -24,6 +24,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     private string _statusMessage = string.Empty;
     private InfoBarSeverity _statusSeverity = InfoBarSeverity.Informational;
     private bool _suppressDraftPropertyChanged;
+    private bool _isReloading;
 
     public ProductsPage()
     {
@@ -99,16 +100,24 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         {
             if (SetProperty(ref _selectedProduct, value))
             {
-                if (_selectedProduct is null)
+                try
                 {
-                    IsEditingSelectedProduct = false;
-                    Draft.Reset();
-                    ResetTaxPickerToDefault();
+                    _suppressDraftPropertyChanged = true;
+                    if (_selectedProduct is null)
+                    {
+                        IsEditingSelectedProduct = false;
+                        Draft.Reset();
+                        ResetTaxPickerToDefault();
+                    }
+                    else
+                    {
+                        Draft.LoadFrom(_selectedProduct.Product);
+                        SelectMatchingTaxPickerItem();
+                    }
                 }
-                else
+                finally
                 {
-                    Draft.LoadFrom(_selectedProduct.Product);
-                    SelectMatchingTaxPickerItem();
+                    _suppressDraftPropertyChanged = false;
                 }
 
                 RaiseSelectedProductProperties();
@@ -358,6 +367,8 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
     private void ReloadProducts()
     {
+        if (_isReloading) return;
+        _isReloading = true;
         try
         {
             TracePageState("ReloadProducts:start");
@@ -382,7 +393,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             if (Products.Count == 0)
             {
                 IsEditingSelectedProduct = false;
-                Draft.Reset();
+                ResetDraftSilently();
             }
 
             RaiseCatalogProperties();
@@ -393,6 +404,10 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         {
             LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.ReloadProducts");
             SetStatus("Unable to refresh the catalog right now.", InfoBarSeverity.Error);
+        }
+        finally
+        {
+            _isReloading = false;
         }
     }
 
@@ -560,6 +575,8 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
     private void ProductsListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (_isReloading) return;
+
         if (!CanBrowseProducts)
         {
             TracePageState("SelectionChanged:blocked");
@@ -1585,7 +1602,8 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
 
     private void TraceDraftState(string stage)
     {
-        StartupTrace.Write($"ProductEditDraft.{stage}: {GetTraceSummary()}");
+        // Removed heavy synchronous disk I/O to improve search and selection performance
+        // StartupTrace.Write($"ProductEditDraft.{stage}: {GetTraceSummary()}");
     }
 
     public bool TryGetCostPrice(out decimal price)
