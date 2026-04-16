@@ -362,9 +362,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         {
             TracePageState("ReloadProducts:start");
             var previousId = SelectedProduct?.Id;
-            var products = string.IsNullOrWhiteSpace(SearchTerm)
-                ? LoginRuntime.Products.GetAll(500)
-                : LoginRuntime.Products.Search(SearchTerm, 500);
+            var products = LoginRuntime.ProductSearch.Search(SearchTerm, 500);
 
             Products.Clear();
             foreach (var product in products)

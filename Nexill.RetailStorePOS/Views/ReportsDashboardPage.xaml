@@ -90,259 +90,9 @@
     </Page.Resources>
 
     <Grid>
-    <ScrollViewer x:Name="DashboardLoadingRoot" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <Grid Padding="24,20,24,24" RowSpacing="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+    
 
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Spacing="8">
-                    <Border Style="{StaticResource SkeletonBlock}" Width="220" Height="28"/>
-                    <Border Style="{StaticResource SkeletonBlock}" Width="280" Height="14"/>
-                </StackPanel>
-
-                <Border Grid.Column="1"
-                        Style="{StaticResource SkeletonBlock}"
-                        Width="132"
-                        Height="36"
-                        CornerRadius="8"
-                        VerticalAlignment="Center"/>
-            </Grid>
-
-            <Grid Grid.Row="1" ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0" Style="{StaticResource SkeletonCard}" Padding="10">
-                    <StackPanel Spacing="10">
-                        <Border Style="{StaticResource SkeletonBlock}" Width="96" Height="16"/>
-                        <Border Background="#EEF2F6" Height="1"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="84" Height="12"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="1" Style="{StaticResource SkeletonCard}" Padding="10">
-                    <StackPanel Spacing="10">
-                        <Border Style="{StaticResource SkeletonBlock}" Width="118" Height="16"/>
-                        <Border Background="#EEF2F6" Height="1"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="74" Height="12"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="2" Style="{StaticResource SkeletonCard}" Padding="10">
-                    <StackPanel Spacing="10">
-                        <Border Style="{StaticResource SkeletonBlock}" Width="110" Height="16"/>
-                        <Border Background="#EEF2F6" Height="1"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="96" Height="28" Margin="0,10,0,0"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="76" Height="12"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
-                    </StackPanel>
-                </Border>
-
-                <Border Grid.Column="3" Style="{StaticResource SkeletonCard}" Padding="10">
-                    <StackPanel Spacing="10">
-                        <Border Style="{StaticResource SkeletonBlock}" Width="130" Height="16"/>
-                        <Border Background="#EEF2F6" Height="1"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="114" Height="28" Margin="0,10,0,0"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Width="90" Height="12"/>
-                        <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-
-            <Grid Grid.Row="2" ColumnSpacing="16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="280"/>
-                </Grid.ColumnDefinitions>
-
-                <Grid Grid.Column="0" RowSpacing="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Grid.Row="0" Style="{StaticResource SkeletonCard}">
-                        <StackPanel Spacing="14">
-                            <Border Style="{StaticResource SkeletonBlock}" Width="110" Height="16"/>
-                            <Border Style="{StaticResource SkeletonBlock}" Height="20" CornerRadius="10"/>
-                            <Border Style="{StaticResource SkeletonBlock}" Width="180" Height="24"/>
-                            <Border Style="{StaticResource SkeletonBlock}" Width="210" Height="12"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Row="1" Style="{StaticResource SkeletonCard}">
-                        <StackPanel Spacing="12">
-                            <Border Style="{StaticResource SkeletonBlock}" Width="104" Height="16"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
-                            </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="136" Height="12"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
-                            </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="104" Height="12"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
-                            </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="28" Height="18" CornerRadius="6"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <Grid Grid.Column="1" RowSpacing="16">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
-
-                    <Border Grid.Row="0" Style="{StaticResource SkeletonCard}">
-                        <StackPanel Spacing="12">
-                            <Border Style="{StaticResource SkeletonBlock}" Width="126" Height="16"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Spacing="6">
-                                    <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
-                                    <Border Style="{StaticResource SkeletonBlock}" Width="180" Height="5" CornerRadius="3"/>
-                                </StackPanel>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="70" Height="14" Margin="12,0,0,0"/>
-                            </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Spacing="6">
-                                    <Border Style="{StaticResource SkeletonBlock}" Width="132" Height="12"/>
-                                    <Border Style="{StaticResource SkeletonBlock}" Width="170" Height="5" CornerRadius="3"/>
-                                </StackPanel>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="64" Height="14" Margin="12,0,0,0"/>
-                            </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Spacing="6">
-                                    <Border Style="{StaticResource SkeletonBlock}" Width="108" Height="12"/>
-                                    <Border Style="{StaticResource SkeletonBlock}" Width="156" Height="5" CornerRadius="3"/>
-                                </StackPanel>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="72" Height="14" Margin="12,0,0,0"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Row="1" Style="{StaticResource SkeletonCard}">
-                        <StackPanel Spacing="12">
-                            <Border Style="{StaticResource SkeletonBlock}" Width="150" Height="16"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="126" Height="12"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="112" Height="20" CornerRadius="6"/>
-                            </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="118" Height="12"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="106" Height="20" CornerRadius="6"/>
-                            </Grid>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="134" Height="12"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="112" Height="20" CornerRadius="6"/>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-                </Grid>
-
-                <StackPanel Grid.Column="2" Spacing="16">
-                    <Border Style="{StaticResource SkeletonCard}">
-                        <StackPanel Spacing="10">
-                            <Border Style="{StaticResource SkeletonBlock}" Width="108" Height="14"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="132" Height="28"/>
-                                <Border Grid.Column="1" Style="{StaticResource SkeletonBlock}" Width="58" Height="20" CornerRadius="6"/>
-                            </Grid>
-                            <Border Style="{StaticResource SkeletonBlock}" Width="124" Height="12"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Style="{StaticResource SkeletonCard}" MinHeight="360">
-                        <Grid RowSpacing="12">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-
-                            <Border Grid.Row="0" Style="{StaticResource SkeletonBlock}" Width="96" Height="16"/>
-                            <Border Grid.Row="1" Style="{StaticResource SkeletonCircle}" HorizontalAlignment="Center"/>
-                            <StackPanel Grid.Row="3" Spacing="8">
-                                <Border Style="{StaticResource SkeletonBlock}" Width="110" Height="12"/>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="120" Height="12"/>
-                                <Border Style="{StaticResource SkeletonBlock}" Width="126" Height="12"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-            </Grid>
-        </Grid>
-    </ScrollViewer>
-
-    <ScrollViewer x:Name="DashboardContentRoot" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
+    <ScrollViewer x:Name="DashboardScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Visible">
         <Grid Padding="24,20,24,24" RowSpacing="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/> <!-- Header -->
@@ -400,6 +150,14 @@
                 <!-- Card 1: Sales Today -->
                 <Border Grid.Column="0" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
+                        <StackPanel x:Name="SalesTodaySkeleton" Spacing="10" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="96" Height="16" HorizontalAlignment="Left"/>
+                            <Border Background="#EEF2F6" Height="1"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="84" Height="12" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <Grid x:Name="SalesTodayContent" Visibility="Collapsed">
                         <!-- BACKGROUND CHART LAYER -->
                         <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
@@ -444,12 +202,20 @@
                                 </Canvas>
                             </StackPanel>
                         </StackPanel>
-                    </Grid>
+                    </Grid></Grid>
                 </Border>
 
                 <!-- Card 2: Net Profit Today -->
                 <Border Grid.Column="1" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
+                        <StackPanel x:Name="NetProfitSkeleton" Spacing="10" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="118" Height="16" HorizontalAlignment="Left"/>
+                            <Border Background="#EEF2F6" Height="1"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="84" Height="12" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <Grid x:Name="NetProfitContent" Visibility="Collapsed">
                         <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
@@ -494,12 +260,20 @@
                                 </Canvas>
                             </StackPanel>
                         </StackPanel>
-                    </Grid>
+                    </Grid></Grid>
                 </Border>
 
                 <!-- Card 3: Invoice Count -->
                 <Border Grid.Column="2" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
+                        <StackPanel x:Name="InvoiceCountSkeleton" Spacing="10" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="110" Height="16" HorizontalAlignment="Left"/>
+                            <Border Background="#EEF2F6" Height="1"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="84" Height="12" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <Grid x:Name="InvoiceCountContent" Visibility="Collapsed">
                         <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
@@ -544,12 +318,20 @@
                                 </Canvas>
                             </StackPanel>
                         </StackPanel>
-                    </Grid>
+                    </Grid></Grid>
                 </Border>
 
                 <!-- Card 4: Avg Invoice Value -->
                 <Border Grid.Column="3" Style="{StaticResource DashCard}" Padding="10" Background="White">
                     <Grid>
+                        <StackPanel x:Name="AvgInvoiceSkeleton" Spacing="10" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="130" Height="16" HorizontalAlignment="Left"/>
+                            <Border Background="#EEF2F6" Height="1"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="128" Height="28" Margin="0,10,0,0" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="84" Height="12" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="60" CornerRadius="10" Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <Grid x:Name="AvgInvoiceContent" Visibility="Collapsed">
                         <Grid Opacity="0.3" Margin="0,0,-10,-10" VerticalAlignment="Bottom" Height="70" CornerRadius="0,0,12,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="30*"/>
@@ -595,7 +377,7 @@
                                 </Canvas>
                             </StackPanel>
                         </StackPanel>
-                    </Grid>
+                    </Grid></Grid>
                 </Border>
             </Grid>
 
@@ -619,6 +401,12 @@
                     <!-- Sales vs Target Card -->
                     <Border Grid.Row="0" Style="{StaticResource DashCard}" Background="White">
                         <Grid RowSpacing="14">
+                        <StackPanel x:Name="SalesTargetSkeleton" Spacing="12" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="140" Height="16" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="24" CornerRadius="8"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="200" Height="12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Grid x:Name="SalesTargetContent" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -667,12 +455,18 @@
                             </Grid>
 
                             <TextBlock Grid.Row="3" x:Name="TargetSubText" FontSize="11" Foreground="#8F96A3"/>
-                        </Grid>
+                        </Grid></Grid>
                     </Border>
 
                     <!-- Critical Alerts -->
                     <Border Grid.Row="1" Style="{StaticResource DashCard}" Background="White">
                         <Grid RowSpacing="14">
+                        <StackPanel x:Name="CrAlertsSkeleton" Spacing="12" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="140" Height="16" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="24" CornerRadius="8"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="200" Height="12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Grid x:Name="CrAlertsContent" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -720,7 +514,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </Grid>
+                        </Grid></Grid>
                     </Border>
 
                 </Grid>
@@ -734,6 +528,12 @@
                     <!-- Top Selling Products Card -->
                     <Border Grid.Row="0" Style="{StaticResource DashCard}" Background="White">
                         <Grid RowSpacing="12">
+                        <StackPanel x:Name="TopProdSkeleton" Spacing="12" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="140" Height="16" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="24" CornerRadius="8"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="200" Height="12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Grid x:Name="TopProdContent" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
@@ -772,12 +572,18 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </Grid>
+                        </Grid></Grid>
                     </Border>
 
                     <!-- Low Stock / Out of Stock -->
                     <Border Grid.Row="1" Style="{StaticResource DashCard}" Background="White">
                         <Grid RowSpacing="12">
+                        <StackPanel x:Name="LowStockSkeleton" Spacing="12" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="140" Height="16" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="24" CornerRadius="8"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="200" Height="12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Grid x:Name="LowStockContent" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -833,7 +639,7 @@
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
-                        </Grid>
+                        </Grid></Grid>
                     </Border>
 
                 </Grid>
@@ -844,6 +650,12 @@
                     <!-- Discounts Today -->
                     <Border Style="{StaticResource DashCard}" Background="White">
                         <Grid RowSpacing="6">
+                        <StackPanel x:Name="DiscountsSkeleton" Spacing="12" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="140" Height="16" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="24" CornerRadius="8"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="200" Height="12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Grid x:Name="DiscountsContent" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -872,12 +684,18 @@
                                 </Border>
                             </Grid>
                             <TextBlock Grid.Row="2" x:Name="DiscountsCountText" FontSize="11" Foreground="#8F96A3"/>
-                        </Grid>
+                        </Grid></Grid>
                     </Border>
 
                     <!-- Stock Health Donut -->
                     <Border Style="{StaticResource DashCard}" Background="White" MinHeight="360">
                         <Grid RowSpacing="12">
+                        <StackPanel x:Name="StockHealthSkeleton" Spacing="12" Visibility="Visible">
+                            <Border Style="{StaticResource SkeletonBlock}" Width="140" Height="16" HorizontalAlignment="Left"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Height="24" CornerRadius="8"/>
+                            <Border Style="{StaticResource SkeletonBlock}" Width="200" Height="12" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <Grid x:Name="StockHealthContent" Visibility="Collapsed">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
@@ -924,7 +742,7 @@
                                     <TextBlock x:Name="OutOfStockLegendText" Text="0%  Out of Stock" FontSize="12" Foreground="#1A1D23"/>
                                 </StackPanel>
                             </StackPanel>
-                        </Grid>
+                        </Grid></Grid>
                     </Border>
                 </StackPanel>
             </Grid>

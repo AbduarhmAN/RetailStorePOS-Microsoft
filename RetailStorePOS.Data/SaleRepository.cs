@@ -373,6 +373,168 @@ WHERE id = @product_id;";
         return current;
     }
 
+    public DashboardMetrics GetDashboardMetrics(DateTime startUtc, DateTime endUtc)
+    {
+        var metrics = new DashboardMetrics();
+        var startString = startUtc.ToString("O");
+        var endString = endUtc.ToString("O");
+
+        using var connection = _factory.OpenConnection();
+
+        // 1. Sales Header aggregates
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"
+            SELECT 
+                SUM(total_cents), 
+                SUM(subtotal_cents),
+                COUNT(*)
+            FROM sales
+            WHERE created_at >= @start AND created_at < @end;";
+        cmd.Parameters.AddWithValue("@start", startString);
+        cmd.Parameters.AddWithValue("@end", endString);
+        
+        decimal subtotal = 0;
+        using (var reader = cmd.ExecuteReader())
+        {
+            if (reader.Read() && !reader.IsDBNull(0))
+            {
+                metrics.Revenue = MoneyUtils.FromCents(reader.GetInt64(0));
+                subtotal = MoneyUtils.FromCents(reader.GetInt64(1));
+                metrics.InvoiceCount = reader.GetInt32(2);
+            }
+        }
+
+        // 2. Sale Items aggregates (COGS and Discounts)
+        using var itemCmd = connection.CreateCommand();
+        itemCmd.CommandText = @"
+            SELECT 
+                SUM(si.item_cost_cents * si.quantity),
+                SUM(CASE WHEN si.product_id = 0 AND si.total_cents < 0 AND si.name LIKE 'Discount%' THEN ABS(si.total_cents) ELSE 0 END),
+                SUM(CASE WHEN si.product_id = 0 AND si.total_cents < 0 AND si.name LIKE 'Discount%' THEN 1 ELSE 0 END)
+            FROM sale_items si
+            INNER JOIN sales s ON si.sale_id = s.id
+            WHERE s.created_at >= @start AND s.created_at < @end;";
+        itemCmd.Parameters.AddWithValue("@start", startString);
+        itemCmd.Parameters.AddWithValue("@end", endString);
+        
+        using (var reader = itemCmd.ExecuteReader())
+        {
+            if (reader.Read() && !reader.IsDBNull(0))
+            {
+                var cogs = MoneyUtils.FromCents(reader.GetInt64(0));
+                metrics.Profit = subtotal - cogs;
+                metrics.DiscountAmount = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : reader.GetInt64(1));
+                metrics.DiscountCount = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+            }
+            else
+            {
+                metrics.Profit = subtotal;
+            }
+        }
+
+        return metrics;
+    }
+
+    public List<DailySparklineData> GetDailySparklines(DateTime startUtc, DateTime endUtc)
+    {
+        var result = new List<DailySparklineData>();
+        var startString = startUtc.ToString("O");
+        var endString = endUtc.ToString("O");
+
+        using var connection = _factory.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"
+            SELECT 
+                date(s.created_at, 'localtime') as local_day,
+                SUM(s.total_cents) as daily_revenue,
+                SUM(s.subtotal_cents) as daily_subtotal,
+                COUNT(*) as daily_invoice_count
+            FROM sales s
+            WHERE s.created_at >= @start AND s.created_at < @end
+            GROUP BY local_day
+            ORDER BY local_day ASC;";
+        cmd.Parameters.AddWithValue("@start", startString);
+        cmd.Parameters.AddWithValue("@end", endString);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            result.Add(new DailySparklineData
+            {
+                LocalDay = reader.GetString(0),
+                Revenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : reader.GetInt64(1)),
+                Profit = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : reader.GetInt64(2)), // Storing subtotal temporarily
+                InvoiceCount = reader.GetInt32(3)
+            });
+        }
+
+        // Apply COGS offset
+        using var cogsCmd = connection.CreateCommand();
+        cogsCmd.CommandText = @"
+            SELECT 
+                date(s.created_at, 'localtime') as local_day,
+                SUM(si.item_cost_cents * si.quantity)
+            FROM sale_items si
+            INNER JOIN sales s ON si.sale_id = s.id
+            WHERE s.created_at >= @start AND s.created_at < @end
+            GROUP BY local_day;";
+        cogsCmd.Parameters.AddWithValue("@start", startString);
+        cogsCmd.Parameters.AddWithValue("@end", endString);
+
+        using var cogsReader = cogsCmd.ExecuteReader();
+        while (cogsReader.Read())
+        {
+            var day = cogsReader.GetString(0);
+            var cogs = MoneyUtils.FromCents(cogsReader.IsDBNull(1) ? 0 : cogsReader.GetInt64(1));
+            var target = result.FirstOrDefault(r => r.LocalDay == day);
+            if (target != null)
+            {
+                target.Profit -= cogs; // subtotal - cogs
+            }
+        }
+
+        return result;
+    }
+
+    public List<TopProductData> GetTopProducts(DateTime startUtc, DateTime endUtc, int limit = 5)
+    {
+        var result = new List<TopProductData>();
+        var startString = startUtc.ToString("O");
+        var endString = endUtc.ToString("O");
+
+        using var connection = _factory.OpenConnection();
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = @"
+            SELECT 
+                si.name,
+                SUM(si.total_cents) as revenue,
+                SUM(si.quantity) as qty
+            FROM sale_items si
+            INNER JOIN sales s ON si.sale_id = s.id
+            WHERE s.created_at >= @start AND s.created_at < @end
+              AND si.product_id != 0
+              AND si.quantity > 0 AND si.total_cents > 0
+              AND si.name IS NOT NULL AND si.name != ''
+            GROUP BY si.product_id, si.name
+            ORDER BY revenue DESC, qty DESC
+            LIMIT @limit;";
+        cmd.Parameters.AddWithValue("@start", startString);
+        cmd.Parameters.AddWithValue("@end", endString);
+        cmd.Parameters.AddWithValue("@limit", limit);
+
+        using var reader = cmd.ExecuteReader();
+        while (reader.Read())
+        {
+            result.Add(new TopProductData
+            {
+                Name = reader.GetString(0),
+                Revenue = MoneyUtils.FromCents(reader.GetInt64(1)),
+                Quantity = (int)Math.Round(reader.GetDouble(2))
+            });
+        }
+        return result;
+    }
+
     public DailySummary GetDailySummary(DateTime date)
     {
         var startOfDay = date.Date.ToString("O");
@@ -420,4 +582,28 @@ public class DailySummary
     public decimal TotalTax { get; set; }
     public decimal CashTotal { get; set; }
     public decimal CardTotal { get; set; }
+}
+
+public class DashboardMetrics
+{
+    public decimal Revenue { get; set; }
+    public decimal Profit { get; set; }
+    public int InvoiceCount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public int DiscountCount { get; set; }
+}
+
+public class DailySparklineData
+{
+    public string LocalDay { get; set; } = string.Empty;
+    public decimal Revenue { get; set; }
+    public decimal Profit { get; set; }
+    public int InvoiceCount { get; set; }
+}
+
+public class TopProductData
+{
+    public string Name { get; set; } = string.Empty;
+    public decimal Revenue { get; set; }
+    public int Quantity { get; set; }
 }
