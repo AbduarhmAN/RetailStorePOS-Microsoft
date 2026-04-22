@@ -11,4 +11,5 @@
   <Project Path="RetailStorePOS.Data/RetailStorePOS.Data.csproj">
     <Platform Solution="*|x64" Project="x64" />
   </Project>
+  <Project Path="RetailStorePOS.Tests/RetailStorePOS.Tests.csproj" />
 </Solution>
