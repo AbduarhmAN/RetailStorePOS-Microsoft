@@ -3,10 +3,11 @@ using System.Text;
 using Microsoft.Data.Sqlite;
 using RetailStorePOS.Data.Models;
 
-namespace RetailStorePOS.Data.Repositories;
+namespace RetailStorePOS.Data.Modules.UsersAuth;
 
 public sealed class UserRepository
 {
+    private const string OwnedTableName = "users";
     private readonly SqliteConnectionFactory _factory;
 
     public UserRepository(SqliteConnectionFactory factory)
@@ -159,8 +160,7 @@ FROM users WHERE pin_hash = @pin_hash AND is_active = 1;";
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
 
-        user.Username = user.Username.Trim();
-        user.DisplayName = user.DisplayName.Trim();
+        NormalizeOwnedWrite(user);
 
         if (UsernameExists(user.Username))
         {
@@ -208,8 +208,7 @@ VALUES (@username, @display_name, @password_hash, @pin_hash, @is_admin,
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
 
-        user.Username = user.Username.Trim();
-        user.DisplayName = user.DisplayName.Trim();
+        NormalizeOwnedWrite(user);
 
         if (UsernameExists(user.Username, user.Id))
         {
@@ -354,5 +353,21 @@ WHERE id = @id;";
             CreatedAt = DateTime.Parse(reader.GetString(13)),
             UpdatedAt = DateTime.Parse(reader.GetString(14))
         };
+    }
+
+    private static void NormalizeOwnedWrite(User user)
+    {
+        if (string.IsNullOrWhiteSpace(user.Username))
+        {
+            throw new InvalidOperationException($"{OwnedTableName} writes require a username.");
+        }
+
+        if (string.IsNullOrWhiteSpace(user.DisplayName))
+        {
+            throw new InvalidOperationException($"{OwnedTableName} writes require a display name.");
+        }
+
+        user.Username = user.Username.Trim();
+        user.DisplayName = user.DisplayName.Trim();
     }
 }

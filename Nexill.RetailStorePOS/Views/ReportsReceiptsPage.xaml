@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:RetailStorePOS.Data.Models"
+    xmlns:models="using:RetailStorePOS.Data.Modules.Sales"
     xmlns:views="using:RetailStorePOS.WinUiLogin.Views"
     mc:Ignorable="d"
     Background="Transparent">
@@ -39,11 +39,11 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Spacing="2">
-                            <TextBlock Text="Filters"
+                            <TextBlock x:Uid="ReportsReceipts_Filters_Title"
                                    FontSize="13"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource PrimaryText}" />
-                            <TextBlock Text="Refine the reporting window to find specific transactions."
+                            <TextBlock x:Uid="ReportsReceipts_Filters_Subtitle"
                                    Style="{StaticResource NotionMetaTextStyle}" />
                         </StackPanel>
 
@@ -51,7 +51,7 @@
                             <TextBlock Text="{x:Bind ViewModel.RangeLabel, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" />
                             <TextBlock Text="|" Style="{StaticResource NotionMetaTextStyle}" />
                             <TextBlock Text="{x:Bind ViewModel.VisibleTransactionsCount, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" />
-                            <TextBlock Text="shown" Style="{StaticResource NotionMetaTextStyle}" />
+                            <TextBlock x:Uid="ReportsReceipts_ShownLabel" Style="{StaticResource NotionMetaTextStyle}" />
                         </StackPanel>
                     </Grid>
 
@@ -65,11 +65,11 @@
 
                         <!-- Quick Range Buttons -->
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="Quick Range" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <TextBlock x:Uid="ReportsReceipts_QuickRange_Label" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Content="Today" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
-                                <Button Content="7 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
-                                <Button Content="30 Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
+                                <Button x:Uid="ReportsReceipts_QuickRange_Today" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
+                                <Button x:Uid="ReportsReceipts_QuickRange_7Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
+                                <Button x:Uid="ReportsReceipts_QuickRange_30Days" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
                                 <Button Style="{StaticResource AccentBlueButtonStyle}" Command="{x:Bind ViewModel.GenerateXReportCommand}" 
                                         Margin="16,0,0,0" Translation="0,0,8">
                                     <Button.Shadow>
@@ -77,31 +77,31 @@
                                     </Button.Shadow>
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <FontIcon Glyph="&#xE9F9;" FontSize="13" Foreground="White" />
-                                        <TextBlock Text="Generate X Report" FontSize="13" Foreground="White" />
+                                        <TextBlock x:Uid="ReportsReceipts_XReport_Button" FontSize="13" Foreground="White" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1">
-                            <TextBlock Text="From" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <TextBlock x:Uid="ReportsReceipts_Date_From" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
                             <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
-                            <TextBlock Text="To" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <TextBlock x:Uid="ReportsReceipts_Date_To" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
                             <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
                         </StackPanel>
 
                         <StackPanel Grid.Column="3">
-                            <TextBlock Text="Search" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <TextBlock x:Uid="ReportsReceipts_Search_Label" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
                             <Grid ColumnSpacing="4">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBox CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" PlaceholderText="Search transactions..." BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
-                                <Button Grid.Column="1" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}" ToolTipService.ToolTip="Clear Search">
+                                <TextBox x:Uid="ReportsReceipts_Search_Box" CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                                <Button Grid.Column="1" x:Uid="ReportsReceipts_Search_ClearTooltip" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}">
                                     <SymbolIcon Symbol="Clear" Foreground="{StaticResource MutedText}" />
                                 </Button>
                             </Grid>
@@ -155,14 +155,14 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="120" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Column="0" Text="Receipt #" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="1" Text="Date" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="2" Text="Time" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="3" Text="Type" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="4" Text="Subtotal" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="5" Text="Tax" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="6" Text="Total" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Left" Padding="15,0,0,0" />
-                                <TextBlock Grid.Column="7" Text="Action" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="0" x:Uid="ReportsReceipts_List_Header_Receipt" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="1" x:Uid="ReportsReceipts_List_Header_Date" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="2" x:Uid="ReportsReceipts_List_Header_Time" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="3" x:Uid="ReportsReceipts_List_Header_Type" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="4" x:Uid="ReportsReceipts_List_Header_Subtotal" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="5" x:Uid="ReportsReceipts_List_Header_Tax" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                                <TextBlock Grid.Column="6" x:Uid="ReportsReceipts_List_Header_Total" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Left" Padding="15,0,0,0" />
+                                <TextBlock Grid.Column="7" x:Uid="ReportsReceipts_List_Header_Action" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
                             </Grid>
                         </ListView.Header>
                         <ListView.ItemTemplate>
@@ -186,11 +186,11 @@
                                     <TextBlock Grid.Column="5" Text="{x:Bind views:ReportsReceiptsPage.FormatCurrency(Tax)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Center" />
                                     <TextBlock Grid.Column="6" Text="{x:Bind views:ReportsReceiptsPage.FormatCurrency(Total)}" FontWeight="SemiBold" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" Padding="15,0,0,0" />
                                     <Button Grid.Column="7" HorizontalAlignment="Center" Style="{StaticResource NotionButtonStyle}"
-                                        Command="{Binding ElementName=ReportsReceiptsRoot, Path=ViewModel.ReprintReceiptCommand}" 
-                                        CommandParameter="{x:Bind}">
+                                        Click="ReprintButton_Click" 
+                                        Tag="{x:Bind}">
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <SymbolIcon Symbol="Print" Foreground="{StaticResource MutedText}" />
-                                            <TextBlock Text="Reprint" />
+                                            <TextBlock x:Uid="ReportsReceipts_List_ReprintButton" />
                                         </StackPanel>
                                     </Button>
                                 </Grid>
@@ -202,10 +202,7 @@
         </Grid>
 
         <ContentDialog x:Name="XReportDialog"
-                       Title="X Report Ready"
-                       PrimaryButtonText="Print Report"
-                       SecondaryButtonText="Open PDF"
-                       CloseButtonText="Cancel"
+                       x:Uid="ReportsReceipts_XReport_Dialog"
                        PrimaryButtonClick="XReportDialog_PrintClick"
                        SecondaryButtonClick="XReportDialog_OpenPdfClick"
                        CloseButtonClick="XReportDialog_CloseClick"
@@ -218,19 +215,19 @@
                 <Border Background="#F0FFF4" Padding="12" CornerRadius="4">
                     <StackPanel Orientation="Horizontal" Spacing="10">
                         <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="#2E7D32" />
-                        <TextBlock Text="X Report generated successfully." FontSize="14" Foreground="#2E7D32" VerticalAlignment="Center" />
+                        <TextBlock x:Uid="ReportsReceipts_XReport_Dialog_Success" FontSize="14" Foreground="#2E7D32" VerticalAlignment="Center" />
                     </StackPanel>
                 </Border>
 
                 <!-- File path -->
                 <StackPanel Spacing="4">
-                    <TextBlock Text="Saved to" FontSize="12" Foreground="{StaticResource MutedText}" />
+                    <TextBlock x:Uid="ReportsReceipts_XReport_Dialog_SavedTo" FontSize="12" Foreground="{StaticResource MutedText}" />
                     <TextBlock x:Name="XReportStatusText" FontSize="12" Foreground="{StaticResource PrimaryText}" TextWrapping="Wrap"
                                IsTextSelectionEnabled="True" />
                 </StackPanel>
 
                 <!-- Hint -->
-                <TextBlock Text="Choose Print to send directly to the default printer, or Open PDF to preview." 
+                <TextBlock x:Uid="ReportsReceipts_XReport_Dialog_Hint" 
                            FontSize="12" Foreground="{StaticResource MutedText}" TextWrapping="Wrap" />
 
             </StackPanel>

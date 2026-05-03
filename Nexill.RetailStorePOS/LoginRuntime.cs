@@ -1,8 +1,17 @@
 using System.Reflection;
+using RetailStorePOS.App.Modules.Products;
 using RetailStorePOS.App.Services;
-using RetailStorePOS.Data;
-using RetailStorePOS.Data.Repositories;
+using global::RetailStorePOS.Data;
+using global::RetailStorePOS.Data.Modules.Migrations;
+using global::RetailStorePOS.Data.Modules.Products;
+using global::RetailStorePOS.Data.Modules.Sales;
+using global::RetailStorePOS.Data.Modules.Settings;
+using global::RetailStorePOS.Data.Modules.Tax;
+using global::RetailStorePOS.Data.Modules.UsersAuth;
+using global::RetailStorePOS.Data.Modules.Reporting;
+using global::RetailStorePOS.Data.Repositories;
 using RetailStorePOS.WinUiLogin.Common;
+using global::Nexill.RetailStorePOS.Modules.Reporting;
 
 namespace RetailStorePOS.WinUiLogin;
 
@@ -31,8 +40,13 @@ public static class LoginRuntime
     public static TaxAuthorityRepository TaxAuthorities { get; private set; } = null!;
     public static TaxRuleRepository TaxRules { get; private set; } = null!;
     public static TaxGroupRepository TaxGroups { get; private set; } = null!;
+    public static RegisterSessionRepository RegisterSessions { get; private set; } = null!;
+    public static global::Nexill.RetailStorePOS.Modules.Reporting.ReadinessService Readiness { get; private set; } = null!;
+
     public static BootstrapAdminHint? PendingBootstrapAdminHint { get; private set; }
     public static bool IsFreshStartResetRequested { get; private set; }
+    public static bool WasRapidReopenAfterUncleanExit { get; private set; }
+    public static string SessionDebugInfo { get; private set; } = "No debug info available";
     public static event EventHandler? ProductsUpdated;
 
     public static void Initialize()
@@ -48,9 +62,28 @@ public static class LoginRuntime
         ConnectionFactory = new SqliteConnectionFactory(DatabasePath);
         LocalPreferences = new LocalPreferencesService();
 
-        // Use the same fallback URL logic just in case it hasn't seeded, but usually the installer does it
-        var supabaseUrl = GetAssemblyMetadata("RetailStorePOSSupabaseUrl");
-        var supabaseKey = GetAssemblyMetadata("RetailStorePOSSupabaseKey");
+        // Priority 1: Direct OS Environment Variables (Visual Studio Debugging / Live Override)
+        var supabaseUrl = (Environment.GetEnvironmentVariable("SUPABASE_URL", EnvironmentVariableTarget.User)
+                          ?? Environment.GetEnvironmentVariable("SUPABASE_URL"))?.Trim();
+        var supabaseKey = (Environment.GetEnvironmentVariable("SUPABASE_KEY", EnvironmentVariableTarget.User)
+                          ?? Environment.GetEnvironmentVariable("SUPABASE_KEY"))?.Trim();
+
+        // Priority 2: Assembly Metadata (App installer default behavior)
+        if (string.IsNullOrWhiteSpace(supabaseUrl))
+        {
+            supabaseUrl = GetAssemblyMetadata("RetailStorePOSSupabaseUrl");
+        }
+
+        if (string.IsNullOrWhiteSpace(supabaseKey))
+        {
+            supabaseKey = GetAssemblyMetadata("RetailStorePOSSupabaseKey");
+        }
+
+        // FORCE ERASE BAD KEY IF DETECTED
+        if (supabaseKey != null && supabaseKey.StartsWith("sb_publishable_"))
+        {
+            supabaseKey = null; // Throw it away, do not seed it
+        }
 
         if (!string.IsNullOrWhiteSpace(supabaseUrl) && !string.IsNullOrWhiteSpace(supabaseKey))
         {
@@ -58,6 +91,56 @@ public static class LoginRuntime
         }
 
         Telemetry = new TelemetryService(LocalPreferences, ConnectionFactory);
+
+        // Task Group 3: Lifecycle Orchestration - Detect unfinished run
+        try
+        {
+            var state = Telemetry.GetTelemetryState();
+            if (!string.IsNullOrEmpty(state.ActiveRunId))
+            {
+                StartupTrace.Write($"Lifecycle: Detected unfinished run {state.ActiveRunId} started at {state.ActiveRunStartedAt}");
+                
+                // Emit unclean_exit for the unfinished prior run with crash-boundary signals
+                _ = Telemetry.LogUncleanExitAsync(
+                    state.ActiveRunId,
+                    state.ActiveRunStartedAt,
+                    state.LastActivityAt,
+                    state.LastActivitySource);
+
+                // CRITICAL FIX: We must check if the PRIOR session was recent.
+                // We use ActiveRunStartedAt because we aren't using a heartbeat timer.
+                if (state.ActiveRunStartedAt.HasValue)
+                {
+                    var lastStart = state.ActiveRunStartedAt.Value.ToUniversalTime();
+                    var secondsSinceLastStart = (DateTime.UtcNow - lastStart).TotalSeconds;
+                    StartupTrace.Write($"Lifecycle: Seconds since last session start: {secondsSinceLastStart:F1}");
+
+                    if (secondsSinceLastStart <= 60)
+                    {
+                        StartupTrace.Write("Lifecycle: Rapid reopen detected! Triggering feedback dialog flag.");
+                        WasRapidReopenAfterUncleanExit = true;
+                    }
+
+                    SessionDebugInfo = $"Last Start: {state.ActiveRunStartedAt:O}\n" +
+                                       $"Current Start: {DateTime.UtcNow:O}\n" +
+                                       $"Diff (sec): {secondsSinceLastStart:F1}\n" +
+                                       $"Result: {(WasRapidReopenAfterUncleanExit ? "SHOW" : "SKIP")}";
+                }
+            }
+            else
+            {
+                StartupTrace.Write("Lifecycle: No unfinished run detected. (Clean start)");
+            }
+
+            // Create new active run
+            var newRunId = Guid.NewGuid().ToString();
+            _ = Telemetry.LogAppLaunchAsync(newRunId);
+        }
+        catch (Exception ex)
+        {
+            ReportException(ex, "WinUiLogin.LifecycleOrchestration");
+        }
+
         try
         {
             Telemetry.StartBackgroundSync();
@@ -78,6 +161,14 @@ public static class LoginRuntime
         AuditLogs = new AuditLogRepository(ConnectionFactory);
         Audit = new AuditLogService(AuditLogs);
         Auth = new AuthService(Users, Audit);
+        RegisterSessions = new RegisterSessionRepository(ConnectionFactory);
+
+        var workspaceManager = new ReadinessWorkspaceManager();
+        Readiness = new ReadinessService(
+            new ReadinessRunner(workspaceManager, new ReadinessReportStore()), 
+            new ReadinessReportStore()
+        );
+
         EnsureBootstrapAdminOnFirstRun();
         ProductSearch = new ProductSearchService(Products);
         ProductSearch.BuildIndex();
@@ -216,5 +307,3 @@ public static class LoginRuntime
 }
 
 public sealed record BootstrapAdminHint(string Username, string Password);
-
-

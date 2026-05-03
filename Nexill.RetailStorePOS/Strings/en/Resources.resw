@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="0" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Hero Panel                                     -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_HeroBrandTitle" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="Login_HeroBrandSubtitle" xml:space="preserve">
+    <value>Point of Sale</value>
+  </data>
+  <data name="Login_HeroHeadline" xml:space="preserve">
+    <value>Fast and secure sign-in</value>
+  </data>
+  <data name="Login_HeroBody" xml:space="preserve">
+    <value>Use your store profile to unlock the register and continue serving customers.</value>
+  </data>
+  <data name="Login_HeroSupport" xml:space="preserve">
+    <value>Cashier mode keeps the line moving.</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Form Header                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_WelcomeBack" xml:space="preserve">
+    <value>Welcome back</value>
+  </data>
+  <data name="Login_SignIn" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Login_ModeSubtitle_Cashier" xml:space="preserve">
+    <value>Select a cashier and unlock the register with a PIN.</value>
+  </data>
+  <data name="Login_ModeSubtitle_AdminSetup" xml:space="preserve">
+    <value>Use the administrator account to finish setup before opening the store.</value>
+  </data>
+  <data name="Login_ModeSubtitle_Admin" xml:space="preserve">
+    <value>Use an administrator account for users, inventory, reports, and store controls.</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Mode Tabs                                      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_CashierTab" xml:space="preserve">
+    <value>Cashier</value>
+  </data>
+  <data name="Login_ManagerTab" xml:space="preserve">
+    <value>Manager</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Cashier Panel                                  -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_CashierAccess" xml:space="preserve">
+    <value>Cashier access</value>
+  </data>
+  <data name="Login_CashierHelper_HasProfiles" xml:space="preserve">
+    <value>Choose a cashier card, then enter the PIN.</value>
+  </data>
+  <data name="Login_CashierHelper_NoProfiles" xml:space="preserve">
+    <value>Add an active staff user with a PIN in Users to enable quick cashier sign-in.</value>
+  </data>
+  <data name="Login_CashierBadge_Ready" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="Login_CashierBadge_NoProfiles" xml:space="preserve">
+    <value>No profiles yet</value>
+  </data>
+  <data name="Login_CashierEmptyTitle" xml:space="preserve">
+    <value>No cashier profiles available</value>
+  </data>
+  <data name="Login_CashierEmptyBody" xml:space="preserve">
+    <value>Add an active staff user with a PIN in Users to enable quick cashier sign-in cards.</value>
+  </data>
+  <data name="Login_EnterPin" xml:space="preserve">
+    <value>Enter PIN</value>
+  </data>
+  <data name="Login_PinPlaceholder" xml:space="preserve">
+    <value>Enter 4-digit PIN</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Admin Panel                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_ManagerAccess" xml:space="preserve">
+    <value>Manager access</value>
+  </data>
+  <data name="Login_AdminHelper_Setup" xml:space="preserve">
+    <value>Use the administrator account to finish first-time setup.</value>
+  </data>
+  <data name="Login_AdminHelper_Normal" xml:space="preserve">
+    <value>Use an administrator account for secure changes and store-wide controls.</value>
+  </data>
+  <data name="Login_SetupCalloutTitle" xml:space="preserve">
+    <value>First-time store setup</value>
+  </data>
+  <data name="Login_SetupCalloutBody_HasCashiers" xml:space="preserve">
+    <value>Finish admin setup, then the cashier profiles will be ready for the next shift.</value>
+  </data>
+  <data name="Login_SetupCalloutBody_NoCashiers" xml:space="preserve">
+    <value>Finish admin setup, then add cashier profiles with PINs.</value>
+  </data>
+  <data name="Login_Username" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="Login_UsernamePlaceholder" xml:space="preserve">
+    <value>Enter username</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_PasswordPlaceholder" xml:space="preserve">
+    <value>Enter your password</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Onboarding Hint                                -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_OnboardingTitle" xml:space="preserve">
+    <value>First-Time Administrator Setup</value>
+  </data>
+  <data name="Login_OnboardingCredentials" xml:space="preserve">
+    <value>Default Username: admin | Password: 1234</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Actions                                        -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_LoginButton" xml:space="preserve">
+    <value>Login</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Hero Support (code-behind variants)            -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_HeroSupport_Cashier" xml:space="preserve">
+    <value>Cashier mode keeps the counter moving.</value>
+  </data>
+  <data name="Login_HeroSupport_AdminSetup" xml:space="preserve">
+    <value>Administrator access is required to finish first-time setup.</value>
+  </data>
+  <data name="Login_HeroSupport_Admin" xml:space="preserve">
+    <value>Administrator access protects pricing, users, reports, and settings.</value>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Status Messages (code-behind)                  -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_CashierSignInFailed" xml:space="preserve">
+    <value>Cashier sign-in failed</value>
+  </data>
+  <data name="Login_AdminSignInFailed" xml:space="preserve">
+    <value>Admin sign-in failed</value>
+  </data>
+  <data name="Login_CashierUnlocked" xml:space="preserve">
+    <value>Cashier unlocked</value>
+  </data>
+  <data name="Login_AdminSignedIn" xml:space="preserve">
+    <value>Administrator signed in</value>
+  </data>
+  <data name="Login_DefaultAdminCreated" xml:space="preserve">
+    <value>Default administrator created</value>
+  </data>
+  <data name="Login_DefaultAdminMessage" xml:space="preserve">
+    <value>Sign in with username '{0}' and password '{1}', then change it after setup.</value>
+    <comment>{0} = username, {1} = password</comment>
+  </data>
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!--  LoginPage — Teaching Tip                                    -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <data name="Login_PinTipTitle" xml:space="preserve">
+    <value>Cashier PIN</value>
+  </data>
+  <data name="Login_PinTipSubtitle" xml:space="preserve">
+    <value>The default Cashier PIN is 1234.</value>
+  </data>
+  <data name="Login_PinTipClose" xml:space="preserve">
+    <value>Close</value>
+  </data>
+
+</root>

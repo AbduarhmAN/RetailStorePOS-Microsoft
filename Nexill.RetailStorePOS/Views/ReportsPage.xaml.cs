@@ -1,4 +1,8 @@
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using global::RetailStorePOS.Data.Modules.Contracts;
+using global::RetailStorePOS.Data.Modules.Reporting;
+using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
@@ -10,12 +14,17 @@ public class ProductVelocityItem
 
 public sealed partial class ReportsPage : Page
 {
+    private static readonly WorkflowBoundary ReportingWorkflow = ReportingWorkflowContract.ReportingRefreshBoundary;
+
     public ReportsPage()
     {
         InitializeComponent();
-        
-        // Default to loading the dashboard completely instantly
-        Loaded += (_, _) => ReportsContentFrame.Navigate(typeof(ReportsDashboardPage));
+        Loaded += ReportsPage_Loaded;
+    }
+
+    private void ReportsPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        NavigateReportingSection(typeof(ReportsDashboardPage), ReportingWorkflowContract.DashboardReadModelQuery);
     }
 
     private void NavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -23,11 +32,19 @@ public sealed partial class ReportsPage : Page
         if (args.SelectedItem is NavigationViewItem item)
         {
             string tag = item.Tag?.ToString() ?? "";
-            
+
             if (tag == "Dashboard")
-                ReportsContentFrame.Navigate(typeof(ReportsDashboardPage));
+                NavigateReportingSection(typeof(ReportsDashboardPage), ReportingWorkflowContract.DashboardReadModelQuery);
             else if (tag == "Receipts")
-                ReportsContentFrame.Navigate(typeof(ReportsReceiptsPage));
+                NavigateReportingSection(typeof(ReportsReceiptsPage), ReportingWorkflowContract.ReceiptHistoryQuery);
         }
     }
+
+    private void NavigateReportingSection(Type pageType, ModuleContract contract)
+    {
+        _ = ReportingWorkflow;
+        _ = contract;
+        ReportsContentFrame.Navigate(pageType);
+    }
+
 }

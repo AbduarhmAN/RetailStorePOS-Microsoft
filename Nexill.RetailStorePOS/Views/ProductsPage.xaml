@@ -16,27 +16,27 @@
         </Grid.ColumnDefinitions>
 
         <ContentDialog x:Name="TransferStockDialog"
-                       Title="Transfer Stock"
+                       x:Uid="Products_Dialog_Transfer"
                        PrimaryButtonText="Transfer"
-                       CloseButtonText="Cancel"
+                       CloseButtonText="Discard"
                        PrimaryButtonClick="TransferStockDialog_PrimaryButtonClick">
             <StackPanel Spacing="16">
-                <TextBlock Text="Move items from Warehouse to Store." TextWrapping="Wrap" />
+                <TextBlock x:Uid="Products_Dialog_Transfer_Text" TextWrapping="Wrap" />
                 <Grid ColumnSpacing="24">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="4">
-                        <TextBlock Text="Available in Warehouse" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Products_Dialog_Transfer_WarehouseQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind SelectedProductWarehouseQuantityText, Mode=OneWay}" FontWeight="SemiBold" FontSize="18" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1" Spacing="4">
-                        <TextBlock Text="Current in Store" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Products_Dialog_Transfer_StoreQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <TextBlock Text="{x:Bind SelectedProductStoreQuantityText, Mode=OneWay}" FontWeight="SemiBold" FontSize="18" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </StackPanel>
                 </Grid>
-                <NumberBox x:Name="TransferQuantityBox" Minimum="1" Maximum="10000" Value="1" SpinButtonPlacementMode="Inline" Header="Quantity to move" Margin="0,8,0,0" common:NumericInputNormalization.NormalizeOnLostFocus="True" />
+                <NumberBox x:Name="TransferQuantityBox" Minimum="1" Maximum="10000" Value="1" SpinButtonPlacementMode="Inline" x:Uid="Products_Dialog_Transfer_QtyToMove" Margin="0,8,0,0" common:NumericInputNormalization.NormalizeOnLostFocus="True" />
             </StackPanel>
         </ContentDialog>
 
@@ -65,38 +65,92 @@
                                         HorizontalAlignment="Center"
                                         VerticalAlignment="Center" />
                         </Border>
-                        <TextBlock Text="Products"
+                        <TextBlock x:Uid="Products_Header_Title"
                                    FontSize="24"
                                    FontWeight="SemiBold"
                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </StackPanel>
-                    <TextBlock Text="Browse the live product catalog"
-                               TextWrapping="WrapWholeWords"
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <InfoBar IsOpen="{x:Bind HasCatalogInventoryAlerts, Mode=OneWay}"
                              Visibility="{x:Bind CatalogInventoryAlertVisibility, Mode=OneWay}"
                              Severity="{x:Bind CatalogInventoryAlertSeverity, Mode=OneWay}"
                              Message="{x:Bind CatalogInventoryAlertText, Mode=OneWay}"
-                             IsClosable="False" />
+                             IsClosable="False" 
+                           
+                             FontWeight="SemiBold"
+                             CornerRadius="5" Width="auto"/>
+                    <Border Visibility="{x:Bind ImportProgressVisibility, Mode=OneWay}"
+                            Background="{ThemeResource AccentFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Padding="12,10">
+                        <Grid RowSpacing="8"
+                              ColumnSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{x:Bind ImportProgressTitle, Mode=OneWay}"
+                                           FontWeight="SemiBold"
+                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                <TextBlock Text="{x:Bind ImportProgressDetail, Mode=OneWay}"
+                                           TextWrapping="WrapWholeWords"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Content="{x:Bind ImportCancelButtonText, Mode=OneWay}"
+                                    Click="CancelImportButton_Click"
+                                    IsEnabled="{x:Bind CanCancelImport, Mode=OneWay}"
+                                    VerticalAlignment="Top" />
+
+                            <Grid Grid.Row="1"
+                                  Grid.ColumnSpan="2"
+                                  ColumnSpacing="10">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <ProgressBar Value="{x:Bind ImportProgressPercent, Mode=OneWay}"
+                                             IsIndeterminate="{x:Bind IsImportProgressIndeterminate, Mode=OneWay}"
+                                             Minimum="0"
+                                             Maximum="100"
+                                             Height="8"
+                                             VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1"
+                                           Text="{x:Bind ImportProgressPercentText, Mode=OneWay}"
+                                           FlowDirection="LeftToRight"
+                                           VerticalAlignment="Center"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </Grid>
+                        </Grid>
+                    </Border>
                 </StackPanel>
 
                 <CommandBar Grid.Column="1"
                             Background="Transparent"
                             DefaultLabelPosition="Right"
                             VerticalAlignment="Top">
-                    <AppBarButton Label="Add" Click="AddProductButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                    <AppBarButton x:Uid="Products_Button_Add" Click="AddProductButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
                         <AppBarButton.Icon><SymbolIcon Symbol="Add" /></AppBarButton.Icon>
                     </AppBarButton>
-                    <AppBarButton Label="Import Data" Click="ImportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                    <AppBarButton x:Uid="Products_Button_Import" Click="ImportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
                         <AppBarButton.Icon><FontIcon Glyph="&#xE8B5;" /></AppBarButton.Icon>
                     </AppBarButton>
-                    <AppBarButton Label="Export Data" Click="ExportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                    <AppBarButton x:Uid="Products_Button_Export" Click="ExportDataButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
                         <AppBarButton.Icon><FontIcon Glyph="&#xE8D8;" /></AppBarButton.Icon>
                     </AppBarButton>
-                    <AppBarButton Label="Refresh" Click="RefreshButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                    <AppBarButton x:Uid="Products_Button_Refresh" Click="RefreshButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
                         <AppBarButton.Icon><SymbolIcon Symbol="Refresh" /></AppBarButton.Icon>
                     </AppBarButton>
-                    <AppBarButton Label="Clear" Click="ClearSearchButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
+                    <AppBarButton x:Uid="Products_Button_Clear" Click="ClearSearchButton_Click" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}">
                         <AppBarButton.Icon><SymbolIcon Symbol="Clear" /></AppBarButton.Icon>
                     </AppBarButton>
                 </CommandBar>
@@ -111,14 +165,33 @@
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
-                    <Grid Background="{ThemeResource ControlFillColorDefaultBrush}" Padding="12,0">
+                    <Grid Background="{ThemeResource ControlFillColorDefaultBrush}" Padding="12,0" BorderBrush="LightGray" CornerRadius="5" BorderThickness="1">
                         <Grid ColumnSpacing="8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <FontIcon Glyph="&#xE721;" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
-                            <TextBox Grid.Column="1" x:Name="SearchTextBox" PlaceholderText="Search products" Text="{x:Bind SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}" Background="Transparent" BorderBrush="Transparent" BorderThickness="0" Padding="0,10,0,10" />
+                            <TextBox Grid.Column="1" 
+                                     x:Name="SearchTextBox" 
+                                     x:Uid="Products_Search_Placeholder" 
+                                     Text="{x:Bind SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                     IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}" 
+                                     Background="Transparent" 
+                                     BorderBrush="Transparent" 
+                                     BorderThickness="0" 
+                                     Padding="0,10,0,10">
+                                <TextBox.Resources>
+                                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlElevationBorderBrush" Color="Transparent" />
+                                    <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                                </TextBox.Resources>
+                            </TextBox>
                         </Grid>
                     </Grid>
                     <Grid Grid.Row="1">
@@ -127,7 +200,6 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <TextBlock Text="{x:Bind ProductsCountText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Grid.Column="1" Text="{x:Bind SearchStatusText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </Grid>
                     <Grid Grid.Row="2">
                         <ListView x:Name="ProductsListView" ItemsSource="{x:Bind Products, Mode=OneWay}" SelectionMode="Single" IsItemClickEnabled="True" IsEnabled="{x:Bind CanBrowseProducts, Mode=OneWay}" SelectionChanged="ProductsListView_SelectionChanged" Padding="0" BorderThickness="0">
@@ -165,8 +237,8 @@
                                 <Border Width="56" Height="56" Background="{ThemeResource AccentFillColorSecondaryBrush}" HorizontalAlignment="Center">
                                     <SymbolIcon Symbol="Shop" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="No products found" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                <TextBlock Text="Try a different search term or clear the search box." TextWrapping="WrapWholeWords" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                <TextBlock x:Uid="Products_Count_None" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                <TextBlock x:Uid="Products_Count_Subtitle" TextWrapping="WrapWholeWords" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
                         </Border>
                 </Grid><!-- /Grid.Row="2" -->
@@ -177,7 +249,7 @@
 
 
         <!-- RIGHT COLUMN: Selected Product Details (full height) -->
-        <Border Grid.Column="1" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="18,16,18,18" VerticalAlignment="Stretch">
+        <Border Grid.Column="1" IsHitTestVisible="{x:Bind CanUseProductDetails, Mode=OneWay}" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="18,16,18,18" VerticalAlignment="Stretch">
                 <Grid RowSpacing="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -191,8 +263,6 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel Spacing="4">
-                            <TextBlock Text="{x:Bind RightPanelTitleText, Mode=OneWay}" FontSize="22" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                            <TextBlock Text="{x:Bind SelectedProductModeText, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="WrapWholeWords" />
                         </StackPanel>
                         <Border Grid.Column="1"
                                 HorizontalAlignment="Right"
@@ -205,14 +275,14 @@
                             <CommandBar Background="Transparent"
                                         DefaultLabelPosition="Right"
                                         VerticalAlignment="Center">
-                                <AppBarButton Label="Delete"
+                                <AppBarButton x:Uid="Products_Details_Delete"
                                               Click="DeleteProductButton_Click"
                                               Visibility="{x:Bind DeleteButtonVisibility, Mode=OneWay}">
                                     <AppBarButton.Icon>
                                         <SymbolIcon Symbol="Delete" />
                                     </AppBarButton.Icon>
                                 </AppBarButton>
-                                <AppBarButton Label="Transfer Stock"
+                                <AppBarButton x:Uid="Products_Details_Transfer"
                                               Click="TransferStockButton_Click"
                                               Visibility="{x:Bind SelectedProductViewVisibility, Mode=OneWay}">
                                     <AppBarButton.Icon>
@@ -227,7 +297,7 @@
                                         <SymbolIcon Symbol="{x:Bind SelectedProductActionSymbol, Mode=OneWay}" />
                                     </AppBarButton.Icon>
                                 </AppBarButton>
-                                <AppBarButton Label="Cancel"
+                                <AppBarButton x:Uid="Products_Details_Cancel"
                                               Click="CancelEditButton_Click"
                                               Visibility="{x:Bind SelectedProductCancelVisibility, Mode=OneWay}">
                                     <AppBarButton.Icon>
@@ -239,73 +309,103 @@
                     </Grid>
 
                     <StackPanel Grid.Row="1" Spacing="4">
-                        <TextBlock Text="{x:Bind StatusMessage, Mode=OneWay}" Visibility="{x:Bind StatusVisibility, Mode=OneWay}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="WrapWholeWords" />
+                        <InfoBar IsOpen="{x:Bind IsStatusOpen, Mode=OneWay}" 
+                                 Severity="{x:Bind StatusSeverity, Mode=OneWay}" 
+                                 Message="{x:Bind StatusMessage, Mode=OneWay}" 
+                                 IsClosable="True"
+                                 Margin="0,0,0,8" />
                         <InfoBar IsOpen="{x:Bind SelectedProductHasInventoryAlert, Mode=OneWay}" Visibility="{x:Bind SelectedProductInventoryAlertVisibility, Mode=OneWay}" Severity="{x:Bind SelectedProductInventoryAlertSeverity, Mode=OneWay}" Message="{x:Bind SelectedProductInventoryAlertText, Mode=OneWay}" IsClosable="False" />
                     </StackPanel>
 
                     <ScrollViewer Grid.Row="2" Margin="0,2,0,0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                         <StackPanel Spacing="12">
+                            <Grid x:Name="ProductImageContainer" Margin="0,0,0,12" Visibility="{x:Bind ProductImageContainerVisibility, Mode=OneWay}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border Width="120" Height="120" CornerRadius="8" Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Image Source="{x:Bind Draft.PreviewImageSource, Mode=OneWay}" 
+                                               Stretch="Uniform" 
+                                               AutomationProperties.Name="Product preview image"/>
+
+                                        <SymbolIcon Symbol="Camera" Opacity="0.2"
+                                                    Visibility="{x:Bind Draft.HasNoImage, Mode=OneWay}">
+                                            <SymbolIcon.RenderTransform>
+                                                <ScaleTransform ScaleX="2" ScaleY="2" CenterX="10" CenterY="10" />
+                                            </SymbolIcon.RenderTransform>
+                                        </SymbolIcon>
+                                    </Grid>
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0,0,0" Spacing="8" Visibility="{x:Bind ProductImageEditorVisibility, Mode=OneWay}">
+                                    <Button Content="{x:Bind ProductImageActionText, Mode=OneWay}" Click="ChangePictureButton_Click" Style="{StaticResource AccentButtonStyle}" />
+                                    <Button x:Uid="Products_Button_RemovePicture" Click="RemovePictureButton_Click" Visibility="{x:Bind Draft.HasImage, Mode=OneWay}" />
+                                </StackPanel>
+                            </Grid>
 
                             <Border Background="{ThemeResource ControlFillColorSecondaryBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" Padding="14" Visibility="{x:Bind SelectedProductViewVisibility, Mode=OneWay}">
                                 <StackPanel Spacing="12">
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Barcode" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_Barcode" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductBarcodeText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center">
-                                            <TextBlock Text="SKU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_SKU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductSkuText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     </Grid>
                                     <StackPanel Spacing="8" Visibility="{x:Bind PriceVisibility, Mode=OneWay}">
                                             <StackPanel Spacing="4">
-                                                <TextBlock Text="Cost price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock x:Uid="Products_Label_CostPrice" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBlock Text="{x:Bind SelectedProductCostPriceText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                             </StackPanel>
                                             <StackPanel Spacing="4">
-                                                <TextBlock Text="Sell price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock x:Uid="Products_Label_SellPrice" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBlock Text="{x:Bind SelectedProductPriceText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                             </StackPanel>
                                     </StackPanel>
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Store quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_StoreQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductStoreQuantityText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center">
-                                            <TextBlock Text="Warehouse quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_WarehouseQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductWarehouseQuantityText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     </Grid>
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Store threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_StoreThreshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductStoreThresholdText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center">
-                                            <TextBlock Text="Warehouse threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_WarehouseThreshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductWarehouseThresholdText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     </Grid>
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Purchased at" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_PurchasedAt" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductPurchasedAtText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="4" HorizontalAlignment="Center">
-                                            <TextBlock Text="Last sale at" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_LastSaleAt" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductLastSaleAtText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     </Grid>
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="4" Grid.ColumnSpan="2">
-                                            <TextBlock Text="Tax configuration" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_Tax" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductTaxText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" TextWrapping="Wrap" />
                                         </StackPanel>
                                     </Grid>
@@ -314,23 +414,23 @@
 
                             <StackPanel Spacing="14" Visibility="{x:Bind SelectedProductEditVisibility, Mode=OneWay}">
                                 <StackPanel Spacing="4">
-                                    <TextBlock Text="Edit details" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                    <TextBlock Text="Update the selected product inline and save when you're done." TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Uid="Products_Details_EditTitle" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    <TextBlock x:Uid="Products_Details_EditSubtitle" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
 
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="Name" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Uid="Products_Label_Name" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBox Text="{x:Bind Draft.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                 </StackPanel>
 
                                 <Grid ColumnSpacing="12">
                                     <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="Barcode" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Products_Label_Barcode" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBox Text="{x:Bind Draft.Barcode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                     </StackPanel>
                                     <StackPanel Grid.Column="1" Spacing="6">
-                                        <TextBlock Text="SKU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Products_Label_SKU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <TextBox Text="{x:Bind Draft.Sku, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                     </StackPanel>
                                 </Grid>
@@ -338,16 +438,16 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6" Grid.ColumnSpan="{x:Bind ProductValueColumnSpan, Mode=OneWay}">
-                                            <TextBlock Text="Unit" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_Unit" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="8" Visibility="{x:Bind PriceVisibility, Mode=OneWay}">
                                             <StackPanel Spacing="6">
-                                                <TextBlock Text="Cost price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock x:Uid="Products_Label_CostPrice" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBox Text="{x:Bind Draft.CostPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                             <StackPanel Spacing="6">
-                                                <TextBlock Text="Sell price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock x:Uid="Products_Label_SellPrice" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBox Text="{x:Bind Draft.PriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                         </StackPanel>
@@ -356,11 +456,11 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Store quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_StoreQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.QuantityStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
-                                            <TextBlock Text="Warehouse quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_WarehouseQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.QuantityWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
@@ -368,11 +468,11 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Store threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_StoreThreshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.MinThresholdStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
-                                            <TextBlock Text="Warehouse threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_WarehouseThreshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.MinThresholdWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
@@ -380,17 +480,17 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Purchased at" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_PurchasedAt" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <DatePicker Date="{x:Bind Draft.PurchasedAtDate, Mode=TwoWay}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Bottom">
-                                            <TextBlock Text="Last sale at" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_LastSaleAt" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBlock Text="{x:Bind SelectedProductLastSaleAtText, Mode=OneWay}" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                         </StackPanel>
                                     </Grid>
 
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="Tax" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Products_Label_Tax" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <ComboBox x:Name="EditTaxPicker" ItemsSource="{x:Bind TaxPickerItems, Mode=OneWay}" SelectedItem="{x:Bind SelectedTaxPickerItem, Mode=TwoWay}" SelectionChanged="TaxPicker_SelectionChanged" MinHeight="40" FontSize="15" Padding="10,6" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Stretch" CornerRadius="4">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate x:DataType="models:TaxPickerItem">
@@ -415,23 +515,23 @@
 
                             <StackPanel Spacing="14" Visibility="{x:Bind AddProductVisibility, Mode=OneWay}">
                                 <StackPanel Spacing="4">
-                                    <TextBlock Text="New product details" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                    <TextBlock Text="Fill in the fields below and press Save to add this product to the catalog." TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Uid="Products_Details_NewTitle" FontSize="18" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    <TextBlock x:Uid="Products_Details_NewSubtitle" TextWrapping="WrapWholeWords" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                 </StackPanel>
 
                                 <StackPanel Spacing="6">
-                                    <TextBlock Text="Name *" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                    <TextBlock x:Uid="Products_Label_Name_Required" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                     <TextBox Text="{x:Bind Draft.Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                 </StackPanel>
 
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Barcode" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_Barcode" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.Barcode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
-                                            <TextBlock Text="SKU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_SKU" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.Sku, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
@@ -439,16 +539,16 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6" Grid.ColumnSpan="1">
-                                            <TextBlock Text="Unit" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_Unit" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.Unit, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="8">
                                             <StackPanel Spacing="6">
-                                                <TextBlock Text="Cost price" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock x:Uid="Products_Label_CostPrice" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBox Text="{x:Bind Draft.CostPriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                             <StackPanel Spacing="6">
-                                                <TextBlock Text="Sell price *" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                                <TextBlock x:Uid="Products_Label_SellPrice_Required" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                 <TextBox Text="{x:Bind Draft.PriceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                             </StackPanel>
                                         </StackPanel>
@@ -457,11 +557,11 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Store quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_StoreQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.QuantityStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
-                                            <TextBlock Text="Warehouse quantity" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_WarehouseQty" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.QuantityWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
@@ -469,17 +569,17 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <StackPanel Spacing="6">
-                                            <TextBlock Text="Store threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_StoreThreshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.MinThresholdStoreText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Spacing="6">
-                                            <TextBlock Text="Warehouse threshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            <TextBlock x:Uid="Products_Label_WarehouseThreshold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                             <TextBox Text="{x:Bind Draft.MinThresholdWarehouseText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" MinHeight="40" FontSize="15" Padding="12,8" common:NumericInputNormalization.NormalizeOnLostFocus="True" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" />
                                         </StackPanel>
                                     </Grid>
 
                                     <StackPanel Spacing="6">
-                                        <TextBlock Text="Tax" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock x:Uid="Products_Label_Tax" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                         <ComboBox x:Name="AddTaxPicker" ItemsSource="{x:Bind TaxPickerItems, Mode=OneWay}" SelectedItem="{x:Bind SelectedTaxPickerItem, Mode=TwoWay}" SelectionChanged="TaxPicker_SelectionChanged" MinHeight="40" FontSize="15" Padding="10,6" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" HorizontalAlignment="Stretch" CornerRadius="4">
                                             <ComboBox.ItemTemplate>
                                                 <DataTemplate x:DataType="models:TaxPickerItem">
@@ -507,16 +607,41 @@
           HorizontalAlignment="Center" 
           VerticalAlignment="Center" />
 
-                            <TextBlock Text="Select a product" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                <TextBlock Text="Choose an item from the catalog to inspect its details." TextWrapping="WrapWholeWords" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Uid="Products_Details_SelectProduct" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                <TextBlock x:Uid="Products_Details_SelectSubtitle" TextWrapping="WrapWholeWords" HorizontalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
                         </StackPanel>
                     </ScrollViewer>
                 </Grid>
             </Border>
-        </Grid>
+        <Border Grid.ColumnSpan="2"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,12,0,0"
+                MaxWidth="440"
+                MinWidth="320"
+                Padding="16,14"
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Visibility="{x:Bind ImportFailureTipVisibility, Mode=OneWay}">
+            <StackPanel Spacing="12">
+                <TextBlock Text="{x:Bind ImportFailureTipTitle, Mode=OneWay}"
+                           FontSize="15"
+                           FontWeight="SemiBold"
+                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                <TextBlock Text="{x:Bind ImportFailureTipMessage, Mode=OneWay}"
+                           MaxWidth="408"
+                           TextWrapping="WrapWholeWords"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <StackPanel Orientation="Horizontal"
+                            HorizontalAlignment="Right">
+                    <Button Content="{x:Bind ImportFailureTipSkipText, Mode=OneWay}"
+                            Click="ImportFailureTipSkipButton_Click"
+                            CornerRadius="4" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Page>
-
-
-
-

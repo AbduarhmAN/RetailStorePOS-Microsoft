@@ -1,0 +1,2279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppTitle.Text" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="LoginPage_HeroBrandTitleText.Text" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="LoginPage_HeroBrandSubtitleText.Text" xml:space="preserve">
+    <value>نقطة البيع</value>
+  </data>
+  <data name="LoginPage_HeroHeadlineText.Text" xml:space="preserve">
+    <value>تسجيل دخول سريع وآمن</value>
+  </data>
+  <data name="LoginPage_HeroBodyText.Text" xml:space="preserve">
+    <value>استخدم ملف المتجر لتسجيل الدخول وفتح نقطة البيع ومتابعة خدمة العملاء.</value>
+  </data>
+  <data name="LoginPage_HeroSupportText.Text" xml:space="preserve">
+    <value>وضع الكاشير يحافظ على سرعة الخدمة.</value>
+  </data>
+  <data name="LoginPage_WelcomeText.Text" xml:space="preserve">
+    <value>مرحباً بعودتك</value>
+  </data>
+  <data name="LoginPage_ModeTitleText.Text" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+  <data name="LoginPage_CashierTabText.Text" xml:space="preserve">
+    <value>الكاشير</value>
+  </data>
+  <data name="LoginPage_AdminTabText.Text" xml:space="preserve">
+    <value>المدير</value>
+  </data>
+  <data name="LoginPage_ModeTitle_SignIn" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+  <data name="LoginPage_ModeSubtitle_Cashier" xml:space="preserve">
+    <value>اختر كاشير وسجل الدخول باستخدام الرقم السري</value>
+  </data>
+  <data name="LoginPage_ModeSubtitle_Setup" xml:space="preserve">
+    <value>استخدم حساب المدير لاداره متجرك.</value>
+  </data>
+  <data name="LoginPage_ModeSubtitle_Admin" xml:space="preserve">
+    <value>استخدم حساب المدير لاداره الموظفين و المخزون و التقارير و التحكم في المتجر.</value>
+  </data>
+  <data name="LoginPage_HeroSupport_Cashier" xml:space="preserve">
+    <value>وضع الكاشير يجعل عملية الدفع أسرع.</value>
+  </data>
+  <data name="LoginPage_HeroSupport_Setup" xml:space="preserve">
+    <value>يجب استخدام حساب المدير لإنهاء الإعداد قبل فتح المتجر.</value>
+  </data>
+  <data name="LoginPage_HeroSupport_Admin" xml:space="preserve">
+    <value>يجب استخدام حساب المدير لإنهاء الإعداد قبل فتح المتجر.</value>
+  </data>
+  <data name="LoginPage_Badge_Ready" xml:space="preserve">
+    <value>جاهز للاستخدام</value>
+  </data>
+  <data name="LoginPage_Badge_NoProfiles" xml:space="preserve">
+    <value>لا يوجد كاشير</value>
+  </data>
+  <data name="LoginPage_Helper_HasStaff" xml:space="preserve">
+    <value>اختر كاشير وسجل الدخول باستخدام الرقم السري</value>
+  </data>
+  <data name="LoginPage_Helper_NoStaff" xml:space="preserve">
+    <value>أضف موظف لتمكين تسجيل الدخول السريع للكاشير.</value>
+  </data>
+  <data name="LoginPage_AdminHelper_Setup" xml:space="preserve">
+    <value>استخدم حساب المسؤول لإكمال عملية الإعداد لأول مرة.</value>
+  </data>
+  <data name="LoginPage_AdminHelper_Admin" xml:space="preserve">
+    <value>قم بتسجيل الدخول كمسؤول لإدارة الموظفين والاطلاع على التقارير المالية والتحكم في إعدادات المتجر.</value>
+  </data>
+  <data name="LoginPage_SetupCallout_HasStaff" xml:space="preserve">
+    <value>أكمل إعداد المسؤول، وستكون ملفات الكاشير جاهزة للوردية القادمة.</value>
+  </data>
+  <data name="LoginPage_SetupCallout_NoStaff" xml:space="preserve">
+    <value>أكمل إعداد المسؤول، ثم أضف موظفي الكاشير بأرقام سرية.</value>
+  </data>
+  <data name="LoginPage_Status_CashierFailed" xml:space="preserve">
+    <value>فشل تسجيل دخول الكاشير</value>
+  </data>
+  <data name="LoginPage_Status_AdminFailed" xml:space="preserve">
+    <value>فشل تسجيل دخول المدير</value>
+  </data>
+  <data name="LoginPage_Status_CashierUnlocked" xml:space="preserve">
+    <value>فتح الكاشير</value>
+  </data>
+  <data name="LoginPage_Status_AdminSignedIn" xml:space="preserve">
+    <value>تسجيل دخول المدير</value>
+  </data>
+  <data name="LoginPage_Status_DefaultAdminCreated" xml:space="preserve">
+    <value>تم إنشاء حساب المدير الافتراضي</value>
+  </data>
+  <data name="LoginPage_Status_DefaultAdminMessage" xml:space="preserve">
+    <value>سجل الدخول باستخدام اسم المستخدم {0} وكلمة المرور {1} , ثم قم بتغييرها بعد الإعداد.</value>
+  </data>
+  <data name="LoginPage_CashierPanelTitle.Text" xml:space="preserve">
+    <value>الكاشير</value>
+  </data>
+  <data name="LoginPage_AdminPanelTitle.Text" xml:space="preserve">
+    <value>المدير</value>
+  </data>
+  <data name="LoginPage_CashierHelperText.Text" xml:space="preserve">
+    <value>اختر كاشير وسجل الدخول باستخدام الرقم السري</value>
+  </data>
+  <data name="LoginPage_CashierCountBadgeText.Text" xml:space="preserve">
+    <value>جاهز للاستخدام</value>
+  </data>
+  <data name="LoginPage_CashierEmptyState_Title.Text" xml:space="preserve">
+    <value>لا يوجد كاشير</value>
+  </data>
+  <data name="LoginPage_CashierEmptyState_Body.Text" xml:space="preserve">
+    <value>أضف موظف لتمكين تسجيل الدخول السريع للكاشير.</value>
+  </data>
+  <data name="LoginPage_AdminHelperText.Text" xml:space="preserve">
+    <value>قم بتسجيل الدخول كمسؤول لإدارة الموظفين والاطلاع على التقارير المالية والتحكم في إعدادات المتجر.</value>
+  </data>
+  <data name="LoginPage_SetupCallout_Title.Text" xml:space="preserve">
+    <value>إعداد المتجر لأول مرة</value>
+  </data>
+  <data name="LoginPage_SetupCalloutText.Text" xml:space="preserve">
+    <value>أكمل إعداد المدير , ثم أضف ملفات الكاشير برقم سري لتسجيل دخول سريع في المره القادمه.</value>
+  </data>
+  <data name="LoginPage_UsernameLabel.Text" xml:space="preserve">
+    <value>اسم المستخدم</value>
+  </data>
+  <data name="LoginPage_UsernameBox.PlaceholderText" xml:space="preserve">
+    <value>أدخل اسم المستخدم</value>
+  </data>
+  <data name="LoginPage_PasswordLabel.Text" xml:space="preserve">
+    <value>كلمة المرور</value>
+  </data>
+  <data name="LoginPage_AdminPasswordBox.PlaceholderText" xml:space="preserve">
+    <value>ادخل كلمة السر</value>
+  </data>
+  <data name="LoginPage_OnboardingHint_Title.Text" xml:space="preserve">
+    <value>إعداد المدير لأول مرة</value>
+  </data>
+  <data name="LoginPage_OnboardingHint_Body.Text" xml:space="preserve">
+    <value>اسم المستخدم الافتراضي: admin | كلمة المرور: 1234</value>
+  </data>
+  <data name="LoginPage_PinLabel.Text" xml:space="preserve">
+    <value>ادخل الرقم السري</value>
+  </data>
+  <data name="LoginPage_PinPasswordBox.PlaceholderText" xml:space="preserve">
+    <value>ادخل الرقم السري المكون من 4 ارقام</value>
+  </data>
+  <data name="LoginPage_LoginButton.Content" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+  <data name="LoginPage_CashierPinTip.Title" xml:space="preserve">
+    <value>الرقم السري للكاشير</value>
+  </data>
+  <data name="LoginPage_CashierPinTip.Subtitle" xml:space="preserve">
+    <value>الرقم السري الافتراضي هو 1234.</value>
+  </data>
+  <data name="LoginPage_CloseButton.Content" xml:space="preserve">
+    <value>اغلاق</value>
+  </data>
+
+  
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="MainWindow_ShellContextText.Text" xml:space="preserve">
+    <value>التحكم اليومي في المتجر</value>
+  </data>
+  <data name="MainWindow_RegisterStatusText.Text" xml:space="preserve">
+    <value>لا يوجد سجل نشط</value>
+  </data>
+  <data name="MainWindow_CashInOutMenuItem.Text" xml:space="preserve">
+    <value>ايداع/سحب نقدي</value>
+  </data>
+  <data name="MainWindow_CloseRegisterMenuItem.Text" xml:space="preserve">
+    <value>إغلاق اليومية</value>
+  </data>
+  <data name="MainWindow_LogoutMenuItem.Text" xml:space="preserve">
+    <value>تسجيل الخروج</value>
+  </data>
+  <data name="MainWindow_Tutorial_Title.Text" xml:space="preserve">
+    <value>التنقل الرئيسي</value>
+  </data>
+  <data name="MainWindow_Tutorial.Title" xml:space="preserve">
+    <value>التنقل الرئيسي</value>
+  </data>
+  <data name="MainWindow_Tutorial_Subtitle.Text" xml:space="preserve">
+    <value>استخدم هذا الزر لفتح واغلاق التنقل في التطبيق.</value>
+  </data>
+  <data name="MainWindow_Tutorial.Subtitle" xml:space="preserve">
+    <value>استخدم هذا الزر لفتح وإغلاق التنقل في التطبيق.</value>
+  </data>
+  <data name="MainWindow_Tutorial_CloseButton.Content" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="MainWindow_Tutorial.CloseButtonContent" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="MainWindow_Splash_Title.Text" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="MainWindow_Splash_Subtitle.Text" xml:space="preserve">
+    <value>إداره المتجر ونقطه البيع</value>
+  </data>
+  <data name="MainWindow_SplashStatusTitle.Text" xml:space="preserve">
+    <value>جاري بدء تشغيل الخدمات...</value>
+  </data>
+  <data name="MainWindow_SplashStatusDetail.Text" xml:space="preserve">
+    <value>جاري تحميل قاعده البيانات , والخدمات , وبيئه التشغيل.</value>
+  </data>
+  <data name="MainWindow_Status_RegisterActive" xml:space="preserve">
+    <value>يوجد سجل نشط</value>
+  </data>
+  <data name="MainWindow_Status_NoActiveRegister" xml:space="preserve">
+    <value>لا يوجد سجل نشط</value>
+  </data>
+  <data name="MainWindow_Status_RegisterUnavailable" xml:space="preserve">
+    <value>السجل غير متاح</value>
+  </data>
+  <data name="MainWindow_Status_StartupError" xml:space="preserve">
+    <value>خطأ في بدء التشغيل</value>
+  </data>
+  <data name="MainWindow_Tutorial_Step0_Title" xml:space="preserve">
+    <value>القائمه الرئيسيه</value>
+  </data>
+  <data name="MainWindow_Tutorial_Step0_Subtitle" xml:space="preserve">
+    <value>استخدم هذا الزر لفتح واغلاق القائمهالرئيسية في التطبيق.</value>
+  </data>
+  <data name="MainWindow_Context_SecureSignIn" xml:space="preserve">
+    <value>تسجيل الدخول الامن</value>
+  </data>
+  <data name="MainWindow_Context_Checkout" xml:space="preserve">
+    <value>نقطه البيع</value>
+  </data>
+  <data name="MainWindow_Context_Products" xml:space="preserve">
+    <value>اداره المنتجات</value>
+  </data>
+  <data name="MainWindow_Context_Reports" xml:space="preserve">
+    <value>التقارير</value>
+  </data>
+  <data name="MainWindow_Context_StoreSettings" xml:space="preserve">
+    <value>اعدادات المتجر</value>
+  </data>
+  <data name="MainWindow_Context_Tax" xml:space="preserve">
+    <value>الضرائب</value>
+  </data>
+  <data name="MainWindow_Context_Users" xml:space="preserve">
+    <value> الموظفين و المدراء</value>
+  </data>
+  <data name="MainWindow_Context_Preferences" xml:space="preserve">
+    <value>اعدادات الشخصيه </value>
+  </data>
+  <data name="MainWindow_Context_About" xml:space="preserve">
+    <value>حول التطبيق</value>
+  </data>
+  <data name="MainWindow_Context_Default" xml:space="preserve">
+    <value>التحكم اليومي في المتجر</value>
+  </data>
+
+  
+  <data name="SettingsPage_Nav_Checkout.Content" xml:space="preserve">
+    <value>نقطه البيع</value>
+  </data>
+  <data name="SettingsPage_Nav_Checkout.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>نقطه البيع</value>
+  </data>
+  <data name="SettingsPage_Nav_Products.Content" xml:space="preserve">
+    <value>اداره المنتجات</value>
+  </data>
+  <data name="SettingsPage_Nav_Products.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>اداره المنتجات</value>
+  </data>
+  <data name="SettingsPage_Nav_Reports.Content" xml:space="preserve">
+    <value>التقارير</value>
+  </data>
+  <data name="SettingsPage_Nav_Reports.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>التقارير</value>
+  </data>
+  <data name="SettingsPage_Nav_Settings.Content" xml:space="preserve">
+    <value>اعدادات التطبيق</value>
+  </data>
+  <data name="SettingsPage_Nav_Settings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>اعدادات التطبيق</value>
+  </data>
+  <data name="SettingsPage_Nav_Store.Content" xml:space="preserve">
+    <value>اعدادات المتجر</value>
+  </data>
+  <data name="SettingsPage_Nav_Store.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>اعدادات المتجر</value>
+  </data>
+  <data name="SettingsPage_Nav_Tax.Content" xml:space="preserve">
+    <value>الضرائب</value>
+  </data>
+  <data name="SettingsPage_Nav_Tax.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>الضرائب</value>
+  </data>
+  <data name="SettingsPage_Nav_Users.Content" xml:space="preserve">
+    <value>الموظفين و المدراء</value>
+  </data>
+  <data name="SettingsPage_Nav_Users.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>الموظفين و المدراء</value>
+  </data>
+  <data name="SettingsPage_Nav_Prefs.Content" xml:space="preserve">
+    <value>اعدادات الشخصيه</value>
+  </data>
+  <data name="SettingsPage_Nav_Prefs.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>اعدادات الشخصيه</value>
+  </data>
+  <data name="SettingsPage_Nav_About.Content" xml:space="preserve">
+    <value>حول التطبيق</value>
+  </data>
+  <data name="SettingsPage_Nav_About.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>حول التطبيق</value>
+  </data>
+  <data name="SettingsPage_Nav_SignOut.Content" xml:space="preserve">
+    <value>تسجيل الخروج</value>
+  </data>
+  <data name="SettingsPage_Nav_SignOut.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>تسجيل الخروج</value>
+  </data>
+
+  
+  <data name="StoreManagement_Header_Title.Text" xml:space="preserve">
+    <value>اعدادات المتجر</value>
+  </data>
+  <data name="StoreManagement_Header_Subtitle.Text" xml:space="preserve">
+    <value>اداره تفاصيل المتجر , وطباعه الفواتير , والضرائب المستخدمة في التطبيق.</value>
+  </data>
+  <data name="StoreManagement_SaveButton.Content" xml:space="preserve">
+    <value>حفظ التغييرات</value>
+  </data>
+  <data name="StoreManagement_StoreIdentity_Title.Text" xml:space="preserve">
+    <value>معلومات المتجر</value>
+  </data>
+  <data name="StoreManagement_StoreIdentity_Subtitle.Text" xml:space="preserve">
+    <value>تظهر هذه التفاصيل في الفواتير والوثائق الموجهه للعملاء.</value>
+  </data>
+  <data name="StoreManagement_StoreName_Label.Text" xml:space="preserve">
+    <value>اسم المتجر</value>
+  </data>
+  <data name="StoreManagement_StoreAddress_Label.Text" xml:space="preserve">
+    <value>عنوان المتجر</value>
+  </data>
+  <data name="StoreManagement_CheckoutDefaults_Title.Text" xml:space="preserve">
+    <value>إعدادات نقطه البيع</value>
+  </data>
+  <data name="StoreManagement_Region_Label.Text" xml:space="preserve">
+    <value>المنطقه</value>
+  </data>
+  <data name="StoreManagement_Currency_Label.Text" xml:space="preserve">
+    <value>العمله</value>
+  </data>
+  <data name="StoreManagement_PrintingSettings_Title.Text" xml:space="preserve">
+    <value>الطباعة</value>
+  </data>
+  <data name="StoreManagement_PrintingSettings_Subtitle.Text" xml:space="preserve">
+    <value>اختر الطابعة المثبتة التي سيتم استخدامها للفواتير والتقارير.</value>
+  </data>
+  <data name="StoreManagement_Printer_Label.Text" xml:space="preserve">
+    <value>الطابعة</value>
+  </data>
+  <data name="StoreManagement_Printer_DefaultOption" xml:space="preserve">
+    <value>طابعة النظام الافتراضية</value>
+  </data>
+  <data name="StoreManagement_LanguageRegion_Title.Text" xml:space="preserve">
+    <value>اللغه و المنطقه</value>
+  </data>
+  <data name="StoreManagement_RestartRequired.Title" xml:space="preserve">
+    <value>مطلوب إعادة تشغيل</value>
+  </data>
+  <data name="StoreManagement_RestartRequired.Message" xml:space="preserve">
+    <value>ستدخل التغييرات على لغة التطبيق حيز التنفيذ في المرة القادمة التي تفتح فيها Nexill.</value>
+  </data>
+    <data name="StoreManagement_RestartButton.Content" xml:space="preserve">
+    <value>إعادة التشغيل الآن</value>
+  </data>
+  <data name="StoreManagement_AppLanguage_Label.Text" xml:space="preserve">
+    <value>لغه التطبيق</value>
+  </data>
+  <data name="StoreManagement_StoreLanguage_Label.Text" xml:space="preserve">
+    <value>لغه الفواتير</value>
+  </data>
+  <data name="StoreManagement_DashboardSettings_Title.Text" xml:space="preserve">
+    <value>اعدادات لوحه التحكم</value>
+  </data>
+  <data name="StoreManagement_DashboardSettings_Subtitle.Text" xml:space="preserve">
+    <value>حدد المقاييس والأهداف المعروضة في لوحة التحكم.</value>
+  </data>
+  <data name="StoreManagement_DailyTarget_Label.Text" xml:space="preserve">
+    <value>الهدف اليومي للمبيعات</value>
+  </data>
+  <data name="StoreManagement_FreshStart_Title.Text" xml:space="preserve">
+    <value>بداية جديدة</value>
+  </data>
+  <data name="StoreManagement_FreshStart_Subtitle.Text" xml:space="preserve">
+    <value>حذف الكتالوج المحلي، المستخدمين، الإيصالات، التفضيلات، بيانات الاعتماد الآمنة، ومخزن القياسات. سيفتح التطبيق كأنه تثبيت جديد.</value>
+  </data>
+  <data name="StoreManagement_ResetButton.Content" xml:space="preserve">
+    <value>إعادة تعيين بيانات التطبيق</value>
+  </data>
+  <data name="StoreManagement_ResetButton.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>يمسح بيانات التطبيق المحلية ويعيد تشغيل التطبيق من جديد.</value>
+  </data>
+
+  
+  <data name="TaxConfiguration_Header_Title.Text" xml:space="preserve">
+    <value>اداره الضرائب</value>
+  </data>
+  <data name="TaxConfiguration_Header_Subtitle.Text" xml:space="preserve">
+    <value>اداره سلوك الضريبه , والقواعد , والمناطق , والتجاوزات لضمان الامتثال.</value>
+  </data>
+  <data name="TaxConfiguration_SaveButton.Content" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="TaxConfiguration_TaxEngine_Title.Text" xml:space="preserve">
+    <value>محرك معالجه الضرائب</value>
+  </data>
+  <data name="TaxConfiguration_TaxEngine_Subtitle.Text" xml:space="preserve">
+    <value>يؤدي إيقاف تشغيل هذا إلى تجاوز جميع مجموعات الضرائب.</value>
+  </data>
+  <data name="TaxConfiguration_EnableTax_Label.Content" xml:space="preserve">
+    <value>تمكين محرك معالجه الضرائب</value>
+  </data>
+  <data name="TaxConfiguration_DefaultRate_Label.Text" xml:space="preserve">
+    <value>نسبة الضريبة الافتراضية (%)</value>
+  </data>
+  <data name="TaxConfiguration_Rounding_Title.Text" xml:space="preserve">
+    <value>إعدادات تقريب المبالغ</value>
+  </data>
+  <data name="TaxConfiguration_Rounding_Subtitle.Text" xml:space="preserve">
+    <value>تحديد كيفية معالجة الكسور العشرية عند الدفع.</value>
+  </data>
+  <data name="TaxConfiguration_RoundingStrategy_Label.Text" xml:space="preserve">
+    <value>استراتيجية تقريب الضرائب</value>
+  </data>
+  <data name="TaxConfiguration_RoundingStrategy_Tip.Text" xml:space="preserve">
+    <value>الوضع الافتراضي هو التقريب القياسي (للأعلى)</value>
+  </data>
+  <data name="TaxConfiguration_CashRounding_Label.Text" xml:space="preserve">
+    <value>وحدة تقريب النقد</value>
+  </data>
+  <data name="TaxConfiguration_CashRounding_Tip.Text" xml:space="preserve">
+    <value>تُستخدم في العملات التي لا تتوفر فيها فئات معدنية صغيرة</value>
+  </data>
+  <data name="TaxConfiguration_Authorities_Title.Text" xml:space="preserve">
+    <value>الهيئات الضريبية</value>
+  </data>
+  <data name="TaxConfiguration_Authorities_Subtitle.Text" xml:space="preserve">
+    <value>الجهات الحكومية التي يتم تحصيل الضرائب لصالحها (الولاية، المدينة، إلخ).</value>
+  </data>
+  <data name="TaxConfiguration_AddAuthority_Button.Content" xml:space="preserve">
+    <value>＋ إضافة هيئة ضريبية</value>
+  </data>
+  <data name="TaxConfiguration_Rules_Title.Text" xml:space="preserve">
+    <value>معدلات وقواعد الضرائب</value>
+  </data>
+  <data name="TaxConfiguration_Rules_Subtitle.Text" xml:space="preserve">
+    <value>النسب المئوية أو الرسوم الثابتة التي يتم احتسابها (مثل: 7٪ ضريبة مبيعات).</value>
+  </data>
+  <data name="TaxConfiguration_AddRule_Button.Content" xml:space="preserve">
+    <value>＋ إضافة قاعدة ضريبية</value>
+  </data>
+  <data name="TaxConfiguration_Groups_Title.Text" xml:space="preserve">
+    <value>ملفات ضرائب المنتجات</value>
+  </data>
+  <data name="TaxConfiguration_Groups_Subtitle.Text" xml:space="preserve">
+    <value>مجموعات من معدلات الضرائب المطبقة على المنتجات. قم بتعيين المنتجات لهذه الملفات لتطبيق الضرائب الصحيحة.</value>
+  </data>
+  <data name="TaxConfiguration_AddGroup_Button.Content" xml:space="preserve">
+    <value>＋ إضافة مجموعة ضريبية</value>
+  </data>
+  <data name="TaxConfiguration_DefaultBadge.Text" xml:space="preserve">
+    <value>افتراضي</value>
+  </data>
+
+  
+  <data name="MyPreferences_Header_Title.Text" xml:space="preserve">
+    <value>إعداداتي الشخصية</value>
+  </data>
+  <data name="MyPreferences_Header_Subtitle.Text" xml:space="preserve">
+    <value>هذه الإعدادات تنطبق فقط على حسابك وهي مصممة لتسريع عملية الدفع.</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Title.Text" xml:space="preserve">
+    <value>أزرار النقد السريع</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Subtitle.Text" xml:space="preserve">
+    <value>تعيين اختصارات النقد المعروضة في شاشة الدفع. يتم الحفظ تلقائيًا.</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Value1.Header" xml:space="preserve">
+    <value>القيمة 1</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Value2.Header" xml:space="preserve">
+    <value>القيمة 2</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Value3.Header" xml:space="preserve">
+    <value>القيمة 3</value>
+  </data>
+
+  
+  <data name="Checkout_Alert_InventoryTitle" xml:space="preserve">
+    <value>تنبيه المخزون</value>
+  </data>
+  <data name="Checkout_Alert_LowStockWarning" xml:space="preserve">
+    <value>تحذير انخفاض المخزون</value>
+  </data>
+  <data name="Checkout_Inventory_OutOfStock_Shelf" xml:space="preserve">
+    <value>نفذ من المخزن (الرف)</value>
+  </data>
+  <data name="Checkout_Inventory_LowStock_Shelf" xml:space="preserve">
+    <value>انخفاض المخزن (الرف)</value>
+  </data>
+  <data name="Checkout_Inventory_OutOfStock_Warehouse" xml:space="preserve">
+    <value>نفذ من المخزن (المستودع)</value>
+  </data>
+  <data name="Checkout_Inventory_LowStock_Warehouse" xml:space="preserve">
+    <value>انخفاض المخزن (المستودع)</value>
+  </data>
+  <data name="Checkout_Inventory_QuantityLeft_Format" xml:space="preserve">
+    <value>متبقي {0}</value>
+  </data>
+  <data name="Checkout_Discount_Title" xml:space="preserve">
+    <value>تطبيق الخصم</value>
+  </data>
+  <data name="Checkout_Discount.Title" xml:space="preserve">
+    <value>تطبيق الخصم</value>
+  </data>
+  <data name="Checkout_Discount.PrimaryButtonText" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="Checkout_Discount.CloseButtonText" xml:space="preserve">
+    <value>تجاهل</value>
+  </data>
+  <data name="Checkout_Discount_PrimaryButton.Content" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="Checkout_Discount_CloseButton.Content" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Checkout_Discount_Text.Text" xml:space="preserve">
+    <value>أدخل قيمة الخصم لتطبيقها على السلة بالكامل.</value>
+  </data>
+  <data name="Checkout_Discount_TypeLabel.Text" xml:space="preserve">
+    <value>نوع الخصم</value>
+  </data>
+  <data name="Checkout_Discount_Percentage" xml:space="preserve">
+    <value>نسبة مئوية (%)</value>
+  </data>
+  <data name="Checkout_Discount_Amount" xml:space="preserve">
+    <value>قيمة نقدية</value>
+  </data>
+  <data name="Checkout_Discount_ValueHeader.Header" xml:space="preserve">
+    <value>قيمة الخصم</value>
+  </data>
+  <data name="Checkout_Discount_PresetsTitle.Text" xml:space="preserve">
+    <value>خصومات سريعة</value>
+  </data>
+  <data name="Checkout_Discount_SummaryLabel.Text" xml:space="preserve">
+    <value>ملخص الخصم: </value>
+  </data>
+  <data name="Checkout_Cart_DiscountButton.Content" xml:space="preserve">
+    <value>خصم</value>
+  </data>
+  <data name="Checkout_Cart_ClearButton.Content" xml:space="preserve">
+    <value>مسح السلة</value>
+  </data>
+  <data name="Checkout_Cart_ItemHeader.Text" xml:space="preserve">
+    <value>الصنف</value>
+  </data>
+  <data name="Checkout_Cart_EmptyTitle.Text" xml:space="preserve">
+    <value>لا توجد أصناف بعد</value>
+  </data>
+  <data name="Checkout_Cart_EmptySubtitle.Text" xml:space="preserve">
+    <value>ابحث عن منتج من القائمة على اليمين وأضفه لبدء البيع.</value>
+  </data>
+  <data name="Checkout_Footer_GrandTotal.Text" xml:space="preserve">
+    <value>الإجمالي الكلي</value>
+  </data>
+  <data name="Checkout_Footer_SubtotalLabel.Text" xml:space="preserve">
+    <value>المجموع </value>
+  </data>
+  <data name="Checkout_Footer_TaxLabel.Text" xml:space="preserve">
+    <value>الضريبة </value>
+  </data>
+  <data name="Checkout_Footer_TaxSuffix" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="Checkout_Search_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>البحث عن منتجات</value>
+  </data>
+  <data name="Checkout_Pay_TenderBox.Header" xml:space="preserve">
+    <value>النقدي</value>
+  </data>
+  <data name="Checkout_Pay_TenderBox.PlaceholderText" xml:space="preserve">
+    <value>المبلغ المدفوع نقداً</value>
+  </data>
+  <data name="Checkout_Pay_TenderBox.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>اختصار: Ctrl+D</value>
+  </data>
+  <data name="Checkout_Pay_TenderPlaceholder.PlaceholderText" xml:space="preserve">
+    <value>المبلغ المدفوع نقداً</value>
+  </data>
+  <data name="Checkout_Pay_TenderTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>اختصار: Ctrl+D</value>
+  </data>
+  <data name="Checkout_Pay_ExactButtonText.Text" xml:space="preserve">
+    <value>المبلغ بالضبط</value>
+  </data>
+  <data name="Checkout_Pay_ChangeLabel.Text" xml:space="preserve">
+    <value>الباقي:</value>
+  </data>
+  <data name="Checkout_Pay_CompleteButton.Content" xml:space="preserve">
+    <value>إتمام البيع</value>
+  </data>
+  <data name="Checkout_Receipt_CompleteTitle.Text" xml:space="preserve">
+    <value>عملية ناجحة</value>
+  </data>
+  <data name="Checkout_Receipt_NumberLabel" xml:space="preserve">
+    <value>رقم الفاتورة # </value>
+  </data>
+  <data name="Checkout_Receipt_ChangeDueLabel.Text" xml:space="preserve">
+    <value>الباقي المستحق</value>
+  </data>
+  <data name="Checkout_Receipt_TotalCharged.Text" xml:space="preserve">
+    <value>المبلغ المطلوب</value>
+  </data>
+  <data name="Checkout_Receipt_PrinterTip.Text" xml:space="preserve">
+    <value>استخدم نافذة طباعة Windows لاختيار الطابعة.</value>
+  </data>
+  <data name="Checkout_Receipt_PrintButton.Content" xml:space="preserve">
+    <value>طباعة الفاتورة</value>
+  </data>
+  <data name="Checkout_Receipt_FolderButton.Content" xml:space="preserve">
+    <value>مجلد الفواتير</value>
+  </data>
+  <data name="Checkout_Receipt_NewSaleButton.Content" xml:space="preserve">
+    <value>عملية بيع جديدة</value>
+  </data>
+  <data name="Checkout_Register_ClosedTitle.Text" xml:space="preserve">
+    <value>اليومية مغلقة</value>
+  </data>
+  <data name="Checkout_Register_ClosedText.Text" xml:space="preserve">
+    <value>يجب فتح اليومية قبل البدء في البيع. أدخل مبلغ العهدة لبدء ورديتك.</value>
+  </data>
+  <data name="Checkout_Register_OpenButton.Content" xml:space="preserve">
+    <value>فتح اليومية</value>
+  </data>
+  <data name="Checkout_Search_Count_Single" xml:space="preserve">
+    <value>منتج واحد</value>
+  </data>
+  <data name="Checkout_Search_Count_Plural" xml:space="preserve">
+    <value>{0} منتجات</value>
+  </data>
+
+  
+  <data name="Checkout_ClearCart_Title" xml:space="preserve">
+    <value>مسح العملية الحالية؟</value>
+  </data>
+  <data name="Checkout_ClearCart_Content" xml:space="preserve">
+    <value>سيؤدي هذا إلى إزالة جميع الأصناف من عملية البيع الحالية.</value>
+  </data>
+  <data name="Checkout_ClearCart_PrimaryButton" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="Checkout_ClearCart_CloseButton" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Checkout_PriceOverride_Title" xml:space="preserve">
+    <value>تعديل السعر</value>
+  </data>
+  <data name="Checkout_PriceOverride_Help" xml:space="preserve">
+    <value>حدد سعر البيع الجديد لهذا الصنف في السلة.</value>
+  </data>
+  <data name="Checkout_PriceOverride_CurrentLabel" xml:space="preserve">
+    <value>السعر الحالي</value>
+  </data>
+  <data name="Checkout_PriceOverride_NewLabel" xml:space="preserve">
+    <value>السعر الجديد</value>
+  </data>
+  <data name="Checkout_PriceOverride_OriginalFormat" xml:space="preserve">
+    <value>السعر الأصلي: {0}</value>
+  </data>
+  <data name="Checkout_PriceOverride_DifferentAmount" xml:space="preserve">
+    <value>أدخل قيمة مختلفة لتغيير السعر.</value>
+  </data>
+  <data name="Checkout_PriceOverride_IncreaseFormat" xml:space="preserve">
+    <value>زيادة بمقدار {0}.</value>
+  </data>
+  <data name="Checkout_PriceOverride_DiscountFormat" xml:space="preserve">
+    <value>خصم بمقدار {0}.</value>
+  </data>
+  <data name="Checkout_PriceOverride_Apply" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="Checkout_PriceOverride_Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+
+  
+  <data name="Reports_Nav_Dashboard.Content" xml:space="preserve">
+    <value>لوحة التحكم</value>
+  </data>
+  <data name="Reports_Nav_Receipts.Content" xml:space="preserve">
+    <value>الفواتير</value>
+  </data>
+  <data name="ReportsPage_LastRefreshText.Text" xml:space="preserve">
+    <value>لم يتم التحديث بعد</value>
+  </data>
+  <data name="ReportsPage_RunReadinessButton.Content" xml:space="preserve">
+    <value>تشغيل فحص الجاهزية</value>
+  </data>
+  <data name="ReportsPage_LastRefresh_Format" xml:space="preserve">
+    <value>آخر تحديث: {0}</value>
+  </data>
+  <data name="ReportsPage_LastRefresh_NotRefreshed" xml:space="preserve">
+    <value>لم يتم التحديث بعد</value>
+  </data>
+  <data name="ReportsPage_LastRefresh_Unknown" xml:space="preserve">
+    <value>الحالة غير معروفة</value>
+  </data>
+  <data name="ReportsPage_Readiness_Running" xml:space="preserve">
+    <value>جار تشغيل فحص الجاهزية...</value>
+  </data>
+  <data name="ReportsPage_Readiness_StatusSummary" xml:space="preserve">
+    <value>نتيجة الجاهزية {0}: {1} أعطال مانعة و{2} ملاحظات.</value>
+  </data>
+  <data name="ReportsPage_Readiness_DialogTitle" xml:space="preserve">
+    <value>نتائج فحص الجاهزية</value>
+  </data>
+  <data name="ReportsPage_Readiness_DialogBody" xml:space="preserve">
+    <value>الحالة: {0}
+بدأ في: {1}
+اكتمل في: {2}
+
+الأعطال المانعة: {3}
+الملاحظات: {4}
+
+{5}</value>
+  </data>
+  <data name="ReportsPage_Readiness_CloseButton" xml:space="preserve">
+    <value>موافق</value>
+  </data>
+  <data name="ReportsPage_Readiness_ErrorFormat" xml:space="preserve">
+    <value>خطأ: {0}</value>
+  </data>
+  <data name="ReportsPage_Readiness_OverallStatus_Passed" xml:space="preserve">
+    <value>ناجح</value>
+  </data>
+  <data name="ReportsPage_Readiness_OverallStatus_Failed" xml:space="preserve">
+    <value>فاشل</value>
+  </data>
+  <data name="ReportsPage_Readiness_OverallStatus_CompletedWithObservations" xml:space="preserve">
+    <value>اكتمل مع ملاحظات</value>
+  </data>
+
+  
+  <data name="ReportsDashboard_StaleStatusText.Text" xml:space="preserve">
+    <value>عرض اللقطة المحفوظة (جار التحديث...)</value>
+  </data>
+  <data name="ReportsDashboard_RefreshFailedSnapshot" xml:space="preserve">
+    <value>فشل التحديث (يتم عرض اللقطة المحفوظة)</value>
+  </data>
+  <data name="ReportsDashboard_Subtitle.Text" xml:space="preserve">
+    <value>إليك نظرة عامة على نشاط متجرك اليوم.</value>
+  </data>
+  <data name="ReportsDashboard_KPI_SalesToday.Text" xml:space="preserve">
+    <value>مبيعات اليوم</value>
+  </data>
+  <data name="ReportsDashboard_KPI_NetProfit.Text" xml:space="preserve">
+    <value>صافي أرباح اليوم</value>
+  </data>
+  <data name="ReportsDashboard_KPI_InvoiceCount.Text" xml:space="preserve">
+    <value>عدد الفواتير</value>
+  </data>
+  <data name="ReportsDashboard_KPI_AvgInvoiceValue.Text" xml:space="preserve">
+    <value>متوسط قيمة الفاتورة</value>
+  </data>
+  <data name="ReportsDashboard_MedianLabel.Text" xml:space="preserve">
+    <value>القيمة الوسيطة:</value>
+  </data>
+  <data name="ReportsDashboard_Target_Title.Text" xml:space="preserve">
+    <value>المبيعات مقابل الهدف</value>
+  </data>
+  <data name="ReportsDashboard_Target_TodayLabel.Text" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="ReportsDashboard_Target_GoalLabel.Text" xml:space="preserve">
+    <value>الهدف اليومي</value>
+  </data>
+  <data name="ReportsDashboard_Alerts_Title.Text" xml:space="preserve">
+    <value>تنبيهات هامة</value>
+  </data>
+  <data name="ReportsDashboard_TopProducts_Title.Text" xml:space="preserve">
+    <value>أكثر المنتجات مبيعاً</value>
+  </data>
+  <data name="ReportsDashboard_StockStatus_Title.Text" xml:space="preserve">
+    <value>نقص المخزون / نفاد الكمية</value>
+  </data>
+  <data name="ReportsDashboard_Discounts_Title.Text" xml:space="preserve">
+    <value>خصومات اليوم</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_Title.Text" xml:space="preserve">
+    <value>حالة المخزون</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_HealthyFormat" xml:space="preserve">
+    <value>{0}% مخزون سليم</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_LowStockFormat" xml:space="preserve">
+    <value>{0}% مخزون منخفض</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_OutOfStockFormat" xml:space="preserve">
+    <value>{0}% نافد من المخزون</value>
+  </data>
+  <data name="ReportsDashboard_TeachingTip_Title.Title" xml:space="preserve">
+    <value>مقياس لوحة التحكم</value>
+  </data>
+
+  
+  <data name="ReportsDashboard_Greeting_Morning" xml:space="preserve">
+    <value>صباح الخير، مدير المتجر</value>
+  </data>
+  <data name="ReportsDashboard_Greeting_Afternoon" xml:space="preserve">
+    <value>طاب يومك، مدير المتجر</value>
+  </data>
+  <data name="ReportsDashboard_Greeting_Evening" xml:space="preserve">
+    <value>مساء الخير، مدير المتجر</value>
+  </data>
+  <data name="ReportsDashboard_Sales_Delta_Positive" xml:space="preserve">
+    <value>+ {0}% مقارنة بأمس</value>
+  </data>
+  <data name="ReportsDashboard_Sales_Delta_Negative" xml:space="preserve">
+    <value>- {0}% مقارنة بأمس</value>
+  </data>
+  <data name="ReportsDashboard_Profit_MarginFormat" xml:space="preserve">
+    <value>هامش ربح {0}%</value>
+  </data>
+  <data name="ReportsDashboard_Profit_NoSales" xml:space="preserve">
+    <value>لا توجد مبيعات بعد</value>
+  </data>
+  <data name="ReportsDashboard_Invoice_Delta_Positive" xml:space="preserve">
+    <value>+ {0}% مقارنة بأمس</value>
+  </data>
+  <data name="ReportsDashboard_Invoice_Delta_Negative" xml:space="preserve">
+    <value>- {0}% مقارنة بأمس</value>
+  </data>
+  <data name="ReportsDashboard_Target_YesterdayPerformance" xml:space="preserve">
+    <value>أداء أمس: {0}</value>
+  </data>
+  <data name="ReportsDashboard_TopProducts_None" xml:space="preserve">
+    <value>لم يتم بيع أي منتجات اليوم</value>
+  </data>
+  <data name="ReportsDashboard_Discounts_CountFormat" xml:space="preserve">
+    <value>تم تطبيق {0} خصم</value>
+  </data>
+  <data name="ReportsDashboard_Stock_ShelfLabel" xml:space="preserve">
+    <value>الرف </value>
+  </data>
+  <data name="ReportsDashboard_Stock_WarehouseLabel" xml:space="preserve">
+    <value>المستودع </value>
+  </data>
+  <data name="ReportsDashboard_Stock_Empty" xml:space="preserve">
+    <value>فارغ</value>
+  </data>
+  <data name="ReportsDashboard_Stock_QtyLeftFormat" xml:space="preserve">
+    <value>متبقي {0}</value>
+  </data>
+  <data name="ReportsDashboard_Stock_OutOffStock" xml:space="preserve">
+    <value>نافد من المخزون</value>
+  </data>
+  <data name="ReportsDashboard_Stock_LowStock" xml:space="preserve">
+    <value>مخزون منخفض</value>
+  </data>
+  <data name="ReportsDashboard_Stock_Shelf" xml:space="preserve">
+    <value>الرف</value>
+  </data>
+  <data name="ReportsDashboard_Stock_Warehouse" xml:space="preserve">
+    <value>المستودع</value>
+  </data>
+  <data name="ReportsDashboard_Stock_AllStocked" xml:space="preserve">
+    <value>جميع المنتجات متوفرة</value>
+  </data>
+  <data name="ReportsDashboard_Stock_Healthy" xml:space="preserve">
+    <value>سليم</value>
+  </data>
+  <data name="ReportsDashboard_Alert_Format" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+
+  
+  <data name="ReportsDashboard_Tooltip_SalesToday" xml:space="preserve">
+    <value>إجمالي الإيرادات المحصلة اليوم شاملة الضريبة. مقارنة بأداء أمس.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_NetProfit" xml:space="preserve">
+    <value>الإيرادات مطروحاً منها تكلفة البضائع المباعة (COGS). يوضح الربح الفعلي قبل المصاريف العامة.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_InvoiceCount" xml:space="preserve">
+    <value>إجمالي عدد المعاملات المكتملة اليوم. كل إيصال يعتبر فاتورة واحدة.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_AvgInvoiceValue" xml:space="preserve">
+    <value>متوسط المبلغ لكل معاملة. تشير القيم الأعلى إلى البيع الإضافي الفعال أو أحجام سلة أكبر.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_SalesTarget" xml:space="preserve">
+    <value>يتتبع إيرادات اليوم مقابل هدفك اليومي المحدد.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_CriticalAlerts" xml:space="preserve">
+    <value>عدد تنبيهات المخزون الحالية حسب الموقع. 'الرف منخفض' يعني الكمية أكبر من الصفر وعند أو أقل من الحد الأدنى. 'المستودع فارغ' يعني الكمية صفر أو أقل.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_TopProducts" xml:space="preserve">
+    <value>أفضل المنتجات مرتبة حسب الإيرادات الناتجة اليوم. يوضح شريط التقدم حصة كل منتج من الإيرادات.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_StockStatus" xml:space="preserve">
+    <value>أكثر المنتجات التي تواجه مشاكل مخزون عاجلة. يعرض شارة الموقع (الرف، المستودع، أو كلاهما).</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_Discounts" xml:space="preserve">
+    <value>إجمالي مبلغ الخصم المطبق في جميع المعاملات اليوم. تقارن الشارة خصومات اليوم بخصومات أمس.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_StockHealth" xml:space="preserve">
+    <value>توزيع المخزون في المتجر بالكامل. 'سليم' يعني أن المنتج فوق الحد الأدنى في الرف والمستودع. 'نافد' يعني أن كلا الموقعين صفر أو أقل.</value>
+  </data>
+
+  
+  <data name="ReportsReceipts_Filters_Title.Text" xml:space="preserve">
+    <value>تصفية</value>
+  </data>
+  <data name="ReportsReceipts_Filters_Subtitle.Text" xml:space="preserve">
+    <value>تحسين نافذة التقارير للعثور على معاملات محددة.</value>
+  </data>
+  <data name="ReportsReceipts_ShownLabel.Text" xml:space="preserve">
+    <value>معروض</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_Label.Text" xml:space="preserve">
+    <value>نطاق سريع</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_Today.Content" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_7Days.Content" xml:space="preserve">
+    <value>7 أيام</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_30Days.Content" xml:space="preserve">
+    <value>30 يوم</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Button.Text" xml:space="preserve">
+    <value>إصدار تقرير X</value>
+  </data>
+  <data name="ReportsReceipts_Date_From.Text" xml:space="preserve">
+    <value>من</value>
+  </data>
+  <data name="ReportsReceipts_Date_To.Text" xml:space="preserve">
+    <value>إلى</value>
+  </data>
+  <data name="ReportsReceipts_Search_Label.Text" xml:space="preserve">
+    <value>البحث</value>
+  </data>
+  <data name="ReportsReceipts_Search_Box.PlaceholderText" xml:space="preserve">
+    <value>بحث في المعاملات...</value>
+  </data>
+  <data name="ReportsReceipts_Search_ClearTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>مسح البحث</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Receipt.Text" xml:space="preserve">
+    <value>رقم الفاتورة</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Date.Text" xml:space="preserve">
+    <value>التاريخ</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Time.Text" xml:space="preserve">
+    <value>الوقت</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Type.Text" xml:space="preserve">
+    <value>النوع</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Subtotal.Text" xml:space="preserve">
+    <value>الإجمالي الفرعي</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Tax.Text" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Total.Text" xml:space="preserve">
+    <value>الإجمالي</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Action.Text" xml:space="preserve">
+    <value>الإجراء</value>
+  </data>
+  <data name="ReportsReceipts_List_ReprintButton.Text" xml:space="preserve">
+    <value>إعادة الطباعة</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.Title" xml:space="preserve">
+    <value>تقرير X جاهز</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.PrimaryButtonText" xml:space="preserve">
+    <value>طباعة التقرير</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.SecondaryButtonText" xml:space="preserve">
+    <value>فتح PDF</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.CloseButtonText" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog_Success.Text" xml:space="preserve">
+    <value>تم إنشاء تقرير X بنجاح.</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog_SavedTo.Text" xml:space="preserve">
+    <value>تم الحفظ في</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog_Hint.Text" xml:space="preserve">
+    <value>اختر 'طباعة' للإرسال مباشرة إلى الطابعة الافتراضية، أو 'فتح PDF' للمعاينة.</value>
+  </data>
+
+  <data name="ReportsReceipts_XReport_StatusFormat" xml:space="preserve">
+    <value>تم حفظ PDF في: {0}</value>
+  </data>
+  <data name="ReportsReceipts_StoreFallback" xml:space="preserve">
+    <value>المتجر</value>
+  </data>
+
+  
+  <data name="ReportsReceipts_Range_Today" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="ReportsReceipts_Range_Last7Days" xml:space="preserve">
+    <value>آخر 7 أيام</value>
+  </data>
+  <data name="ReportsReceipts_Range_Last30Days" xml:space="preserve">
+    <value>آخر 30 يوم</value>
+  </data>
+  <data name="ReportsReceipts_Tooltip_Collapse" xml:space="preserve">
+    <value>طي عرض التقرير</value>
+  </data>
+  <data name="ReportsReceipts_Tooltip_Expand" xml:space="preserve">
+    <value>توسيع قائمة المعاملات</value>
+  </data>
+  <data name="ReportsReceipts_Status_Loading" xml:space="preserve">
+    <value>جاري التحميل...</value>
+  </data>
+  <data name="ReportsReceipts_Status_ReprintSuccess" xml:space="preserve">
+    <value>تم إرسال الفاتورة رقم {0:D6} إلى الطابعة.</value>
+  </data>
+  <data name="ReportsReceipts_Status_ReprintError" xml:space="preserve">
+    <value>تعذر إعادة طباعة الفاتورة رقم {0:D6}: {1}</value>
+  </data>
+  <data name="ReportsReceipts_Status_Error" xml:space="preserve">
+    <value>خطأ: {0}</value>
+  </data>
+  <data name="ReportsReceipts_Status_XReportError" xml:space="preserve">
+    <value>تعذر إنشاء تقرير X: {0}</value>
+  </data>
+  <data name="ReportsReceipts_Status_Searching" xml:space="preserve">
+    <value>جاري البحث في قاعدة البيانات...</value>
+  </data>
+  <data name="ReportsReceipts_Status_RangeInfo" xml:space="preserve">
+    <value>{0} | {1} من أصل {2} معاملة.</value>
+  </data>
+  <data name="ReportsReceipts_Status_SearchActive" xml:space="preserve">
+    <value>البحث النشط | تم العثور على {0} تطابق.</value>
+  </data>
+  <data name="ReportsReceipts_Date_RangeFormat" xml:space="preserve">
+    <value>من {0} إلى {1}</value>
+  </data>
+  <data name="ReportsReceipts_Velocity_SoldFormat" xml:space="preserve">
+    <value>بيع {0}</value>
+  </data>
+  
+
+
+  <data name="Settings_Rounding_HalfUp" xml:space="preserve">
+    <value>التقريب القياسي (للأعلى)</value>
+  </data>
+  <data name="Settings_Rounding_HalfEven" xml:space="preserve">
+    <value>تقريب البنوك (للأقرب زوجي)</value>
+  </data>
+  <data name="Settings_Rounding_RoundUp" xml:space="preserve">
+    <value>دائماً للأعلى</value>
+  </data>
+  <data name="Settings_Rounding_RoundDown" xml:space="preserve">
+    <value>دائماً للأسفل</value>
+  </data>
+  <!-- Crash Feedback Dialog -->
+  <data name="CrashFeedbackDialog.Title" xml:space="preserve">
+    <value>هل تواجه مشكلة؟</value>
+  </data>
+  <data name="CrashFeedbackDialog.PrimaryButtonText" xml:space="preserve">
+    <value>إرسال</value>
+  </data>
+  <data name="CrashFeedbackDialog.CloseButtonText" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="CrashFeedbackDialog_Title.Text" xml:space="preserve">
+    <value>هل تواجه مشكلة؟</value>
+  </data>
+  <data name="CrashFeedbackDialog_IntroText.Text" xml:space="preserve">
+    <value>نأسف لهذا الانقطاع. لاحظنا أن جلستك السابقة انتهت بشكل مفاجئ. لمساعدتنا في تحسين الاستقرار، ما هي الميزة التي كنت تحاول استخدامها؟</value>
+  </data>
+  <data name="CrashFeedbackDialog_Checkout.Content" xml:space="preserve">
+    <value>معالجة عملية بيع (نقطة البيع)</value>
+  </data>
+  <data name="CrashFeedbackDialog_Products.Content" xml:space="preserve">
+    <value>إدارة المنتجات أو المخزون</value>
+  </data>
+  <data name="CrashFeedbackDialog_Reports.Content" xml:space="preserve">
+    <value>عرض التقارير أو لوحة التحكم</value>
+  </data>
+  <data name="CrashFeedbackDialog_Settings.Content" xml:space="preserve">
+    <value>تكوين إعدادات المتجر أو الضرائب</value>
+  </data>
+  <data name="CrashFeedbackDialog_Startup.Content" xml:space="preserve">
+    <value>فتحت التطبيق للتو</value>
+  </data>
+  <data name="CrashFeedbackDialog_Other.Content" xml:space="preserve">
+    <value>أخرى</value>
+  </data>
+  <data name="CrashFeedbackDialog_DetailsTextBox.Header" xml:space="preserve">
+    <value>تفاصيل إضافية (اختياري)</value>
+  </data>
+  <data name="CrashFeedbackDialog_DetailsTextBox.PlaceholderText" xml:space="preserve">
+    <value>أي إجراء محدد تسبب في ذلك؟</value>
+  </data>
+  <data name="CrashFeedbackDialog_SuppressPromptCheckBox.Content" xml:space="preserve">
+    <value>لا تظهر لي هذا المربع الحواري مرة أخرى</value>
+  </data>
+  <!-- Open Register Dialog -->
+  <data name="OpenRegisterDialog.PrimaryButtonText" xml:space="preserve">
+    <value>فتح اليومية</value>
+  </data>
+  <data name="OpenRegisterDialog.SecondaryButtonText" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="OpenRegisterDialog_Title.Text" xml:space="preserve">
+    <value>فتح درج النقود</value>
+  </data>
+  <data name="OpenRegisterDialog_IntroText.Text" xml:space="preserve">
+    <value>أدخل مبلغ النقود الموجود حاليًا في الدرج لبدء ورديتك.</value>
+  </data>
+  <data name="OpenRegisterDialog_OpeningCashHeader.Text" xml:space="preserve">
+    <value>مبلغ العهدة</value>
+  </data>
+  <data name="OpenRegisterDialog_OpeningCashBox.PlaceholderText" xml:space="preserve">
+    <value>0.00</value>
+  </data>
+  <data name="OpenRegisterDialog_NotesHeader.Text" xml:space="preserve">
+    <value>ملاحظات (اختياري)</value>
+  </data>
+  <data name="OpenRegisterDialog_NoteBox.PlaceholderText" xml:space="preserve">
+    <value>أضف ملاحظة لهذه الوردية...</value>
+  </data>
+  <!-- Cash In / Out Dialog -->
+  <data name="CashInOutDialog_Title.Text" xml:space="preserve">
+    <value>سحب / إيداع نقدي</value>
+  </data>
+  <data name="CashInOutDialog.PrimaryButtonText" xml:space="preserve">
+    <value>تأكيد</value>
+  </data>
+  <data name="CashInOutDialog.SecondaryButtonText" xml:space="preserve">
+    <value>تجاهل</value>
+  </data>
+  <data name="CashInOutDialog_Description.Text" xml:space="preserve">
+    <value>قم بتسجيل حركة نقدية لدرج النقود النشط قبل المتابعة.</value>
+  </data>
+  <data name="CashInOutDialog_ErrorBar.Title" xml:space="preserve">
+    <value>فشلت العملية</value>
+  </data>
+  <data name="CashInOutDialog_AdjustmentTypeHeader.Text" xml:space="preserve">
+    <value>نوع التعديل</value>
+  </data>
+  <data name="CashInOutDialog_CashInButton.Content" xml:space="preserve">
+    <value>إيداع</value>
+  </data>
+  <data name="CashInOutDialog_CashOutButton.Content" xml:space="preserve">
+    <value>سحب</value>
+  </data>
+  <data name="CashInOutDialog_AmountHeader.Text" xml:space="preserve">
+    <value>المبلغ</value>
+  </data>
+  <data name="CashInOutDialog_AmountBox.PlaceholderText" xml:space="preserve">
+    <value>0.00</value>
+  </data>
+  <data name="CashInOutDialog_ReasonHeader.Text" xml:space="preserve">
+    <value>السبب</value>
+  </data>
+  <data name="CashInOutDialog_ReasonBox.PlaceholderText" xml:space="preserve">
+    <value>أضف سببًا لهذه الحركة النقدية...</value>
+  </data>
+  <!-- Close Register Dialog -->
+  <data name="CloseRegisterDialog_Title.Text" xml:space="preserve">
+    <value>إغلاق الوردية</value>
+  </data>
+  <data name="CloseRegisterDialog_ReviewText.Text" xml:space="preserve">
+    <value>راجع إجماليات الدرج الحالية قبل إنهاء هذه الوردية.</value>
+  </data>
+  <data name="CloseRegisterDialog_SessionMetaText.Text" xml:space="preserve">
+    <value>وردية الدرج النشطة</value>
+  </data>
+  <data name="CloseRegisterDialog_SessionTotalLabel.Text" xml:space="preserve">
+    <value>إجمالي الوردية</value>
+  </data>
+  <data name="CloseRegisterDialog_ErrorBar.Title" xml:space="preserve">
+    <value>فشلت العملية</value>
+  </data>
+  <data name="CloseRegisterDialog_CashLabel.Text" xml:space="preserve">
+    <value>نقدي</value>
+  </data>
+  <data name="CloseRegisterDialog_OpeningLabel.Text" xml:space="preserve">
+    <value>الافتتاحي</value>
+  </data>
+  <data name="CloseRegisterDialog_CashInOutLabel.Text" xml:space="preserve">
+    <value>سحب / إيداع نقدي</value>
+  </data>
+  <data name="CloseRegisterDialog_CountedLabel.Text" xml:space="preserve">
+    <value>المحسوب</value>
+  </data>
+  <data name="CloseRegisterDialog_DifferenceLabel.Text" xml:space="preserve">
+    <value>الفرق</value>
+  </data>
+  <data name="CloseRegisterDialog_CountedCashLabel.Text" xml:space="preserve">
+    <value>المبلغ الفعلي</value>
+  </data>
+  <data name="CloseRegisterDialog_CountedCashInputBox.PlaceholderText" xml:space="preserve">
+    <value>0.00</value>
+  </data>
+  <data name="CloseRegisterDialog_ClosingNoteLabel.Text" xml:space="preserve">
+    <value>ملاحظة  (اختياري)</value>
+  </data>
+  <data name="CloseRegisterDialog_ClosingNoteBox.PlaceholderText" xml:space="preserve">
+    <value>أضف أي فروقات أو ملاحظات هنا...</value>
+  </data>
+  <data name="CloseRegisterDialog_FooterHint.Text" xml:space="preserve">
+    <value>بعد الحفظ، سيقوم التطبيق بتسجيل الخروج والعودة إلى شاشة تسجيل الدخول.</value>
+  </data>
+  <data name="CloseRegisterDialog_CloseRegisterButton.Content" xml:space="preserve">
+    <value>إغلاق الوردية</value>
+  </data>
+  <data name="CloseRegisterDialog_CashInOutButton.Content" xml:space="preserve">
+    <value>سحب / إيداع نقدي</value>
+  </data>
+  <data name="CloseRegisterDialog_DiscardButton.Content" xml:space="preserve">
+    <value>تجاهل</value>
+  </data>
+  <!-- Time Sync Dialog -->
+  <data name="TimeSyncDialog_Title.Text" xml:space="preserve">
+    <value>تم اكتشاف خطأ في ساعة النظام</value>
+  </data>
+  <data name="TimeSyncDialog_Description.Text" xml:space="preserve">
+    <value>يبدو أن ساعة نظامك مضبوطة على الماضي. سيؤدي الاستمرار بساعة غير صحيحة إلى تلف بيانات المبيعات والتحليلات. يرجى تصحيح التاريخ والوقت في ويندوز، ثم اضغط على إعادة المحاولة.</value>
+  </data>
+  <data name="TimeSyncDialog_ContinueButton.Content" xml:space="preserve">
+    <value>استمرار</value>
+  </data>
+  <data name="TimeSyncDialog_RetryButton.Content" xml:space="preserve">
+    <value>إعادة المحاولة</value>
+  </data>
+  <!-- Remaining Login Page Strings -->
+  <data name="LoginPage_ModeSubtitleText.Text" xml:space="preserve">
+    <value>اختر الوضع، ثم سجل الدخول.</value>
+  </data>
+  <data name="CloseRegisterDialog_NoAdjustments" xml:space="preserve">
+    <value>لم يتم تسجيل أي سحب أو إيداع نقدي.</value>
+  </data>
+  <data name="CloseRegisterDialog_In" xml:space="preserve">
+    <value>إيداع</value>
+  </data>
+  <data name="CloseRegisterDialog_Out" xml:space="preserve">
+    <value>سحب</value>
+  </data>
+  <data name="CloseRegisterDialog_Order" xml:space="preserve">
+    <value>طلب</value>
+  </data>
+  <data name="CloseRegisterDialog_Orders" xml:space="preserve">
+    <value>طلبات</value>
+  </data>
+  <data name="CloseRegisterDialog_SessionOpenedAt" xml:space="preserve">
+    <value>فتحت الوردية في {0}</value>
+  </data>
+  <data name="CashInOutDialog_Error_Amount" xml:space="preserve">
+    <value>يرجى إدخال مبلغ أكبر من الصفر.</value>
+  </data>
+  <data name="CashInOutDialog_Error_Reason" xml:space="preserve">
+    <value>يرجى إدخال سبب لتعديل النقود.</value>
+  </data>
+  <data name="LoginPage_LoginButton_Content" xml:space="preserve">
+    <value>تسجيل الدخول</value>
+  </data>
+  <data name="Products_StockSummary_Format" xml:space="preserve">
+    <value>المتجر {0} · المستودع {1} · الإجمالي {2}</value>
+  </data>
+  <data name="Products_Inventory_LegacyAlert" xml:space="preserve">
+    <value>تنبيه مخزون قديم</value>
+  </data>
+  <data name="Products_Inventory_AttentionNeeded" xml:space="preserve">
+    <value>يتطلب اهتمام بالمخزون</value>
+  </data>
+  <data name="Products_Inventory_Healthy" xml:space="preserve">
+    <value>المخزون سليم</value>
+  </data>
+  <data name="Products_Inventory_LegacyNeedReview" xml:space="preserve">
+    <value>يوجد {0} من الأصناف القديمة تتطلب مراجعة.</value>
+  </data>
+  <data name="Products_Inventory_ShelfOutOfStock" xml:space="preserve">
+    <value>يوجد {0} من الأصناف في المتجر نافدة من المخزون.</value>
+  </data>
+  <data name="Products_Inventory_WarehouseOutOfStock" xml:space="preserve">
+    <value>يوجد {0} من الأصناف في المستودع نافدة من المخزون.</value>
+  </data>
+  <data name="Products_Inventory_ShelfBelowThreshold" xml:space="preserve">
+    <value>يوجد {0} من الأصناف في المتجر تحت الحد الأدنى.</value>
+  </data>
+  <data name="Products_Inventory_WarehouseBelowThreshold" xml:space="preserve">
+    <value>يوجد {0} من الأصناف في المستودع تحت الحد الأدنى.</value>
+  </data>
+  <data name="Products_Inventory_HealthyAcrossCatalog" xml:space="preserve">
+    <value>المخزون سليم في كامل الكتالوج.</value>
+  </data>
+  <data name="Products_Inventory_Product" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="Products_Inventory_Products" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="Products_Inventory_ShelfLow_Format" xml:space="preserve">
+    <value>نقص في المتجر: {0} معروض، الحد الأدنى {1}.</value>
+  </data>
+  <data name="Products_Inventory_ShelfOut_Format" xml:space="preserve">
+    <value>نفد مخزون المتجر: الكمية {0}، والحد الأدنى {1}.</value>
+  </data>
+  <data name="Products_Inventory_WarehouseLow_Format" xml:space="preserve">
+    <value>نقص في المستودع: {0} في المخزن، الحد الأدنى {1}.</value>
+  </data>
+  <data name="Products_Inventory_WarehouseOut_Format" xml:space="preserve">
+    <value>نفد مخزون المستودع: الكمية {0}، والحد الأدنى {1}.</value>
+  </data>
+  <data name="Products_Inventory_LegacyStock_Format" xml:space="preserve">
+    <value>مخزون قديم: تم شراؤه في {0}، آخر بيع في {1}.</value>
+  </data>
+  <data name="Products_Status_Updated" xml:space="preserve">
+    <value>تم تحديث المنتج.</value>
+  </data>
+  <data name="Products_Status_Deleted" xml:space="preserve">
+    <value>تم حذف المنتج.</value>
+  </data>
+  <data name="Products_Status_NameRequired" xml:space="preserve">
+    <value>اسم المنتج مطلوب.</value>
+  </data>
+  <data name="Products_Status_InvalidPrice" xml:space="preserve">
+    <value>أدخل سعر بيع صالح (0 أو أكثر).</value>
+  </data>
+  <data name="Products_Status_AddedFormat" xml:space="preserve">
+    <value>تم إضافة المنتج '{0}' إلى الكتالوج.</value>
+  </data>
+  <data name="Products_Action_Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="Products_Action_Edit" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="Products_Panel_NewProduct" xml:space="preserve">
+    <value>منتج جديد</value>
+  </data>
+  <data name="Products_Panel_SelectedProduct" xml:space="preserve">
+    <value>المنتج المختار</value>
+  </data>
+  <data name="Products_Search_Summary_All" xml:space="preserve">
+    <value>عرض الكتالوج المباشر من قاعدة البيانات المحلية.</value>
+  </data>
+  <data name="Products_Search_Summary_Filter" xml:space="preserve">
+    <value>تصفية النتائج لـ "{0}".</value>
+  </data>
+  <data name="Products_Search_Status_All" xml:space="preserve">
+    <value>تصفح الكتالوج بالكامل.</value>
+  </data>
+  <data name="Products_Search_Status_Typing" xml:space="preserve">
+    <value>يتم تحديث البحث فوراً أثناء الكتابة.</value>
+  </data>
+  <data name="Products_Count_Format_Single" xml:space="preserve">
+    <value>صنف واحد</value>
+  </data>
+  <data name="Products_Count_Format_Plural" xml:space="preserve">
+    <value>{0} أصناف</value>
+  </data>
+  <data name="Products_Selection_None" xml:space="preserve">
+    <value>لم يتم اختيار منتج</value>
+  </data>
+  <data name="Products_Selection_Subtitle_None" xml:space="preserve">
+    <value>اختر منتجاً لمعاينة أو تعديل تفاصيله.</value>
+  </data>
+  <data name="Products_Selection_Subtitle_Editing" xml:space="preserve">
+    <value>تعديل هذا المنتج مباشرة. اضغط حفظ أو إلغاء للخروج من وضع التعديل.</value>
+  </data>
+  <data name="Products_Selection_Subtitle_Normal" xml:space="preserve">
+    <value>تفاصيل الكتالوج المباشرة من قاعدة البيانات.</value>
+  </data>
+  <data name="Products_Mode_Adding" xml:space="preserve">
+    <value>املأ الحقول أدناه واضغط حفظ لإنشاء منتج جديد.</value>
+  </data>
+  <data name="Products_Mode_None" xml:space="preserve">
+    <value>اختر منتجاً لمعاينة تفاصيله.</value>
+  </data>
+  <data name="Products_Mode_Editing" xml:space="preserve">
+    <value>وضع التعديل نشط. قائمة الكتالوج مقفلة حتى تقوم بالحفظ أو الإلغاء.</value>
+  </data>
+  <data name="Products_Mode_Normal" xml:space="preserve">
+    <value>تفاصيل للقراءة فقط مع خيار التعديل المباشر.</value>
+  </data>
+  <data name="Products_Tax_Header_Common" xml:space="preserve">
+    <value>شائع</value>
+  </data>
+  <data name="Products_Tax_Header_Profiles" xml:space="preserve">
+    <value>ملفات الضرائب</value>
+  </data>
+  <data name="Products_Tax_Header_AllRates" xml:space="preserve">
+    <value>جميع النسب الفردية</value>
+  </data>
+  <data name="Products_Tax_Subtitle_Format" xml:space="preserve">
+    <value>{0} • لكل {1}</value>
+  </data>
+  <data name="Products_Tax_InfoChip_Format" xml:space="preserve">
+    <value>{0} ({1})، يتم تطبيقه لكل {2} عند الدفع.</value>
+  </data>
+  <data name="Products_Tax_AutoManaged_Format" xml:space="preserve">
+    <value>{0} — {1} ({2})</value>
+  </data>
+  <data name="Products_Tax_Inclusive" xml:space="preserve">
+    <value>شامل</value>
+  </data>
+  <data name="Products_Tax_Exclusive" xml:space="preserve">
+    <value>غير شامل</value>
+  </data>
+  <data name="Products_Tax_Scope_Order" xml:space="preserve">
+    <value>الطلب</value>
+  </data>
+  <data name="Products_Tax_Scope_Product" xml:space="preserve">
+    <value>المنتج</value>
+  </data>
+  <data name="Products_Tax_NoRules" xml:space="preserve">
+    <value>لا توجد قواعد</value>
+  </data>
+  <data name="Products_Tax_Inactive_Format" xml:space="preserve">
+    <value>{0} (غير نشط)</value>
+  </data>
+  <data name="Products_Tax_Display_TieredRates" xml:space="preserve">
+    <value>شرائح ضريبية</value>
+  </data>
+  <data name="Products_Tax_Display_PerUnit_Format" xml:space="preserve">
+    <value>{0}/وحدة</value>
+  </data>
+  <data name="Products_Tax_Display_PercentageOnMargin_Format" xml:space="preserve">
+    <value>{0} (هامش)</value>
+  </data>
+  <data name="Products_Tax_Display_ReverseCharge" xml:space="preserve">
+    <value>ضريبة عكسية</value>
+  </data>
+  <data name="Products_Dialog_Transfer_WarehouseQty.Text" xml:space="preserve">
+    <value>متوفر في المستودع</value>
+  </data>
+  <data name="Products_Dialog_Transfer_StoreQty.Text" xml:space="preserve">
+    <value>الحالي في المتجر</value>
+  </data>
+  <data name="Products_Dialog_Transfer_QtyToMove.Header" xml:space="preserve">
+    <value>الكمية المراد نقلها</value>
+  </data>
+  <data name="Products_Label_Barcode.Text" xml:space="preserve">
+    <value>الباركود</value>
+  </data>
+  <data name="Products_Label_SKU.Text" xml:space="preserve">
+    <value>رمز التخزين (SKU)</value>
+  </data>
+  <data name="Products_Label_Tax.Text" xml:space="preserve">
+    <value>الضريبة</value>
+  </data>
+  <data name="Products_Label_Name_Required.Text" xml:space="preserve">
+    <value>الاسم *</value>
+  </data>
+  <data name="Products_Label_SellPrice_Required.Text" xml:space="preserve">
+    <value>سعر البيع *</value>
+  </data>
+  <data name="Products_Edit_Hint" xml:space="preserve">
+    <value>يقوم الحفظ بكتابة تغييراتك في الكتالوج المحلي، ومواقع المخزون، والحدود الدنيا.</value>
+  </data>
+  <data name="Products_Status_Transferred" xml:space="preserve">
+    <value>تم نقل {0} أصناف إلى المتجر.</value>
+  </data>
+  <data name="Products_Status_Error_Transfer" xml:space="preserve">
+    <value>غير قادر على نقل المخزون حالياً.</value>
+  </data>
+  <data name="Products_Status_EditMode" xml:space="preserve">
+    <value>وضع التعديل نشط. قم بتحديث الحقول، ثم اضغط حفظ أو إلغاء.</value>
+  </data>
+  <data name="Products_Status_Discarded" xml:space="preserve">
+    <value>تم تجاهل التغييرات.</value>
+  </data>
+  <data name="Products_Status_Error_NameRequired" xml:space="preserve">
+    <value>اسم المنتج مطلوب.</value>
+  </data>
+  <data name="Products_Status_Error_InvalidPrice" xml:space="preserve">
+    <value>أدخل سعراً صالحاً.</value>
+  </data>
+  <data name="Products_Status_Error_PriceNegative" xml:space="preserve">
+    <value>يجب أن يكون السعر صفراً أو أكثر.</value>
+  </data>
+  <data name="Products_Status_Error_InvalidCostPrice" xml:space="preserve">
+    <value>أدخل سعر تكلفة صالحاً.</value>
+  </data>
+  <data name="Products_Status_Error_CostPriceNegative" xml:space="preserve">
+    <value>يجب أن يكون سعر التكلفة صفراً أو أكثر.</value>
+  </data>
+  <data name="Products_Status_Error_InvalidStoreQty" xml:space="preserve">
+    <value>أدخل كمية متجر صالحة.</value>
+  </data>
+  <data name="Products_Status_Error_InvalidWarehouseQty" xml:space="preserve">
+    <value>أدخل كمية مستودع صالحة.</value>
+  </data>
+  <data name="Products_Status_Error_QtyNegative" xml:space="preserve">
+    <value>يجب أن تكون كميات المخزون صفراً أو أكثر.</value>
+  </data>
+  <data name="Products_Status_Error_InvalidStoreThreshold" xml:space="preserve">
+    <value>أدخل حد أدنى للمتجر صالحاً.</value>
+  </data>
+  <data name="Products_Status_Error_InvalidWarehouseThreshold" xml:space="preserve">
+    <value>أدخل حد أدنى للمستودع صالحاً.</value>
+  </data>
+  <data name="Products_Status_Error_ThresholdNegative" xml:space="preserve">
+    <value>يجب أن تكون حدود المخزون صفراً أو أكثر.</value>
+  </data>
+  <data name="Products_Status_Error_Load" xml:space="preserve">
+    <value>غير قادر على تحميل المنتجات حالياً.</value>
+  </data>
+  <data name="Products_Status_Error_Refresh" xml:space="preserve">
+    <value>غير قادر على تحديث الكتالوج حالياً.</value>
+  </data>
+  <data name="Products_Status_Error_TaxLoad" xml:space="preserve">
+    <value>غير قادر على تحميل فئات الضرائب حالياً.</value>
+  </data>
+  <data name="Products_Status_Importing" xml:space="preserve">
+    <value>جاري استيراد ملف CSV...</value>
+  </data>
+  <data name="Products_Status_ImportComplete" xml:space="preserve">
+    <value>اكتمل الاستيراد: {0} تم إنشاؤه، {1} تم تحديثه، {2} تم تخطيه.</value>
+  </data>
+  <data name="Products_Status_ImportCanceled" xml:space="preserve">
+    <value>تم إلغاء الاستيراد.</value>
+  </data>
+  <data name="Products_Status_ImportFailed" xml:space="preserve">
+    <value>فشل الاستيراد.</value>
+  </data>
+  <data name="Products_Status_Exporting" xml:space="preserve">
+    <value>جاري تصدير ملف CSV...</value>
+  </data>
+  <data name="Products_Status_ExportComplete" xml:space="preserve">
+    <value>اكتمل التصدير بنجاح.</value>
+  </data>
+  <data name="Products_Status_Error_ImagePick" xml:space="preserve">
+    <value>غير قادر على اختيار الصورة.</value>
+  </data>
+  <data name="Products_Status_Error_TransferOpen" xml:space="preserve">
+    <value>غير قادر على فتح نافذة النقل حالياً.</value>
+  </data>
+  <data name="Products_Dialog_Transfer.Title" xml:space="preserve">
+    <value>نقل المخزون</value>
+  </data>
+  <data name="Products_Dialog_Transfer.PrimaryButtonText" xml:space="preserve">
+    <value>نقل</value>
+  </data>
+  <data name="Products_Dialog_Transfer.CloseButtonText" xml:space="preserve">
+    <value>تجاهل</value>
+  </data>
+  <data name="Products_Dialog_Transfer_Text.Text" xml:space="preserve">
+    <value>نقل المخزون بين المستودع الرئيسي ورف المتجر.</value>
+  </data>
+  <data name="Products_Header_Title.Text" xml:space="preserve">
+    <value>كتالوج المتجر</value>
+  </data>
+  <data name="Products_Button_Add.Label" xml:space="preserve">
+    <value>إضافة</value>
+  </data>
+  <data name="Products_Button_Import.Label" xml:space="preserve">
+    <value>استيراد</value>
+  </data>
+  <data name="Products_ImportProgress_Title" xml:space="preserve">
+    <value>جاري استيراد المنتجات</value>
+  </data>
+  <data name="Products_ImportProgress_Canceling" xml:space="preserve">
+    <value>جاري إلغاء الاستيراد...</value>
+  </data>
+  <data name="Products_ImportProgress_Preparing" xml:space="preserve">
+    <value>جاري تجهيز الاستيراد...</value>
+  </data>
+  <data name="Products_ImportProgress_Detail" xml:space="preserve">
+    <value>تمت معالجة {0} من {1} صفوف • {2} تم إنشاؤه • {3} تم تحديثه • {4} تم تخطيه</value>
+  </data>
+  <data name="Products_ImportProgress_Percent" xml:space="preserve">
+    <value>{0}%</value>
+  </data>
+  <data name="Products_ImportProgress_Cancel" xml:space="preserve">
+    <value>إلغاء الاستيراد</value>
+  </data>
+  <data name="Products_ImportFailureTip_Title" xml:space="preserve">
+    <value>فشل الاستيراد</value>
+  </data>
+  <data name="Products_ImportFailureTip_Message" xml:space="preserve">
+    <value>توقف الاستيراد بسبب الخطأ التالي: {0}</value>
+  </data>
+  <data name="Products_ImportFailureTip_DefaultMessage" xml:space="preserve">
+    <value>توقف الاستيراد بسبب خطأ غير معروف.</value>
+  </data>
+  <data name="Products_ImportFailureTip_Dismiss" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="Products_ImportFailureTip_Skip" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="Products_ImportWarningTip_Title" xml:space="preserve">
+    <value>اكتمل الاستيراد مع تحذيرات</value>
+  </data>
+  <data name="Products_ImportWarningTip_Message" xml:space="preserve">
+    <value>تم تعديل بعض الصفوف أو تخطيها جزئياً:</value>
+  </data>
+  <data name="Products_Button_Export.Label" xml:space="preserve">
+    <value>تصدير</value>
+  </data>
+  <data name="Products_Button_Refresh.Label" xml:space="preserve">
+    <value>تحديث</value>
+  </data>
+  <data name="Products_Button_Clear.Label" xml:space="preserve">
+    <value>مسح</value>
+  </data>
+  <data name="Products_Search_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>ابحث عن المنتجات بالاسم أو رمز SKU أو الباركود...</value>
+  </data>
+  <data name="Products_Count_None.Text" xml:space="preserve">
+    <value>لم يتم العثور على منتجات</value>
+  </data>
+  <data name="Products_Count_Subtitle.Text" xml:space="preserve">
+    <value>حاول تعديل بحثك أو أضف منتجاً جديداً إلى الكتالوج.</value>
+  </data>
+  <data name="Products_Details_Delete.Label" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Products_Details_Transfer.Label" xml:space="preserve">
+    <value>نقل</value>
+  </data>
+  <data name="Products_Details_Cancel.Label" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Products_Button_ChangePicture.Content" xml:space="preserve">
+    <value>تغيير الصورة</value>
+  </data>
+  <data name="Products_ImageAction_ChangePicture" xml:space="preserve">
+    <value>تغيير الصورة</value>
+  </data>
+  <data name="Products_ImageAction_AddPicture" xml:space="preserve">
+    <value>إضافة صورة</value>
+  </data>
+  <data name="Products_Button_RemovePicture.Content" xml:space="preserve">
+    <value>إزالة الصورة</value>
+  </data>
+  <data name="Products_Label_CostPrice.Text" xml:space="preserve">
+    <value>سعر التكلفة</value>
+  </data>
+  <data name="Products_Label_SellPrice.Text" xml:space="preserve">
+    <value>سعر البيع</value>
+  </data>
+  <data name="Products_Label_Unit.Text" xml:space="preserve">
+    <value>الوحدة</value>
+  </data>
+  <data name="Products_Label_StoreQty.Text" xml:space="preserve">
+    <value>كمية المتجر</value>
+  </data>
+  <data name="Products_Label_WarehouseQty.Text" xml:space="preserve">
+    <value>كمية المستودع</value>
+  </data>
+  <data name="Products_Label_StoreThreshold.Text" xml:space="preserve">
+    <value>الحد الادني في المتجر</value>
+  </data>
+  <data name="Products_Label_WarehouseThreshold.Text" xml:space="preserve">
+    <value>الحد الادني في المستودع</value>
+  </data>
+  <data name="Products_Label_PurchasedAt.Text" xml:space="preserve">
+    <value>تاريخ الشراء</value>
+  </data>
+  <data name="Products_Label_LastSaleAt.Text" xml:space="preserve">
+    <value>آخر بيع</value>
+  </data>
+  <data name="Products_Details_EditTitle.Text" xml:space="preserve">
+    <value>تعديل المنتج</value>
+  </data>
+  <data name="Products_Details_EditSubtitle.Text" xml:space="preserve">
+    <value>تحديث معلومات المنتج ومستويات المخزون.</value>
+  </data>
+  <data name="Products_Label_Name.Text" xml:space="preserve">
+    <value>الاسم</value>
+  </data>
+
+  <data name="Products_Details_NewTitle.Text" xml:space="preserve">
+    <value>منتج جديد</value>
+  </data>
+  <data name="Products_Details_NewSubtitle.Text" xml:space="preserve">
+    <value>إضافة صنف جديد إلى كتالوجك المحلي.</value>
+  </data>
+  <data name="Products_Details_SelectProduct.Text" xml:space="preserve">
+    <value>اختر منتجاً</value>
+  </data>
+  <data name="Products_Details_SelectSubtitle.Text" xml:space="preserve">
+    <value>اختر صنفاً من القائمة لعرض تفاصيله الكاملة وحالة المخزون.</value>
+  </data>
+  <data name="Settings_Status_Loaded" xml:space="preserve">
+    <value>تم تحميل الإعدادات.</value>
+  </data>
+  <data name="Settings_Status_Error_Load" xml:space="preserve">
+    <value>خطأ في تحميل الإعدادات.</value>
+  </data>
+  <data name="Settings_Status_PrefsSaved" xml:space="preserve">
+    <value>تم حفظ التفضيلات تلقائياً.</value>
+  </data>
+  <data name="Settings_Status_Error_PrefsSave" xml:space="preserve">
+    <value>فشل حفظ التفضيلات.</value>
+  </data>
+  <data name="Settings_Status_Error_TaxLoad" xml:space="preserve">
+    <value>فشل تحميل تكوين الضرائب.</value>
+  </data>
+  <data name="Settings_Status_Error_Permission" xml:space="preserve">
+    <value>تم رفض الإذن: مطلوب الوصول لإعدادات المتجر.</value>
+  </data>
+  <data name="Settings_Status_Error_CurrencyRequired" xml:space="preserve">
+    <value>رمز العملة مطلوب.</value>
+  </data>
+  <data name="Settings_Status_Error_TaxRateNegative" xml:space="preserve">
+    <value>يجب أن يكون معدل الضريبة صفراً أو أكثر.</value>
+  </data>
+  <data name="Settings_Status_Saved_Format" xml:space="preserve">
+    <value>تم حفظ الإعدادات بنجاح في {0}</value>
+  </data>
+  <data name="Settings_Status_Error_Save" xml:space="preserve">
+    <value>فشل حفظ الإعدادات.</value>
+  </data>
+  <data name="Settings_Status_Restored" xml:space="preserve">
+    <value>تم إلغاء تغييرات المتجر. تمت استعادة آخر القيم المحفوظة.</value>
+  </data>
+  <data name="Settings_Status_Error_Restore" xml:space="preserve">
+    <value>تعذر استعادة آخر قيم المتجر المحفوظة.</value>
+  </data>
+  <data name="Settings_Status_Resetting" xml:space="preserve">
+    <value>جاري إعادة تعيين بيانات التطبيق...</value>
+  </data>
+  <data name="Settings_Status_Reset_ManualRestart" xml:space="preserve">
+    <value>تم مسح بيانات التطبيق. يرجى إعادة تشغيل التطبيق يدوياً.</value>
+  </data>
+  <data name="Settings_Status_Error_Reset" xml:space="preserve">
+    <value>غير قادر على إعادة تعيين بيانات التطبيق حالياً.</value>
+  </data>
+  <data name="Settings_Dialog_SaveStore_Title" xml:space="preserve">
+    <value>حفظ تغييرات المتجر</value>
+  </data>
+  <data name="Settings_Dialog_SaveStore_Content" xml:space="preserve">
+    <value>هل تريد حفظ تغييرات إدارة المتجر الحالية؟ إذا ألغيت، ستستعيد الصفحة آخر القيم المحفوظة.</value>
+  </data>
+  <data name="Settings_Dialog_RestartRequired_Title" xml:space="preserve">
+    <value>مطلوب إعادة تشغيل</value>
+  </data>
+  <data name="Settings_Dialog_RestartRequired_Content" xml:space="preserve">
+    <value>لقد قمت بتغيير لغة التطبيق. احفظ الآن وأعد تشغيل Nexill لتطبيقها، أو احفظ وأعد التشغيل لاحقاً، أو تجاهل تغييرات اللغة هذه.</value>
+  </data>
+  <data name="Settings_Dialog_Reset_Title" xml:space="preserve">
+    <value>إعادة تعيين بيانات التطبيق</value>
+  </data>
+  <data name="Settings_Dialog_Reset_Content" xml:space="preserve">
+    <value>سيؤدي هذا إلى حذف الكتالوج المحلي، المستخدمين، الإيصالات، التفضيلات، بيانات الاعتماد الآمنة، ومخزن القياسات. سيفتح التطبيق كأنه تثبيت جديد.</value>
+  </data>
+  <data name="Settings_Action_Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="Settings_Action_RestartNow" xml:space="preserve">
+    <value>إعادة التشغيل الآن</value>
+  </data>
+  <data name="Settings_Action_SaveRestartLater" xml:space="preserve">
+    <value>حفظ وإعادة التشغيل لاحقاً</value>
+  </data>
+  <data name="Settings_Action_Discard" xml:space="preserve">
+    <value>تجاهل</value>
+  </data>
+  <data name="Settings_Action_Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Settings_Action_Reset" xml:space="preserve">
+    <value>إعادة تعيين</value>
+  </data>
+  <!-- Users Page -->
+  <data name="Users_List_Title.Text" xml:space="preserve">
+    <value>إدارة المستخدمين</value>
+  </data>
+  <data name="Users_List_Subtitle.Text" xml:space="preserve">
+    <value>اختر أحد أعضاء الفريق لمراجعة أو تعديل تفاصيل حسابه.</value>
+  </data>
+  <data name="Users_Editor_NewButton.Label" xml:space="preserve">
+    <value>مستخدم جديد</value>
+  </data>
+  <data name="Users_Editor_UnlockButton.Label" xml:space="preserve">
+    <value>إلغاء القفل</value>
+  </data>
+  <data name="Users_Editor_ReadOnlyBanner.Text" xml:space="preserve">
+    <value>يمكنك تصفح المستخدمين، ولكن التعديل معطل لهذا الحساب.</value>
+  </data>
+  <data name="Users_Editor_SecurityWarning.Title" xml:space="preserve">
+    <value>تحذير أمني</value>
+  </data>
+  <data name="Users_Editor_SecurityWarning.Message" xml:space="preserve">
+    <value>يجب عليك تغيير كلمة مرور المسؤول.</value>
+  </data>
+  <data name="Users_Section_Identity.Text" xml:space="preserve">
+    <value>الهوية</value>
+  </data>
+  <data name="Users_Section_Identity_Subtitle.Text" xml:space="preserve">
+    <value>تفاصيل الملف الشخصي الأساسية المستخدمة لتسجيل الدخول ونشاط المتجر اليومي.</value>
+  </data>
+  <data name="Users_Label_DisplayName.Text" xml:space="preserve">
+    <value>الاسم المعروض</value>
+  </data>
+  <data name="Users_Label_Username.Text" xml:space="preserve">
+    <value>اسم المستخدم / رقم الموظف</value>
+  </data>
+  <data name="Users_Section_Security.Text" xml:space="preserve">
+    <value>الأمان</value>
+  </data>
+  <data name="Users_Section_Security_Subtitle.Text" xml:space="preserve">
+    <value>يستخدم المسؤولون كلمة مرور أو رمز PIN. يستخدم الصرافون رمز PIN مخصص من 4 أرقام.</value>
+  </data>
+  <data name="Users_Label_PIN.Text" xml:space="preserve">
+    <value>رمز PIN من 4 أرقام</value>
+  </data>
+  <data name="Users_Label_AdminPassword.Text" xml:space="preserve">
+    <value>كلمة مرور المسؤول</value>
+  </data>
+  <data name="Users_Label_AdminPasswordHint.Text" xml:space="preserve">
+    <value>اتركه فارغاً للحفاظ على كلمة المرور الحالية.</value>
+  </data>
+  <data name="Users_Section_Roles.Text" xml:space="preserve">
+    <value>الأدوار والأذونات</value>
+  </data>
+  <data name="Users_Section_Roles_Subtitle.Text" xml:space="preserve">
+    <value>تحدد هذه الضوابط مناطق المتجر وإجراءات الكاشير المتاحة.</value>
+  </data>
+  <data name="Users_Role_Admin.Text" xml:space="preserve">
+    <value>صلاحيات المسؤول</value>
+  </data>
+  <data name="Users_Role_Admin_Description.Text" xml:space="preserve">
+    <value>يمنح تحكماً تشغيلياً كاملاً في مساحة عمل المتجر.</value>
+  </data>
+  <data name="Users_Role_Checkout.Text" xml:space="preserve">
+    <value>معالجة الدفع</value>
+  </data>
+  <data name="Users_Role_Checkout_Description.Text" xml:space="preserve">
+    <value>يسمح ببدء المبيعات وتسجيل المدفوعات وإتمام الفواتير.</value>
+  </data>
+  <data name="Users_Role_Override.Text" xml:space="preserve">
+    <value>تجاوز السعر</value>
+  </data>
+  <data name="Users_Role_Override_Description.Text" xml:space="preserve">
+    <value>يسمح بتغييرات الأسعار اليدوية واستثناءات البيع على مستوى المشرف.</value>
+  </data>
+  <data name="Users_Role_Reports.Text" xml:space="preserve">
+    <value>عرض التقارير</value>
+  </data>
+  <data name="Users_Role_Reports_Description.Text" xml:space="preserve">
+    <value>يسمح بالوصول إلى الملخصات اليومية وتاريخ الفواتير ومراجعة المبيعات.</value>
+  </data>
+  <data name="Users_Role_Products.Text" xml:space="preserve">
+    <value>إدارة المنتجات</value>
+  </data>
+  <data name="Users_Role_Products_Description.Text" xml:space="preserve">
+    <value>يسمح بتحديثات المنتجات وتغييرات الأسعار والتعديلات المتعلقة بالمخزون.</value>
+  </data>
+  <data name="Users_Role_Settings.Text" xml:space="preserve">
+    <value>إدارة الإعدادات</value>
+  </data>
+  <data name="Users_Role_Settings_Description.Text" xml:space="preserve">
+    <value>يسمح بتغييرات في تفاصيل المتجر والضرائب الافتراضية وتفضيلات النظام.</value>
+  </data>
+  <data name="Users_Button_Deactivate.Text" xml:space="preserve">
+    <value>تعطيل المستخدم</value>
+  </data>
+  <data name="Users_Button_Deactivate_Tip.Text" xml:space="preserve">
+    <value>راجع التغييرات بعناية. "حفظ" يطبق تحديثاتك، بينما "إلغاء" يعود إلى القائمة.</value>
+  </data>
+  <data name="Users_Button_Cancel.Text" xml:space="preserve">
+    <value>إلغاء التغييرات</value>
+  </data>
+  <data name="Users_Button_Save.Text" xml:space="preserve">
+    <value>حفظ التغييرات</value>
+  </data>
+  <data name="Users_Empty_Title.Text" xml:space="preserve">
+    <value>لم يتم اختيار مستخدم</value>
+  </data>
+  <data name="Users_Empty_Subtitle.Text" xml:space="preserve">
+    <value>اختر مستخدماً أو أضف مستخدماً جديداً إلى القائمة.</value>
+  </data>
+  <data name="Users_Unlock_Title.Text" xml:space="preserve">
+    <value>فك قفل هذا الملف الشخصي؟</value>
+  </data>
+  <data name="Users_Unlock_Subtitle.Text" xml:space="preserve">
+    <value>أنت على وشك تعديل بيانات الاعتماد وإعدادات الأذونات لهذا الموظف. استمر فقط عندما تنوي تحديث الوصول.</value>
+  </data>
+  <data name="Users_Unlock_Reason_Title.Text" xml:space="preserve">
+    <value>ماذا يفعل فك القفل</value>
+  </data>
+  <data name="Users_Unlock_Reason_Text.Text" xml:space="preserve">
+    <value>يقوم بتمكين عناصر التحكم في الاسم وتسجيل الدخول وكلمة المرور ورمز PIN والأذونات مؤقتاً حتى تقوم بالحفظ أو الإلغاء.</value>
+  </data>
+  <data name="Users_Unlock_Button_Cancel.Text" xml:space="preserve">
+    <value>ليس الآن</value>
+  </data>
+  <data name="Users_Unlock_Button_Confirm.Text" xml:space="preserve">
+    <value>فك قفل الملف الشخصي</value>
+  </data>
+  <data name="Users_Walkthrough_Admin_Title" xml:space="preserve">
+    <value>ملف المسؤول</value>
+  </data>
+  <data name="Users_Walkthrough_Admin_Subtitle" xml:space="preserve">
+    <value>انقر فوق ملف المسؤول هذا لمتابعة جولة إعدادات المستخدم.</value>
+  </data>
+  <data name="Users_Walkthrough_Skip" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="Users_Walkthrough_New_Title" xml:space="preserve">
+    <value>مستخدم جديد</value>
+  </data>
+  <data name="Users_Walkthrough_New_Subtitle" xml:space="preserve">
+    <value>استخدم هذا لإنشاء حساب موظف آخر من صفحة إدارة المستخدمين.</value>
+  </data>
+  <data name="Users_Walkthrough_Next" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="Users_Walkthrough_Unlock_Title" xml:space="preserve">
+    <value>فك القفل</value>
+  </data>
+  <data name="Users_Walkthrough_Unlock_Subtitle" xml:space="preserve">
+    <value>استخدم هذا قبل تحرير بيانات الاعتماد المحمية وإعدادات الأذونات.</value>
+  </data>
+  <data name="Users_Walkthrough_Save_Title" xml:space="preserve">
+    <value>حفظ التغييرات</value>
+  </data>
+  <data name="Users_Walkthrough_Save_Subtitle" xml:space="preserve">
+    <value>استخدم هذا بعد مراجعة إعدادات المسؤول وتغييرات كلمة المرور.</value>
+  </data>
+  <data name="Users_Walkthrough_Finish" xml:space="preserve">
+    <value>إنهاء</value>
+  </data>
+  <data name="Users_Walkthrough_Admin.Title" xml:space="preserve">
+    <value>ملف المسؤول</value>
+  </data>
+  <data name="Users_Walkthrough_Admin.Subtitle" xml:space="preserve">
+    <value>انقر فوق ملف المسؤول هذا لمتابعة جولة إعدادات المستخدم.</value>
+  </data>
+  <data name="Users_Walkthrough_Admin.CloseButtonContent" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="Users_Walkthrough_New.Title" xml:space="preserve">
+    <value>مستخدم جديد</value>
+  </data>
+  <data name="Users_Walkthrough_New.Subtitle" xml:space="preserve">
+    <value>استخدم هذا لإنشاء حساب موظف آخر من صفحة إدارة المستخدمين.</value>
+  </data>
+  <data name="Users_Walkthrough_New.ActionButtonContent" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="Users_Walkthrough_New.CloseButtonContent" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="Users_Walkthrough_Unlock.Title" xml:space="preserve">
+    <value>فك القفل</value>
+  </data>
+  <data name="Users_Walkthrough_Unlock.Subtitle" xml:space="preserve">
+    <value>استخدم هذا قبل تحرير بيانات الاعتماد المحمية وإعدادات الأذونات.</value>
+  </data>
+  <data name="Users_Walkthrough_Unlock.ActionButtonContent" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="Users_Walkthrough_Unlock.CloseButtonContent" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+  <data name="Users_Walkthrough_Save.Title" xml:space="preserve">
+    <value>حفظ التغييرات</value>
+  </data>
+  <data name="Users_Walkthrough_Save.Subtitle" xml:space="preserve">
+    <value>استخدم هذا بعد مراجعة إعدادات المسؤول وتغييرات كلمة المرور.</value>
+  </data>
+  <data name="Users_Walkthrough_Save.ActionButtonContent" xml:space="preserve">
+    <value>إنهاء</value>
+  </data>
+  <data name="Users_Walkthrough_Save.CloseButtonContent" xml:space="preserve">
+    <value>تخطي</value>
+  </data>
+
+  <data name="Users_Status_Unlocked" xml:space="preserve">
+    <value>تم فك قفل التعديل لـ '{0}'. راجع التغييرات واحفظها عندما تكون جاهزاً.</value>
+  </data>
+  <data name="Users_Status_AdminOnly" xml:space="preserve">
+    <value>يمكن للمسؤولين فقط إدارة المستخدمين.</value>
+  </data>
+  <data name="Users_Status_DisplayNameRequired" xml:space="preserve">
+    <value>الاسم المعروض مطلوب.</value>
+  </data>
+  <data name="Users_Status_UsernameRequired" xml:space="preserve">
+    <value>اسم المستخدم مطلوب.</value>
+  </data>
+  <data name="Users_Status_AdminCredentialsRequired" xml:space="preserve">
+    <value>يتطلب مستخدم المسؤول كلمة مرور أو رمز PIN على الأقل.</value>
+  </data>
+  <data name="Users_Status_PinRequired" xml:space="preserve">
+    <value>رمز PIN مطلوب للصرافين.</value>
+  </data>
+  <data name="Users_Status_PinInvalid" xml:space="preserve">
+    <value>يجب أن يتكون رمز PIN من 4 أرقام بالضبط.</value>
+  </data>
+  <data name="Users_Status_UsernameInUse" xml:space="preserve">
+    <value>اسم المستخدم '{0}' مستخدم بالفعل.</value>
+  </data>
+  <data name="Users_Status_Created" xml:space="preserve">
+    <value>تم إنشاء المستخدم '{0}' بنجاح.</value>
+  </data>
+  <data name="Users_Status_Updated" xml:space="preserve">
+    <value>تم تحديث المستخدم '{0}' بنجاح.</value>
+  </data>
+  <data name="Users_Status_SaveError" xml:space="preserve">
+    <value>تعذر حفظ المستخدم. يرجى مراجعة الحقول والمحاولة مرة أخرى.</value>
+  </data>
+  <data name="Users_Status_CannotDeactivateSelf" xml:space="preserve">
+    <value>لا يمكن تعطيل المستخدم الحالي.</value>
+  </data>
+  <data name="Users_Status_Deactivated" xml:space="preserve">
+    <value>تم تعطيل المستخدم '{0}'.</value>
+  </data>
+
+  <data name="TaxConfiguration_Authorities_Subtitle.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>الهيئات الحكومية التي تحصل الضرائب لصالحها (الولاية، المحافظة، المدينة).</value>
+  </data>
+  <data name="TaxConfiguration_EditAuthority_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="TaxConfiguration_DeleteAuthority_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="TaxConfiguration_Rules_Subtitle.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>النسب المئوية المحددة أو الرسوم الثابتة التي تفرضها (مثل ضريبة مبيعات الولاية 7%).</value>
+  </data>
+  <data name="TaxConfiguration_EditRule_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="TaxConfiguration_DeleteRule_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="TaxConfiguration_Groups_Subtitle.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>مجموعات من معدلات الضرائب المطبقة على مخزونك. قم بتعيين المنتجات لهذه الملفات الشخصية لتطبيق الضرائب الصحيحة.</value>
+  </data>
+  <data name="TaxConfiguration_EditGroup_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="TaxConfiguration_DeleteGroup_Button.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+
+  <data name="Tax_Status_AuthorityAdded" xml:space="preserve">
+    <value>تم إضافة هيئة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_AuthorityUpdated" xml:space="preserve">
+    <value>تم تحديث هيئة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_AuthorityDeleted" xml:space="preserve">
+    <value>تم حذف هيئة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_AuthorityInUse" xml:space="preserve">
+    <value>لا يمكن الحذف: قيد الاستخدام حالياً بواسطة قاعدة.</value>
+  </data>
+  <data name="Tax_Dialog_DeleteAuthority_Title" xml:space="preserve">
+    <value>حذف وكالة الضريبة</value>
+  </data>
+  <data name="Tax_Dialog_DeleteAuthority_Content" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد حذف "{0}"؟</value>
+  </data>
+  <data name="Tax_Dialog_AuthorityName_Header" xml:space="preserve">
+    <value>اسم الهيئة</value>
+  </data>
+  <data name="Tax_Dialog_AuthorityCode_Header" xml:space="preserve">
+    <value>كود الهيئة</value>
+  </data>
+  <data name="Tax_Dialog_Registration_Header" xml:space="preserve">
+    <value>رقم التسجيل (اختياري)</value>
+  </data>
+  <data name="Tax_Dialog_AddAuthority_Title" xml:space="preserve">
+    <value>إضافة وكالة ضريبة</value>
+  </data>
+  <data name="Tax_Dialog_EditAuthority_Title" xml:space="preserve">
+    <value>تعديل وكالة ضريبة</value>
+  </data>
+  <data name="Tax_Status_NameCodeRequired" xml:space="preserve">
+    <value>الاسم والكود مطلوبان.</value>
+  </data>
+  <data name="Tax_Status_RuleAdded" xml:space="preserve">
+    <value>تم إضافة قاعدة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_RuleUpdated" xml:space="preserve">
+    <value>تم تحديث قاعدة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_RuleDeleted" xml:space="preserve">
+    <value>تم حذف قاعدة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_RuleInUse" xml:space="preserve">
+    <value>لا يمكن الحذف: قيد الاستخدام حالياً بواسطة مجموعة.</value>
+  </data>
+  <data name="Tax_Dialog_DeleteRule_Title" xml:space="preserve">
+    <value>حذف معدل الضريبة</value>
+  </data>
+  <data name="Tax_Dialog_DeleteRule_Content" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد حذف "{0}"؟</value>
+  </data>
+  <data name="Tax_Dialog_TaxName_Header" xml:space="preserve">
+    <value>اسم الضريبة</value>
+  </data>
+  <data name="Tax_Dialog_CalcType_Header" xml:space="preserve">
+    <value>نوع الحساب</value>
+  </data>
+  <data name="Tax_Dialog_RateValue_Header" xml:space="preserve">
+    <value>قيمة المعدل</value>
+  </data>
+  <data name="Tax_Dialog_Scope_Header" xml:space="preserve">
+    <value>النطاق</value>
+  </data>
+  <data name="Tax_Dialog_Inclusive_Content" xml:space="preserve">
+    <value>شامل (متضمن في السعر)</value>
+  </data>
+  <data name="Tax_Dialog_AddRule_Title" xml:space="preserve">
+    <value>إضافة معدل ضريبة</value>
+  </data>
+  <data name="Tax_Dialog_EditRule_Title" xml:space="preserve">
+    <value>تعديل معدل ضريبة</value>
+  </data>
+  <data name="Tax_Status_GroupAdded" xml:space="preserve">
+    <value>تم إضافة مجموعة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_GroupUpdated" xml:space="preserve">
+    <value>تم تحديث مجموعة الضريبة.</value>
+  </data>
+  <data name="Tax_Status_CannotDeleteDefaultGroup" xml:space="preserve">
+    <value>لا يمكن حذف مجموعة الضريبة الافتراضية.</value>
+  </data>
+  <data name="Tax_Dialog_DeleteGroup_Title" xml:space="preserve">
+    <value>حذف ملف الضريبة</value>
+  </data>
+  <data name="Tax_Dialog_DeleteGroup_Content" xml:space="preserve">
+    <value>هل أنت متأكد أنك تريد حذف "{0}"؟</value>
+  </data>
+  <data name="Tax_Status_GroupDeleted" xml:space="preserve">
+    <value>تم حذف مجموعة الضريبة.</value>
+  </data>
+  <data name="Tax_Dialog_ProfileName_Header" xml:space="preserve">
+    <value>اسم الملف الشخصي</value>
+  </data>
+  <data name="Tax_Dialog_DefaultGroup_Content" xml:space="preserve">
+    <value>تعيين كافتراضي للمنتجات الجديدة</value>
+  </data>
+  <data name="Tax_Dialog_IncludedRules_Header" xml:space="preserve">
+    <value>معدلات الضرائب المضمنة (يسمح بتعدد الاختيار)</value>
+  </data>
+  <data name="Tax_Dialog_AddGroup_Title" xml:space="preserve">
+    <value>إضافة ملف ضريبة</value>
+  </data>
+  <data name="Tax_Dialog_EditGroup_Title" xml:space="preserve">
+    <value>تعديل ملف ضريبة</value>
+  </data>
+
+  <data name="Users_Mode_Draft" xml:space="preserve">
+    <value>مسودة</value>
+  </data>
+  <data name="Users_Mode_Preview" xml:space="preserve">
+    <value>معاينة</value>
+  </data>
+  <data name="Users_Mode_Unlocked" xml:space="preserve">
+    <value>تم فك قفل التعديل</value>
+  </data>
+  <data name="Users_Mode_Locked" xml:space="preserve">
+    <value>التعديل مقفل</value>
+  </data>
+  <data name="Users_Editor_Title_Create" xml:space="preserve">
+    <value>إنشاء مستخدم</value>
+  </data>
+  <data name="Users_Editor_Title_Profile" xml:space="preserve">
+    <value>الملف الشخصي: {0}</value>
+  </data>
+  <data name="Users_Editor_Subtitle_Create" xml:space="preserve">
+    <value>قم بتعيين الهوية وبيانات اعتماد تسجيل الدخول والأذونات لحساب موظف جديد.</value>
+  </data>
+  <data name="Users_Editor_Subtitle_Review" xml:space="preserve">
+    <value>راجع الهوية وتفاصيل تسجيل الدخول والأذونات قبل حفظ التغييرات.</value>
+  </data>
+  <data name="Users_Role_NewAdmin" xml:space="preserve">
+    <value>مسؤول جديد</value>
+  </data>
+  <data name="Users_Role_NewStaff" xml:space="preserve">
+    <value>موظف جديد</value>
+  </data>
+  <data name="Users_Role_AdminLabel" xml:space="preserve">
+    <value>مسؤول</value>
+  </data>
+  <data name="Users_Role_CashierLabel" xml:space="preserve">
+    <value>كاشير</value>
+  </data>
+  <data name="Generic_Save" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="Generic_Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="Generic_Delete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="Generic_Close" xml:space="preserve">
+    <value>إغلاق</value>
+  </data>
+  <data name="Generic_Next" xml:space="preserve">
+    <value>التالي</value>
+  </data>
+  <data name="Generic_Previous" xml:space="preserve">
+    <value>السابق</value>
+  </data>
+  <data name="Generic_Done" xml:space="preserve">
+    <value>تم</value>
+  </data>
+</root>

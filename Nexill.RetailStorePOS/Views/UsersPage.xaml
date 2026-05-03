@@ -78,9 +78,9 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Spacing="4" Margin="16">
-                            <TextBlock Text="Manage Users"
+                            <TextBlock x:Uid="Users_List_Title"
                                        Style="{StaticResource UsersSectionTitleTextStyle}" />
-                            <TextBlock Text="Select a team member to review or edit their account details."
+                            <TextBlock x:Uid="Users_List_Subtitle"
                                        Style="{StaticResource UsersSubtitleTextStyle}" />
                         </StackPanel>
 
@@ -149,7 +149,7 @@
                                                 CornerRadius="2"
                                                 Padding="10,5"
                                                 VerticalAlignment="Center">
-                                            <TextBlock Text="{x:Bind RoleLabel}"
+                                            <TextBlock Text="{x:Bind IsAdmin, Converter={StaticResource UserRoleConverter}, Mode=OneWay}"
                                                        FontSize="11"
                                                        FontWeight="SemiBold"
                                                        Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
@@ -192,7 +192,7 @@
                                     DefaultLabelPosition="Right"
                                     VerticalAlignment="Center">
                             <AppBarButton x:Name="NewUserButton"
-                                          Label="New user" CornerRadius="6"
+                                          x:Uid="Users_Editor_NewButton" CornerRadius="6"
                                           Background="#fcfcfc"
                                           Command="{x:Bind ViewModel.NewUserCommand}"
                                           IsEnabled="{x:Bind ViewModel.CanManageUsers, Mode=OneWay}">
@@ -202,7 +202,7 @@
                             </AppBarButton>
 
                             <AppBarButton x:Name="UnlockUserButton"
-                                           Label="Unlock"
+                                           x:Uid="Users_Editor_UnlockButton"
                                            CornerRadius="3"
                                            Background="#fcfcfc"
                                            Command="{x:Bind ViewModel.UnlockEditCommand}"
@@ -222,7 +222,7 @@
                                 <Border Visibility="{x:Bind ViewModel.ReadOnlyBannerVisibility, Mode=OneWay}"
                                         Style="{StaticResource UsersSectionCardStyle}"
                                         Padding="12,10">
-                                    <TextBlock Text="You can browse users, but editing is disabled for this account."
+                                    <TextBlock x:Uid="Users_Editor_ReadOnlyBanner"
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -231,17 +231,16 @@
                                 <InfoBar IsOpen="{x:Bind ViewModel.IsOnboardingActive, Mode=OneWay}"
                                          Severity="Error"
                                          IsClosable="False"
-                                         Title="Security Warning"
-                                         Message="You have to change the admin password." />
+                                         x:Uid="Users_Editor_SecurityWarning" />
 
                                 <Border Style="{StaticResource UsersSectionCardStyle}"
                                         Padding="16"
                                         Visibility="{x:Bind ViewModel.HasSelectedUserVisibility, Mode=OneWay}">
                                     <StackPanel Spacing="14">
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Identity"
+                                            <TextBlock x:Uid="Users_Section_Identity"
                                                        Style="{StaticResource UsersSectionTitleTextStyle}" />
-                                            <TextBlock Text="Basic profile details used for sign-in and daily store activity."
+                                            <TextBlock x:Uid="Users_Section_Identity_Subtitle"
                                                        Style="{StaticResource UsersSubtitleTextStyle}" />
                                         </StackPanel>
 
@@ -252,13 +251,13 @@
                                             </Grid.ColumnDefinitions>
 
                                             <StackPanel Spacing="6">
-                                                <TextBlock Text="Display name" Style="{StaticResource UsersSubtitleTextStyle}" />
+                                                <TextBlock x:Uid="Users_Label_DisplayName" Style="{StaticResource UsersSubtitleTextStyle}" />
                                                 <TextBox Text="{x:Bind ViewModel.EditDisplayName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CornerRadius="3"
                                                          IsReadOnly="{x:Bind ViewModel.IsEditLocked, Mode=OneWay}" />
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="1" Spacing="6">
-                                                <TextBlock Text="Username / Employee ID" Style="{StaticResource UsersSubtitleTextStyle}" />
+                                                <TextBlock x:Uid="Users_Label_Username" Style="{StaticResource UsersSubtitleTextStyle}" />
                                                 <TextBox Text="{x:Bind ViewModel.EditUsername, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CornerRadius="3"
                                                          IsReadOnly="{x:Bind ViewModel.IsEditLocked, Mode=OneWay}" />
                                             </StackPanel>
@@ -271,9 +270,9 @@
                                         Visibility="{x:Bind ViewModel.HasSelectedUserVisibility, Mode=OneWay}">
                                     <StackPanel Spacing="14">
                                         <StackPanel Spacing="4">
-                                            <TextBlock Text="Security"
+                                            <TextBlock x:Uid="Users_Section_Security"
                                                        Style="{StaticResource UsersSectionTitleTextStyle}" />
-                                            <TextBlock Text="Admins use a password or PIN. Cashiers use a dedicated 4-digit PIN."
+                                            <TextBlock x:Uid="Users_Section_Security_Subtitle"
                                                        Style="{StaticResource UsersSubtitleTextStyle}" />
                                         </StackPanel>
 
@@ -284,7 +283,7 @@
                                             </Grid.ColumnDefinitions>
 
                                             <StackPanel Spacing="6">
-                                                <TextBlock Text="4-Digit PIN" Style="{StaticResource UsersSubtitleTextStyle}" />
+                                                <TextBlock x:Uid="Users_Label_PIN" Style="{StaticResource UsersSubtitleTextStyle}" />
                                                 <TextBox Text="{x:Bind ViewModel.EditPin, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CornerRadius="3"
                                                          IsReadOnly="{x:Bind ViewModel.IsEditLocked, Mode=OneWay}"
                                                          MaxLength="4"
@@ -294,10 +293,10 @@
                                             <StackPanel Grid.Column="1"
                                                         Spacing="6"
                                                         Visibility="{x:Bind ViewModel.AdminPasswordVisibility, Mode=OneWay}">
-                                                <TextBlock Text="Admin Password" Style="{StaticResource UsersSubtitleTextStyle}" />
+                                                <TextBlock x:Uid="Users_Label_AdminPassword" Style="{StaticResource UsersSubtitleTextStyle}" />
                                                 <PasswordBox x:Name="EditorPasswordBox"
-                                                             IsEnabled="{x:Bind ViewModel.IsEditUnlocked, Mode=OneWay}" />
-                                                <TextBlock Text="Leave blank to keep the current password."
+                                                              IsEnabled="{x:Bind ViewModel.IsEditUnlocked, Mode=OneWay}" />
+                                                <TextBlock x:Uid="Users_Label_AdminPasswordHint"
                                                            Style="{StaticResource UsersSubtitleTextStyle}" />
                                             </StackPanel>
                                         </Grid>
@@ -316,9 +315,9 @@
                                             </Grid.ColumnDefinitions>
 
                                             <StackPanel Spacing="4">
-                                                <TextBlock Text="Roles and permissions"
+                                                <TextBlock x:Uid="Users_Section_Roles"
                                                            Style="{StaticResource UsersSectionTitleTextStyle}" />
-                                                <TextBlock Text="These controls determine which store areas and register actions are available."
+                                                <TextBlock x:Uid="Users_Section_Roles_Subtitle"
                                                            Style="{StaticResource UsersSubtitleTextStyle}" />
                                             </StackPanel>
 
@@ -350,10 +349,10 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Spacing="2">
-                                                        <TextBlock Text="Administrator access"
+                                                        <TextBlock x:Uid="Users_Role_Admin"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                                        <TextBlock Text="Grants full operational control across the store workspace."
+                                                        <TextBlock x:Uid="Users_Role_Admin_Description"
                                                                    Style="{StaticResource UsersSubtitleTextStyle}" />
                                                     </StackPanel>
      <ToggleSwitch x:Name="AdministratorAccessToggle"
@@ -368,10 +367,10 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Spacing="2">
-                                                        <TextBlock Text="Process checkout"
+                                                        <TextBlock x:Uid="Users_Role_Checkout"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                                        <TextBlock Text="Allows starting sales, recording payment, and finalizing receipts."
+                                                        <TextBlock x:Uid="Users_Role_Checkout_Description"
                                                                    Style="{StaticResource UsersSubtitleTextStyle}" />
                                                     </StackPanel>
                                                     <ToggleSwitch Grid.Column="1"
@@ -385,10 +384,10 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Spacing="2">
-                                                        <TextBlock Text="Override price"
+                                                        <TextBlock x:Uid="Users_Role_Override"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                                        <TextBlock Text="Allows manual price changes and supervisor-level selling exceptions."
+                                                        <TextBlock x:Uid="Users_Role_Override_Description"
                                                                    Style="{StaticResource UsersSubtitleTextStyle}" />
                                                     </StackPanel>
                                                     <ToggleSwitch Grid.Column="1"
@@ -402,10 +401,10 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Spacing="2">
-                                                        <TextBlock Text="View reports"
+                                                        <TextBlock x:Uid="Users_Role_Reports"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                                        <TextBlock Text="Allows access to daily summaries, receipt history, and sales review."
+                                                        <TextBlock x:Uid="Users_Role_Reports_Description"
                                                                    Style="{StaticResource UsersSubtitleTextStyle}" />
                                                     </StackPanel>
                                                     <ToggleSwitch Grid.Column="1"
@@ -421,10 +420,10 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Spacing="2">
-                                                        <TextBlock Text="Manage products"
+                                                        <TextBlock x:Uid="Users_Role_Products"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                                        <TextBlock Text="Allows product updates, pricing changes, and inventory-related edits."
+                                                        <TextBlock x:Uid="Users_Role_Products_Description"
                                                                    Style="{StaticResource UsersSubtitleTextStyle}" />
                                                     </StackPanel>
                                                     <ToggleSwitch Grid.Column="1"
@@ -438,10 +437,10 @@
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
                                                     <StackPanel Spacing="2">
-                                                        <TextBlock Text="Manage settings"
+                                                        <TextBlock x:Uid="Users_Role_Settings"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                                        <TextBlock Text="Allows changes to store details, tax defaults, and system preferences."
+                                                        <TextBlock x:Uid="Users_Role_Settings_Description"
                                                                    Style="{StaticResource UsersSubtitleTextStyle}" />
                                                     </StackPanel>
                                                     <ToggleSwitch Grid.Column="1"
@@ -473,12 +472,12 @@
                                                 IsEnabled="{x:Bind ViewModel.CanManageUsers, Mode=OneWay}">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <SymbolIcon Symbol="Delete" />
-                                                <TextBlock Text="Deactivate User" />
+                                                <TextBlock x:Uid="Users_Button_Deactivate" />
                                             </StackPanel>
                                         </Button>
 
                                         <TextBlock Grid.Column="1"
-                                                   Text="Review changes carefully. Save applies your updates, while cancel returns to the roster."
+                                                   x:Uid="Users_Button_Deactivate_Tip"
                                                    Style="{StaticResource UsersSubtitleTextStyle}"
                                                    VerticalAlignment="Center"
                                                    Margin="10,0,10,0" />
@@ -491,7 +490,7 @@
                                                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                     Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                     Command="{x:Bind ViewModel.CancelCommand}">
-                                                <TextBlock Text="Cancel Changes" />
+                                                <TextBlock x:Uid="Users_Button_Cancel" />
                                             </Button>
 
                                             <Button x:Name="SaveUserChangesButton"
@@ -503,7 +502,7 @@
                                                     IsEnabled="{x:Bind ViewModel.IsEditUnlocked, Mode=OneWay}">
                                                 <StackPanel Orientation="Horizontal" Spacing="6">
                                                     <SymbolIcon Symbol="Save" />
-                                                    <TextBlock Text="Save Changes" />
+                                                    <TextBlock x:Uid="Users_Button_Save" />
                                                 </StackPanel>
                                             </Button>
                                         </StackPanel>
@@ -546,12 +545,12 @@
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Center" />
                                 </Border>
-                                <TextBlock Text="No User selected"
+                                <TextBlock x:Uid="Users_Empty_Title"
                                            FontSize="18"
                                            FontWeight="SemiBold"
                                            HorizontalAlignment="Center"
                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                <TextBlock Text="Choose a user  or add a new User"
+                                <TextBlock x:Uid="Users_Empty_Subtitle"
                                            Style="{StaticResource UsersSubtitleTextStyle}"
                                            TextAlignment="Center"
                                            Width="340" />
@@ -584,14 +583,14 @@
                                                     VerticalAlignment="Center" />
                                     </Border>
 
-                                    <TextBlock Text="Unlock this profile?"
+                                    <TextBlock x:Uid="Users_Unlock_Title"
                                                FontSize="22"
                                                FontWeight="SemiBold"
                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                TextAlignment="Center"
                                                Margin="0,16,0,0" />
 
-                                    <TextBlock Text="You are about to edit credentials and permission settings for this team member. Continue only when you intend to update access."
+                                    <TextBlock x:Uid="Users_Unlock_Subtitle"
                                                Style="{StaticResource UsersSubtitleTextStyle}"
                                                TextAlignment="Center"
                                                Margin="0,10,0,0" />
@@ -603,11 +602,11 @@
                                             Padding="14"
                                             Margin="0,16,0,0">
                                         <StackPanel>
-                                            <TextBlock Text="What unlock does"
+                                            <TextBlock x:Uid="Users_Unlock_Reason_Title"
                                                        FontSize="12"
                                                        FontWeight="SemiBold"
                                                        Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-                                            <TextBlock Text="It temporarily enables name, sign-in, password, PIN, and permission controls until you save or cancel."
+                                            <TextBlock x:Uid="Users_Unlock_Reason_Text"
                                                        Style="{StaticResource UsersSubtitleTextStyle}"
                                                        Margin="0,6,0,0" />
                                         </StackPanel>
@@ -626,7 +625,7 @@
                                                 BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                                 Foreground="{ThemeResource TextFillColorPrimaryBrush}"
                                                 Command="{x:Bind ViewModel.DismissUnlockPromptCommand}">
-                                            <TextBlock Text="Not Now" />
+                                            <TextBlock x:Uid="Users_Unlock_Button_Cancel" />
                                         </Button>
 
                                         <Button Grid.Column="2"
@@ -637,7 +636,7 @@
                                                 Command="{x:Bind ViewModel.ConfirmUnlockEditCommand}">
                                             <StackPanel Orientation="Horizontal" Spacing="6">
                                                 <SymbolIcon Symbol="Edit" />
-                                                <TextBlock Text="Unlock Profile" />
+                                                <TextBlock x:Uid="Users_Unlock_Button_Confirm" />
                                             </StackPanel>
                                         </Button>
                                     </Grid>
@@ -650,40 +649,29 @@
         </Grid>
         <TeachingTip x:Name="AdministratorAccessTip"
                      Target="{x:Bind UsersListView, Mode=OneWay}"
-                     Title="Administrator profile"
-                     Subtitle="Click this administrator profile to continue the user-settings walkthrough."
+                     x:Uid="Users_Walkthrough_Admin"
                      PreferredPlacement="Right"
                      IsLightDismissEnabled="False"
-                     CloseButtonContent="Skip"
                      CloseButtonClick="AdministratorAccessTip_CloseButtonClick" />
         <TeachingTip x:Name="NewUserTeachingTip"
                      Target="{x:Bind NewUserButton, Mode=OneWay}"
                      PreferredPlacement="Bottom"
                      IsLightDismissEnabled="False"
-                     CloseButtonContent="Skip"
-                     ActionButtonContent="Next"
-                     Title="New user"
-                     Subtitle="Use this to create another staff account from the user-management page."
+                     x:Uid="Users_Walkthrough_New"
                      ActionButtonClick="NewUserTeachingTip_ActionButtonClick"
                      CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
         <TeachingTip x:Name="UnlockTeachingTip"
                      Target="{x:Bind UnlockUserButton, Mode=OneWay}"
                      PreferredPlacement="Bottom"
                      IsLightDismissEnabled="False"
-                     CloseButtonContent="Skip"
-                     ActionButtonContent="Next"
-                     Title="Unlock"
-                     Subtitle="Use this before editing protected credentials and permission settings."
+                     x:Uid="Users_Walkthrough_Unlock"
                      ActionButtonClick="UnlockTeachingTip_ActionButtonClick"
                      CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
         <TeachingTip x:Name="SaveChangesTeachingTip"
                      Target="{x:Bind SaveUserChangesButton, Mode=OneWay}"
                      PreferredPlacement="Top"
                      IsLightDismissEnabled="False"
-                     CloseButtonContent="Skip"
-                     ActionButtonContent="Finish"
-                     Title="Save changes"
-                     Subtitle="Use this after reviewing the administrator settings and password changes."
+                     x:Uid="Users_Walkthrough_Save"
                      ActionButtonClick="SaveChangesTeachingTip_ActionButtonClick"
                      CloseButtonClick="UsersWalkthroughTip_CloseButtonClick" />
     </Grid>

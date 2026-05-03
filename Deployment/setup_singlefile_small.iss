@@ -41,7 +41,7 @@
 #endif
 
 [Setup]
-AppId={{4EF6C0E7-54AD-4E8F-9F55-1989B6B27FB8}
+AppId={{14A5B548-6B24-447E-86DA-D96F702D4D4F}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
@@ -95,3 +95,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilen
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+#include "upgrade_remove_previous_versions.inc.iss"
+#include "uninstall_remove_userdata.inc.iss"

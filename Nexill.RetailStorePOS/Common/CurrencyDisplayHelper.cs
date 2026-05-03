@@ -73,29 +73,46 @@ internal static class CurrencyDisplayHelper
     public static string FormatAmount(decimal amount, string? currencyCode)
     {
         var culture = ResolveDisplayCulture();
-        var numericAmount = ApplyNativeDigits(amount.ToString("N2", culture), culture);
+        var format = amount == Math.Truncate(amount) ? "N0" : "N2";
+        var numericAmount = ApplyNativeDigits(amount.ToString(format, culture), culture);
         var displayCode = ResolveDisplayCode(currencyCode);
         return string.IsNullOrWhiteSpace(displayCode)
             ? numericAmount
             : $"{displayCode} {numericAmount}";
     }
 
-    public static string FormatNumber(decimal amount)
+    public static string FormatNumber(decimal amount, string format = "N2")
     {
         var culture = ResolveDisplayCulture();
-        return ApplyNativeDigits(amount.ToString("N2", culture), culture);
+        return ApplyNativeDigits(amount.ToString(format, culture), culture);
+    }
+
+    public static string FormatInt(long amount)
+    {
+        var culture = ResolveDisplayCulture();
+        return ApplyNativeDigits(amount.ToString("N0", culture), culture);
+    }
+
+    public static string FormatPercent(double percent, string format = "0")
+    {
+        var culture = ResolveDisplayCulture();
+        return ApplyNativeDigits($"{percent.ToString(format, culture)}%", culture);
     }
 
     public static string FormatDate(DateTime value)
     {
-        var culture = ResolveDisplayCulture();
-        return ApplyNativeDigits(value.ToString("d", culture), culture);
+        return value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
     }
 
     public static string FormatDateTime(DateTime value)
     {
+        return value.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+    }
+
+    public static string FormatStringWithDigits(string input)
+    {
         var culture = ResolveDisplayCulture();
-        return ApplyNativeDigits(value.ToString("g", culture), culture);
+        return ApplyNativeDigits(input, culture);
     }
 
     private static string? TryGetSavedRegionCode()
@@ -129,19 +146,19 @@ internal static class CurrencyDisplayHelper
         if (!string.IsNullOrWhiteSpace(region.CurrencySymbol)
             && !string.Equals(region.CurrencySymbol, region.ISOCurrencySymbol, StringComparison.OrdinalIgnoreCase))
         {
-            return region.CurrencySymbol.Trim();
+            return region.CurrencySymbol.Replace(".", "").Trim();
         }
 
         if (!string.IsNullOrWhiteSpace(region.CurrencyNativeName)
             && !string.Equals(region.CurrencyNativeName, region.ISOCurrencySymbol, StringComparison.OrdinalIgnoreCase))
         {
-            return region.CurrencyNativeName.Trim();
+            return region.CurrencyNativeName.Replace(".", "").Trim();
         }
 
         if (!string.IsNullOrWhiteSpace(region.CurrencyEnglishName)
             && !string.Equals(region.CurrencyEnglishName, region.ISOCurrencySymbol, StringComparison.OrdinalIgnoreCase))
         {
-            return region.CurrencyEnglishName.Trim();
+            return region.CurrencyEnglishName.Replace(".", "").Trim();
         }
 
         return region.ISOCurrencySymbol;
@@ -151,7 +168,8 @@ internal static class CurrencyDisplayHelper
     {
         try
         {
-            var languageTag = GlobalizationPreferences.Languages.FirstOrDefault();
+            var languageTag = LocalizationHelper.GetEffectiveLanguageTag();
+
             if (!string.IsNullOrWhiteSpace(languageTag))
             {
                 return CultureInfo.CreateSpecificCulture(languageTag);
@@ -167,13 +185,38 @@ internal static class CurrencyDisplayHelper
             // The preferred language tag is invalid; fall back to CurrentCulture.
             StartupTrace.Write($"CurrencyDisplayHelper.ResolveDisplayCulture: ArgumentException: {ex.Message}");
         }
+        catch (InvalidOperationException ex)
+        {
+            StartupTrace.Write($"CurrencyDisplayHelper.ResolveDisplayCulture: InvalidOperationException: {ex.Message}");
+        }
 
-        return CultureInfo.CurrentCulture;
+        try
+        {
+            var systemLanguage = GlobalizationPreferences.Languages.FirstOrDefault();
+            if (!string.IsNullOrWhiteSpace(systemLanguage))
+            {
+                return CultureInfo.CreateSpecificCulture(systemLanguage);
+            }
+        }
+        catch (Exception ex) when (ex is CultureNotFoundException or ArgumentException or InvalidOperationException)
+        {
+            StartupTrace.Write($"CurrencyDisplayHelper.ResolveDisplayCulture: System fallback failed: {ex.Message}");
+        }
+
+        return CultureInfo.GetCultureInfo(LocalizationHelper.DefaultLanguage);
     }
 
     private static string ApplyNativeDigits(string formattedText, CultureInfo culture)
     {
         var nativeDigits = culture.NumberFormat.NativeDigits;
+
+        // Force Eastern Arabic digits if we are in an Arabic culture and the system 
+        // hasn't already provided them (some Windows configs default to Western digits even for ar-SA).
+        if (culture.TwoLetterISOLanguageName == "ar" && nativeDigits[0] == "0")
+        {
+            nativeDigits = new[] { "٠", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩" };
+        }
+
         if (nativeDigits.Length != 10)
         {
             return formattedText;

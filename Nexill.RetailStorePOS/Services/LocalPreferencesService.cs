@@ -1,7 +1,6 @@
-using System.IO;
 using System.Text.Json;
-using System.Threading;
 using RetailStorePOS.Data;
+using RetailStorePOS.Data.Modules.Contracts;
 
 namespace RetailStorePOS.App.Services;
 
@@ -10,39 +9,36 @@ public class LocalPreferencesService : ILocalPreferencesService
     public event EventHandler<LocalPreferencesChangedEventArgs>? PreferencesChanged;
     private readonly string _settingsPath;
     private static readonly SemaphoreSlim _fileLock = new(1, 1);
-
-    // Ensure thread-safe or atomic writes if needed, but for MVP file I/O is sufficient
-    private static readonly JsonSerializerOptions _jsonOptions = new()
-    {
-        WriteIndented = true,
-        PropertyNameCaseInsensitive = true
-    };
+    public string PreferencesPath => _settingsPath;
+    public string PreferencesContractKey => SettingsPlatformContract.LocalPreferencesFileContract.ContractKey;
 
     public LocalPreferencesService()
     {
         var appFolder = AppDataPaths.GetRootFolder();
-        _settingsPath = Path.Combine(appFolder, "preferences.json");
+        _settingsPath = NormalizeLocalPreferencesPath(Path.Combine(appFolder, SettingsPlatformContract.PreferencesFileName));
     }
 
     // For testing purposes (inject custom path)
     public LocalPreferencesService(string customPath)
     {
-        _settingsPath = customPath;
+        _settingsPath = NormalizeLocalPreferencesPath(customPath);
     }
 
     public async Task<LocalPreferences> LoadPreferencesAsync()
     {
-        if (!File.Exists(_settingsPath))
-        {
-            return new LocalPreferences(); // Defaults
-        }
-
         await _fileLock.WaitAsync();
         try
         {
+            TryMigrateLegacyPreferencesFile();
+
+            if (!File.Exists(_settingsPath))
+            {
+                return new LocalPreferences();
+            }
+
             using var stream = new FileStream(_settingsPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            return await JsonSerializer.DeserializeAsync<LocalPreferences>(stream, _jsonOptions)
-                   ?? new LocalPreferences();
+            return await JsonSerializer.DeserializeAsync(stream, StartupJsonContext.Default.LocalPreferences)
+                ?? new LocalPreferences();
         }
         catch
         {
@@ -60,8 +56,9 @@ public class LocalPreferencesService : ILocalPreferencesService
         await _fileLock.WaitAsync();
         try
         {
+            EnsurePreferencesDirectory(_settingsPath);
             using var stream = new FileStream(_settingsPath, FileMode.Create, FileAccess.Write, FileShare.None);
-            await JsonSerializer.SerializeAsync(stream, preferences, _jsonOptions);
+            await JsonSerializer.SerializeAsync(stream, preferences, StartupJsonContext.Default.LocalPreferences);
         }
         finally
         {
@@ -98,6 +95,20 @@ public class LocalPreferencesService : ILocalPreferencesService
         await SavePreferencesAsync(current);
     }
 
+    public async Task UpdateDailyTargetAsync(decimal amount)
+    {
+        var current = await LoadPreferencesAsync();
+        current.DailyTarget = amount;
+        await SavePreferencesAsync(current);
+    }
+
+    public async Task UpdateSuppressCrashFeedbackAsync(bool suppress)
+    {
+        var current = await LoadPreferencesAsync();
+        current.SuppressCrashFeedbackPrompt = suppress;
+        await SavePreferencesAsync(current);
+    }
+
     private static LocalPreferences ClonePreferences(LocalPreferences preferences)
     {
         return new LocalPreferences
@@ -115,7 +126,44 @@ public class LocalPreferencesService : ILocalPreferencesService
             CrashCount = preferences.CrashCount,
             LastUpdatePromptAt = preferences.LastUpdatePromptAt,
             LastUpdateInstalledAt = preferences.LastUpdateInstalledAt,
-            SetupCompletedEventId = preferences.SetupCompletedEventId
+            SetupCompletedEventId = preferences.SetupCompletedEventId,
+            DailyTarget = preferences.DailyTarget,
+            SuppressCrashFeedbackPrompt = preferences.SuppressCrashFeedbackPrompt
         };
+    }
+
+    private static string NormalizeLocalPreferencesPath(string path)
+    {
+        return SettingsPlatformContract.NormalizeLocalPreferencesPath(path);
+    }
+
+    private static void EnsurePreferencesDirectory(string preferencesPath)
+    {
+        var directory = Path.GetDirectoryName(preferencesPath);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+    }
+
+    private void TryMigrateLegacyPreferencesFile()
+    {
+        if (File.Exists(_settingsPath))
+        {
+            return;
+        }
+
+        var legacyPath = NormalizeLocalPreferencesPath(
+            Path.Combine(
+                AppDataPaths.GetLegacyRootFolder(),
+                SettingsPlatformContract.PreferencesFileName));
+
+        if (!File.Exists(legacyPath))
+        {
+            return;
+        }
+
+        EnsurePreferencesDirectory(_settingsPath);
+        File.Copy(legacyPath, _settingsPath, overwrite: false);
     }
 }

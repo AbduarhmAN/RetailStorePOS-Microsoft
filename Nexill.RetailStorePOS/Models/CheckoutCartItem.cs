@@ -1,6 +1,6 @@
-using Microsoft.UI.Xaml;
 using System.Text.Json;
-using RetailStorePOS.Data.Models;
+using Microsoft.UI.Xaml;
+using RetailStorePOS.Data.Modules.Tax;
 using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.WinUiLogin.Models;
@@ -11,12 +11,26 @@ public sealed class CheckoutCartItem : ObservableObject
     private decimal _price;
     private string _currencyCode = "USD";
     private bool _canOverridePrice;
+    private string? _unit;
 
     public long ProductId { get; set; }
 
     public string Name { get; set; } = string.Empty;
 
     public string? Barcode { get; set; }
+
+    public string? Unit
+    {
+        get => _unit;
+        set
+        {
+            if (SetProperty(ref _unit, value))
+            {
+                OnPropertyChanged(nameof(DisplayUnitText));
+                OnPropertyChanged(nameof(QuantityPriceUnitText));
+            }
+        }
+    }
 
     public decimal OriginalPrice { get; set; }
 
@@ -94,9 +108,17 @@ public sealed class CheckoutCartItem : ObservableObject
 
     public string PriceText => CurrencyDisplayHelper.FormatAmount(Price, _currencyCode);
 
+    public string PriceAmountText => CurrencyDisplayHelper.FormatNumber(Price);
+
     public string OriginalPriceText => CurrencyDisplayHelper.FormatAmount(OriginalPrice, _currencyCode);
 
     public string LineTotalText => CurrencyDisplayHelper.FormatAmount(LineTotal, _currencyCode);
+
+    public string LineTotalAmountText => CurrencyDisplayHelper.FormatNumber(LineTotal);
+
+    public string DisplayUnitText => string.IsNullOrWhiteSpace(Unit) ? "Unit" : Unit.Trim();
+
+    public string QuantityPriceUnitText => $"x {PriceAmountText} / {DisplayUnitText}";
 
     public string TaxSnapshotJson => BuildTaxSnapshotJson();
 
@@ -133,8 +155,11 @@ public sealed class CheckoutCartItem : ObservableObject
         OnPropertyChanged(nameof(NetLineTotal));
         OnPropertyChanged(nameof(TaxAmount));
         OnPropertyChanged(nameof(PriceText));
+        OnPropertyChanged(nameof(PriceAmountText));
         OnPropertyChanged(nameof(OriginalPriceText));
         OnPropertyChanged(nameof(LineTotalText));
+        OnPropertyChanged(nameof(LineTotalAmountText));
+        OnPropertyChanged(nameof(QuantityPriceUnitText));
         OnPropertyChanged(nameof(IsPriceOverridden));
         OnPropertyChanged(nameof(PriceOverrideVisibility));
         OnPropertyChanged(nameof(PriceReadOnlyVisibility));

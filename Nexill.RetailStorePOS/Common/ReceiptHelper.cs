@@ -19,25 +19,37 @@ public static class ReceiptHelper
         TryOpenReceiptPdf(GetReceiptPdfPath(receiptNumber));
     }
 
-    public static void OpenReceiptsFolder()
+    public static bool OpenReceiptsFolder()
     {
-        // MSIX redirects Environment.GetFolderPath(LocalApplicationData) to:
-        //   ...\Packages\{FamilyName}\LocalCache\Local
-        // explorer.exe runs outside the sandbox, so we need the real physical path.
-        string folder;
+        var folder = AppDataPaths.Combine("Receipts");
+        Directory.CreateDirectory(folder);
+
         try
         {
-            var localCacheFolder = Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path;
-            folder = Path.Combine(localCacheFolder, "Local", "RetailStorePOS", "Receipts");
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "explorer.exe",
+                Arguments = $"\"{folder}\"",
+                UseShellExecute = true
+            });
+            return true;
         }
         catch
         {
-            // Fallback for unpackaged builds
-            folder = AppDataPaths.Combine("Receipts");
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = folder,
+                    UseShellExecute = true
+                });
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
-
-        Directory.CreateDirectory(folder);
-        Process.Start("explorer.exe", $"\"{folder}\"");
     }
 
     public static string ArchiveReceipt(ReceiptSummary receipt, string? storeName = null, string? storeAddress = null, string? currencyCode = null)

@@ -16,8 +16,8 @@
         <!-- Section Header -->
         <Grid Grid.Row="0" Margin="0,0,0,24">
             <StackPanel>
-                <TextBlock Text="My Preferences" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold"/>
-                <TextBlock Text="These settings apply only to your login and are designed for faster checkout." 
+                <TextBlock x:Uid="MyPreferences_Header_Title" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold"/>
+                <TextBlock x:Uid="MyPreferences_Header_Subtitle"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
             </StackPanel>
         </Grid>
@@ -27,8 +27,8 @@
                 
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Quick-Cash Buttons" FontWeight="SemiBold" FontSize="16"/>
-                        <TextBlock Text="Set the cash shortcuts shown on the checkout screen. Auto-saves directly." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+                        <TextBlock x:Uid="MyPreferences_QuickCash_Title" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock x:Uid="MyPreferences_QuickCash_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
                         
                         <Grid ColumnSpacing="24">
                             <Grid.ColumnDefinitions>
@@ -39,7 +39,7 @@
 
                             <NumberBox
                                        Grid.Column="0"
-                                       Header="Value 1"
+                                       x:Uid="MyPreferences_QuickCash_Value1"
                                        Value="{x:Bind ViewModel.QuickCash1Value, Mode=TwoWay}"
                                        Minimum="0"
                                        SmallChange="1"
@@ -47,8 +47,8 @@
                                        SpinButtonPlacementMode="Hidden"
                                        CornerRadius="4"
                                        common:NumericInputNormalization.NormalizeOnLostFocus="True"/>
-                            <NumberBox Grid.Column="1" Header="Value 2" Value="{x:Bind ViewModel.QuickCash2Value, Mode=TwoWay}" Minimum="0" SmallChange="1" AcceptsExpression="False" SpinButtonPlacementMode="Hidden" CornerRadius="4" common:NumericInputNormalization.NormalizeOnLostFocus="True" />
-                            <NumberBox Grid.Column="2" Header="Value 3" Value="{x:Bind ViewModel.QuickCash3Value, Mode=TwoWay}" Minimum="0" SmallChange="1" AcceptsExpression="False" SpinButtonPlacementMode="Hidden" CornerRadius="4" common:NumericInputNormalization.NormalizeOnLostFocus="True" />
+                            <NumberBox Grid.Column="1" x:Uid="MyPreferences_QuickCash_Value2" Value="{x:Bind ViewModel.QuickCash2Value, Mode=TwoWay}" Minimum="0" SmallChange="1" AcceptsExpression="False" SpinButtonPlacementMode="Hidden" CornerRadius="4" common:NumericInputNormalization.NormalizeOnLostFocus="True" />
+                            <NumberBox Grid.Column="2" x:Uid="MyPreferences_QuickCash_Value3" Value="{x:Bind ViewModel.QuickCash3Value, Mode=TwoWay}" Minimum="0" SmallChange="1" AcceptsExpression="False" SpinButtonPlacementMode="Hidden" CornerRadius="4" common:NumericInputNormalization.NormalizeOnLostFocus="True" />
                         </Grid>
                     </StackPanel>
                 </Border>

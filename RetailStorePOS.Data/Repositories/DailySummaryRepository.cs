@@ -1,3 +1,5 @@
+using RetailStorePOS.Data.Models;
+
 namespace RetailStorePOS.Data.Repositories;
 
 public sealed class DailySummaryRepository

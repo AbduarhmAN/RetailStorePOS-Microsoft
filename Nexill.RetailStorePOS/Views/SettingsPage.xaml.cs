@@ -1,7 +1,7 @@
-using System;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
+using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.ViewModels;
 
 namespace RetailStorePOS.WinUiLogin.Views;
@@ -16,15 +16,27 @@ public sealed partial class SettingsPage : Page
     public SettingsPage()
     {
         ViewModel = new SettingsViewModel();
+        StartupTrace.Write("SettingsPage.ctor:start");
         InitializeComponent();
         Loaded += Page_Loaded;
         Unloaded += Page_Unloaded;
+        StartupTrace.Write("SettingsPage.ctor:end");
     }
 
     private void Page_Loaded(object sender, RoutedEventArgs e)
     {
-        UpdateNavigationAccess();
-        NavigateToTag(ResolveRequestedTag());
+        StartupTrace.Write("SettingsPage.Loaded:start");
+        try
+        {
+            UpdateNavigationAccess();
+            NavigateToTag(ResolveRequestedTag());
+            StartupTrace.Write("SettingsPage.Loaded:end");
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"SettingsPage.Loaded failed: {ex}");
+            LoginRuntime.ReportException(ex, "SettingsPage.Loaded");
+        }
     }
 
     private void Page_Unloaded(object sender, RoutedEventArgs e)
@@ -48,6 +60,7 @@ public sealed partial class SettingsPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        StartupTrace.Write($"SettingsPage.OnNavigatedTo:start:{e.Parameter}");
         ViewModel.ReloadCommand.Execute(null);
         UpdateNavigationAccess();
 
@@ -60,10 +73,14 @@ public sealed partial class SettingsPage : Page
         {
             NavigateToTag(ResolveRequestedTag());
         }
+
+        StartupTrace.Write("SettingsPage.OnNavigatedTo:end");
     }
 
     private void SettingsNavView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
+        if (_isSyncingNavigationSelection) return;
+
         if (args.SelectedItemContainer is NavigationViewItem navItem && navItem.Tag is string tag)
         {
             NavigateToTag(tag);
@@ -84,6 +101,8 @@ public sealed partial class SettingsPage : Page
 
     public void NavigateToTag(string? tag)
     {
+        StartupTrace.Write($"SettingsPage.NavigateToTag:start:{tag ?? "<null>"}");
+
         if (string.IsNullOrWhiteSpace(tag))
         {
             tag = GetFirstAvailableTag();
@@ -108,19 +127,9 @@ public sealed partial class SettingsPage : Page
             targetNavItem = GetNavItemForTag(tag);
             if (targetNavItem is null || targetNavItem.Visibility != Visibility.Visible)
             {
+                StartupTrace.Write($"SettingsPage.NavigateToTag:no-visible-target:{tag ?? "<null>"}");
                 return;
             }
-        }
-
-        _isSyncingNavigationSelection = true;
-        try
-        {
-            SettingsRootNav.IsExpanded = tag is "store" or "tax" or "users" or "prefs";
-            SettingsNavView.SelectedItem = targetNavItem;
-        }
-        finally
-        {
-            _isSyncingNavigationSelection = false;
         }
 
         Type targetPageType = tag switch
@@ -144,12 +153,48 @@ public sealed partial class SettingsPage : Page
             _ => null
         };
 
-        if (SettingsContentFrame.CurrentSourcePageType != targetPageType)
+        try
         {
-            SettingsContentFrame.Navigate(targetPageType, parameters);
-        }
+            SettingsRootNav.IsExpanded = tag is "store" or "tax" or "users" or "prefs";
 
-        MainWindow.Current?.SetCurrentRouteTag(tag);
+            if (SettingsContentFrame.CurrentSourcePageType != targetPageType)
+            {
+                StartupTrace.Write($"SettingsPage.NavigateToTag:navigate:{tag}:{targetPageType.Name}");
+                SettingsContentFrame.Navigate(targetPageType, parameters);
+            }
+
+            TrySyncNavigationSelection(targetNavItem, tag);
+            MainWindow.Current?.SetCurrentRouteTag(tag);
+            StartupTrace.Write($"SettingsPage.NavigateToTag:complete:{tag}:{targetPageType.Name}");
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"SettingsPage.NavigateToTag({tag}) failed: {ex}");
+            LoginRuntime.ReportException(ex, $"SettingsPage.NavigateToTag.{tag}");
+        }
+    }
+
+    private void TrySyncNavigationSelection(NavigationViewItem targetNavItem, string tag)
+    {
+        _isSyncingNavigationSelection = true;
+        try
+        {
+            if (!ReferenceEquals(SettingsNavView.SelectedItem, targetNavItem))
+            {
+                StartupTrace.Write($"SettingsPage.TrySyncNavigationSelection:start:{tag}");
+                SettingsNavView.SelectedItem = targetNavItem;
+                StartupTrace.Write($"SettingsPage.TrySyncNavigationSelection:end:{tag}");
+            }
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"SettingsPage.TrySyncNavigationSelection({tag}) failed: {ex}");
+            LoginRuntime.ReportException(ex, $"SettingsPage.TrySyncNavigationSelection.{tag}");
+        }
+        finally
+        {
+            _isSyncingNavigationSelection = false;
+        }
     }
 
     public void ShowSubNavigationTeachingTip()

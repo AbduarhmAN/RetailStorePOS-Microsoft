@@ -18,19 +18,25 @@
                         IsBackButtonVisible="Collapsed"
                         IsSettingsVisible="False"
                         SelectionChanged="NavView_SelectionChanged"
-                        Margin="0,0,0,16">
+                        Margin="0,0,0,1">
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Dashboard" Tag="Dashboard" IsSelected="True">
+                <NavigationViewItem x:Uid="Reports_Nav_Dashboard" Tag="Dashboard" IsSelected="True">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Library"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
-                <NavigationViewItem Content="Receipts" Tag="Receipts">
+                <NavigationViewItem x:Uid="Reports_Nav_Receipts" Tag="Receipts">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Folder"/>
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
+            <NavigationView.PaneFooter>
+                <StackPanel Orientation="Horizontal" Padding="12,0" Spacing="8">
+                    <ProgressRing x:Name="ReadinessProgressRing" IsActive="False" Visibility="Collapsed" Margin="12,0,0,0" Width="20" Height="20" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="ReadinessStatusText" VerticalAlignment="Center" Margin="12,0,0,0" Foreground="Gray"/>
+                </StackPanel>
+            </NavigationView.PaneFooter>
         </NavigationView>
 
         <Frame x:Name="ReportsContentFrame" Grid.Row="1" IsNavigationStackEnabled="False" />

@@ -2,15 +2,22 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Text;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
+using RetailStorePOS.App.Modules.Products;
 using RetailStorePOS.App.Services;
 using RetailStorePOS.Data.Models;
+using RetailStorePOS.Data.Modules.Products;
+using RetailStorePOS.Data.Modules.Sales;
+using RetailStorePOS.Data.Modules.Settings;
+using RetailStorePOS.Data.Modules.Tax;
 using RetailStorePOS.Data.Repositories;
+using RetailStorePOS.WinUiLogin;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Models;
 
@@ -43,6 +50,8 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
     private decimal _subtotal;
     private decimal _tax;
     private decimal _total;
+    private decimal _cashRoundingUnit;
+    private decimal _cashRoundingAdjustment;
     private decimal _changeDue;
     private long _lastReceiptNumber;
     private bool _hasLastReceipt;
@@ -268,6 +277,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
             if (SetProperty(ref _subtotal, value))
             {
                 OnPropertyChanged(nameof(SubtotalText));
+                OnPropertyChanged(nameof(SubtotalAmountText));
             }
         }
     }
@@ -280,6 +290,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
             if (SetProperty(ref _tax, value))
             {
                 OnPropertyChanged(nameof(TaxText));
+                OnPropertyChanged(nameof(TaxAmountText));
             }
         }
     }
@@ -292,6 +303,9 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
             if (SetProperty(ref _total, value))
             {
                 OnPropertyChanged(nameof(TotalText));
+                OnPropertyChanged(nameof(TotalAmountText));
+                OnPropertyChanged(nameof(AmountDue));
+                OnPropertyChanged(nameof(AmountDueText));
                 OnPropertyChanged(nameof(CanCompleteSale));
             }
         }
@@ -309,7 +323,26 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         }
     }
 
-    public bool CanCompleteSale => CartItems.Count > 0 && Total > 0m && _isTenderedInputValid && _tenderedCash >= Total;
+    public decimal CashRoundingAdjustment
+    {
+        get => _cashRoundingAdjustment;
+        private set
+        {
+            var normalized = Math.Round(value, 2, MidpointRounding.AwayFromZero);
+            if (SetProperty(ref _cashRoundingAdjustment, normalized))
+            {
+                OnPropertyChanged(nameof(CashRoundingAdjustmentText));
+                OnPropertyChanged(nameof(CashRoundingVisibility));
+                OnPropertyChanged(nameof(AmountDue));
+                OnPropertyChanged(nameof(AmountDueText));
+                OnPropertyChanged(nameof(CanCompleteSale));
+            }
+        }
+    }
+
+    public decimal AmountDue => Math.Round(Total + CashRoundingAdjustment, 2, MidpointRounding.AwayFromZero);
+
+    public bool CanCompleteSale => CartItems.Count > 0 && AmountDue > 0m && _isTenderedInputValid && _tenderedCash >= AmountDue;
 
     public string CurrentCashierDisplay =>
         _authService.CurrentUser?.DisplayName
@@ -317,14 +350,24 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         ?? "Cashier";
 
     public string SubtotalText => FormatMoney(Subtotal);
+    public string SubtotalAmountText => CurrencyDisplayHelper.FormatNumber(Subtotal);
 
     public string TaxText => FormatMoney(Tax);
+    public string TaxAmountText => CurrencyDisplayHelper.FormatNumber(Tax);
 
     public string TotalText => FormatMoney(Total);
+
+    public string TotalAmountText => CurrencyDisplayHelper.FormatNumber(Total);
+
+    public string CashRoundingAdjustmentText => FormatSignedMoney(CashRoundingAdjustment);
+
+    public string AmountDueText => FormatMoney(AmountDue);
 
     public string TenderedText => FormatMoney(_tenderedCash);
 
     public string ChangeDueText => FormatMoney(ChangeDue);
+
+    public Visibility CashRoundingVisibility => CashRoundingAdjustment == 0m ? Visibility.Collapsed : Visibility.Visible;
 
     public bool CanAddSelectedProduct => SelectedSearchResult is not null;
 
@@ -387,7 +430,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         private set
         {
             if (SetProperty(ref _receipt, value))
-            {
+            { 
                 OnPropertyChanged(nameof(ReceiptVisibility));
                 OnPropertyChanged(nameof(ReceiptItems));
                 OnPropertyChanged(nameof(ReceiptPdfAvailable));
@@ -417,9 +460,11 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
     public int SearchResultsCount => SearchResults.Count;
 
-    public string SearchResultsCountText => SearchResultsCount == 1 ? "1 PRODUCT" : $"{SearchResultsCount} PRODUCTS";
+    public string SearchResultsCountText => SearchResultsCount == 1 
+        ? LocalizationHelper.GetString("Checkout_Search_Count_Single") 
+        : LocalizationHelper.Format("Checkout_Search_Count_Plural", CurrencyDisplayHelper.FormatInt(SearchResultsCount));
 
-    public string LastReceiptNumberLabel => _lastReceiptNumber > 0 ? $"Receipt #{_lastReceiptNumber:D6}" : "No sale yet";
+    public string LastReceiptNumberLabel => _lastReceiptNumber > 0 ? $"Receipt #{CurrencyDisplayHelper.FormatStringWithDigits(_lastReceiptNumber.ToString("D6"))}" : "No sale yet";
 
     public string LastReceiptTotalText => FormatMoney(_lastReceiptTotal);
 
@@ -460,7 +505,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         }
     }
 
-    public string DiscountAmountText => _isDiscountPercentage ? $"{_discountAmount:0.##}%" : CurrencyDisplayHelper.FormatAmount(_discountAmount, _currencyCode);
+    public string DiscountAmountText => _isDiscountPercentage ? $"{_discountAmount:0.##}%" : CurrencyDisplayHelper.FormatAmount((decimal)_discountAmount, _currencyCode);
 
     public bool IsDiscountPercentage
     {
@@ -637,6 +682,11 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         }
     }
 
+    public void RefreshSettings()
+    {
+        LoadSettings();
+    }
+
     private void LoadSettings()
     {
         CurrencyCode = NormalizeCurrencyCode(_settingsRepository.GetCurrencyCode());
@@ -645,6 +695,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
         var taxSettings = _settingsRepository.GetTaxSettings();
         _taxEnabled = taxSettings.Enabled;
+        CashRoundingUnit = decimal.TryParse(_settingsRepository.GetCashRoundingUnit(), out var cru) ? cru : 0.01m;
         RecalculateTotals();
     }
 
@@ -752,13 +803,6 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var appliedRules = ResolveAppliedTaxRules(product);
-
-        // Combined percentage-only rate for backward compatibility with sale_items.tax_rate_percent
-        var combinedPercentageRate = appliedRules
-            .Where(r => r.IsActive && r.CalcType == "PERCENTAGE")
-            .Sum(r => r.RateValue);
-
         var item = new CheckoutCartItem
         {
             ProductId = product.Id,
@@ -766,50 +810,33 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
             Barcode = product.Barcode,
             Price = product.Price,
             OriginalPrice = product.Price,
-            CostPrice = product.CostPrice,
-            TaxRatePercent = combinedPercentageRate,
-            AppliedTaxRules = appliedRules,
+            TaxRatePercent = product.TaxRatePercent,
             Quantity = 1m,
             CanOverridePrice = canOverridePrice
         };
 
+        // Resolve modern tax rules if a tax group is assigned
+        if (product.TaxGroupId.HasValue)
+        {
+            try
+            {
+                var group = LoginRuntime.TaxGroups.GetAllWithRules()
+                    .FirstOrDefault(g => g.Id == product.TaxGroupId.Value);
+                
+                if (group != null && group.IsActive)
+                {
+                    item.AppliedTaxRules = group.Rules.ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                LoginRuntime.ReportException(ex, "CheckoutViewModel.ResolveTaxRules");
+            }
+        }
+
         item.UpdateCurrencyCode(CurrencyCode);
         item.PropertyChanged += OnCartItemPropertyChanged;
         CartItems.Insert(0, item);
-    }
-
-    /// <summary>
-    /// Resolves the full list of active TaxRules for a product by looking up its
-    /// tax_group_id → tax_group_rules → tax_rules.
-    /// Returns an empty list if tax is disabled or no rules are found.
-    /// </summary>
-    private List<TaxRule> ResolveAppliedTaxRules(Product product)
-    {
-        if (!_taxEnabled) return new List<TaxRule>();
-
-        try
-        {
-            var groupId = product.TaxGroupId ?? 0;
-            if (groupId <= 0)
-            {
-                // No tax group assigned — fall back to legacy rate via empty rules
-                // (CheckoutCartItem.TaxAmount will use TaxRatePercent as fallback)
-                return new List<TaxRule>();
-            }
-
-            var allGroups = LoginRuntime.TaxGroups.GetAllWithRules();
-            var group = allGroups.FirstOrDefault(g => g.Id == groupId);
-            if (group == null || group.Rules.Count == 0)
-            {
-                return new List<TaxRule>();
-            }
-
-            return group.Rules.Where(r => r.IsActive).ToList();
-        }
-        catch
-        {
-            return new List<TaxRule>();
-        }
     }
 
     private void IncreaseQuantity(CheckoutCartItem? item)
@@ -852,7 +879,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
     private void SetTenderExact()
     {
-        TenderedAmount = (double)Total;
+        TenderedAmount = (double)AmountDue;
     }
 
     private void AddTenderAmount(decimal amount)
@@ -886,7 +913,7 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
     private void AddDiscount()
     {
         if (CartItems.Count == 0) return;
-
+        
         DiscountAmount = 0;
         IsDiscountPercentage = true;
         IsDiscountDialogOpen = true;
@@ -921,12 +948,11 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                 ProductId = 0,
                 Name = _isDiscountPercentage ? $"Discount ({_discountAmount:0.##}%)" : "Discount",
                 OriginalPrice = -discountValue,
-                CostPrice = 0m,
                 Price = -discountValue,
                 Quantity = 1,
                 TaxRatePercent = 0
             };
-
+            
             discountItem.UpdateCurrencyCode(_currencyCode);
             CartItems.Add(discountItem);
         }
@@ -947,9 +973,9 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                 return;
             }
 
-            if (_tenderedCash < Total)
+            if (_tenderedCash < AmountDue)
             {
-                SetStatus(InfoBarSeverity.Warning, "Tendered cash is less than the total.");
+                SetStatus(InfoBarSeverity.Warning, "Tendered cash is less than the amount due.");
                 return;
             }
 
@@ -959,8 +985,8 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                 Tax = Tax,
                 Total = Total,
                 Tendered = _tenderedCash,
-                Change = Math.Round(_tenderedCash - Total, 2, MidpointRounding.AwayFromZero),
-                PaymentType = "cash",
+                Change = Math.Round(_tenderedCash - AmountDue, 2, MidpointRounding.AwayFromZero),
+                PaymentType = "Cash",
                 CashierName = CurrentCashierDisplay
             };
 
@@ -972,12 +998,10 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                     Name = item.Name,
                     Barcode = item.Barcode,
                     Price = item.Price,
-                    ItemCost = item.CostPrice,
                     Quantity = item.Quantity,
-                    TaxRatePercent = _taxEnabled ? item.TaxRatePercent : 0m,
-                    TaxAmount = _taxEnabled ? item.TaxAmount : 0m,
-                    LineTotal = item.LineTotal,
-                    TaxSnapshot = _taxEnabled ? item.TaxSnapshotJson : null
+                    TaxRatePercent = item.TaxRatePercent,
+                    TaxAmount = GetCartItemTax(item),
+                    LineTotal = item.LineTotal
                 });
             }
 
@@ -1017,20 +1041,10 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                 });
             }
 
-            try
-            {
-                receipt.PdfPath = ReceiptHelper.ArchiveReceipt(receipt);
-            }
-            catch (Exception ex)
-            {
-                LoginRuntime.ReportException(ex, "WinUiCheckoutViewModel.ArchiveReceipt");
-                receipt.PdfPath = GetReceiptPdfPath(receiptNumber);
-            }
-
             Receipt = receipt;
 
             _lastReceiptNumber = receiptNumber;
-            _lastReceiptTotal = sale.Total;
+            _lastReceiptTotal = receipt.Total;
             _lastReceiptChange = sale.Change;
             HasLastReceipt = true;
             OnPropertyChanged(nameof(LastReceiptNumberLabel));
@@ -1049,38 +1063,58 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
     private void CheckAndNotifyLowStock(IReadOnlyList<SaleItem> soldItems)
     {
-        var lowStockNames = new List<string>();
-        var outOfStockNames = new List<string>();
+        var shelfOutOfStock = new List<string>();
+        var shelfLowStock = new List<string>();
+        var warehouseOutOfStock = new List<string>();
+        var warehouseLowStock = new List<string>();
 
-        var productIds = soldItems.Select(i => i.ProductId).Distinct().ToList();
-        var products = _productRepository.GetByIds(productIds);
-
-        foreach (var product in products)
+        foreach (var item in soldItems)
         {
+            var product = _productRepository.GetById(item.ProductId);
+            if (product is null) continue;
+
+            // Shelf checks
             if (product.QuantityStore <= 0)
             {
-                outOfStockNames.Add(product.Name);
+                shelfOutOfStock.Add(product.Name);
             }
             else if (product.QuantityStore <= product.MinThresholdStore)
             {
-                lowStockNames.Add($"{product.Name} ({product.QuantityStore:N0} left)");
+                shelfLowStock.Add(LocalizationHelper.Format("Checkout_Inventory_QuantityLeft_Format", product.Name, CurrencyDisplayHelper.FormatNumber(product.QuantityStore)));
+            }
+
+            // Warehouse checks
+            if (product.QuantityWarehouse <= 0)
+            {
+                warehouseOutOfStock.Add(product.Name);
+            }
+            else if (product.QuantityWarehouse <= product.MinThresholdWarehouse)
+            {
+                warehouseLowStock.Add(LocalizationHelper.Format("Checkout_Inventory_QuantityLeft_Format", product.Name, CurrencyDisplayHelper.FormatNumber(product.QuantityWarehouse)));
             }
         }
 
-        if (outOfStockNames.Count == 0 && lowStockNames.Count == 0) return;
+        if (shelfOutOfStock.Count == 0 && shelfLowStock.Count == 0 &&
+            warehouseOutOfStock.Count == 0 && warehouseLowStock.Count == 0) return;
 
         // Build a combined message for the in-app status
         var sb = new StringBuilder();
-        if (outOfStockNames.Count > 0)
+
+        void AppendGroup(List<string> names, string key)
         {
-            sb.Append($"⚠ OUT OF STOCK: {string.Join(", ", outOfStockNames)}. ");
-        }
-        if (lowStockNames.Count > 0)
-        {
-            sb.Append($"⚠ LOW STOCK: {string.Join(", ", lowStockNames)}. ");
+            if (names.Count > 0)
+            {
+                sb.Append($"⚠ {LocalizationHelper.GetString(key)}: {string.Join(", ", names)}. ");
+            }
         }
 
+        AppendGroup(shelfOutOfStock, "Checkout_Inventory_OutOfStock_Shelf");
+        AppendGroup(shelfLowStock, "Checkout_Inventory_LowStock_Shelf");
+        AppendGroup(warehouseOutOfStock, "Checkout_Inventory_OutOfStock_Warehouse");
+        AppendGroup(warehouseLowStock, "Checkout_Inventory_LowStock_Warehouse");
+
         var alertMessage = sb.ToString().Trim();
+        var hasOutOfStock = shelfOutOfStock.Count > 0 || warehouseOutOfStock.Count > 0;
 
         // Show in-app warning in the dedicated dismissible alert
         _dispatcherQueue.TryEnqueue(() =>
@@ -1092,7 +1126,10 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
         // Send Windows toast notification
         try
         {
-            var toastTitle = outOfStockNames.Count > 0 ? "⚠ Inventory Alert" : "Low Stock Warning";
+            var toastTitle = hasOutOfStock
+                ? LocalizationHelper.GetString("Checkout_Alert_InventoryTitle")
+                : LocalizationHelper.GetString("Checkout_Alert_LowStockWarning");
+
             var toastBody = alertMessage;
 
             var toastXml = $"""
@@ -1129,27 +1166,15 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
             var pdfPath = Receipt?.PdfPath ?? (_lastReceiptNumber > 0 ? GetReceiptPdfPath(_lastReceiptNumber) : string.Empty);
             if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
             {
-                if (Receipt is not null)
-                {
-                    try
-                    {
-                        pdfPath = ReceiptHelper.ArchiveReceipt(Receipt);
-                        Receipt.PdfPath = pdfPath;
-                    }
-                    catch (Exception ex)
-                    {
-                        SetStatus(InfoBarSeverity.Error, "Unable to generate the receipt PDF.");
-                        LoginRuntime.ReportException(ex, "WinUiCheckoutViewModel.OpenReceiptPdfArchive");
-                        return;
-                    }
-                }
-            }
-
-            if (!ReceiptHelper.TryOpenReceiptPdf(pdfPath))
-            {
                 SetStatus(InfoBarSeverity.Warning, "Receipt PDF not found for this sale.");
                 return;
             }
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = pdfPath,
+                UseShellExecute = true
+            });
         }
         catch (Exception ex)
         {
@@ -1162,7 +1187,10 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
     {
         try
         {
-            ReceiptHelper.OpenReceiptsFolder();
+            if (!ReceiptHelper.OpenReceiptsFolder())
+            {
+                SetStatus(InfoBarSeverity.Warning, "Unable to open receipts folder.");
+            }
         }
         catch (Exception ex)
         {
@@ -1173,24 +1201,36 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
     private void RecalculateTotals()
     {
-        var subtotalSource = _taxEnabled
-            ? CartItems.Sum(item => item.NetLineTotal)
-            : CartItems.Sum(item => item.LineTotal);
-
-        Subtotal = Math.Round(subtotalSource, 2, MidpointRounding.AwayFromZero);
+        Subtotal = Math.Round(CartItems.Sum(GetCartItemSubtotal), 2, MidpointRounding.AwayFromZero);
         Tax = _taxEnabled
-            ? Math.Round(CartItems.Sum(item => item.TaxAmount), 2, MidpointRounding.AwayFromZero)
+            ? Math.Round(CartItems.Sum(GetCartItemTax), 2, MidpointRounding.AwayFromZero)
             : 0m;
         Total = Math.Round(Subtotal + Tax, 2, MidpointRounding.AwayFromZero);
+        UpdateCashRounding();
         UpdateChangeDue();
+    }
+
+    private decimal GetCartItemSubtotal(CheckoutCartItem item)
+    {
+        return _taxEnabled ? item.NetLineTotal : item.LineTotal;
+    }
+
+    private decimal GetCartItemTax(CheckoutCartItem item)
+    {
+        return _taxEnabled ? item.TaxAmount : 0m;
     }
 
     private void UpdateChangeDue()
     {
         ChangeDue = _isTenderedInputValid
-            ? Math.Round(_tenderedCash - Total, 2, MidpointRounding.AwayFromZero)
+            ? Math.Round(_tenderedCash - AmountDue, 2, MidpointRounding.AwayFromZero)
             : 0m;
         CompleteSaleCommand.RaiseCanExecuteChanged();
+    }
+
+    private void UpdateCashRounding()
+    {
+        CashRoundingAdjustment = CalculateCashRoundingAdjustment(Total, CashRoundingUnit);
     }
 
     private void OnCartItemsChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -1223,7 +1263,11 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
     private void OnCartItemPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(CheckoutCartItem.Quantity) or nameof(CheckoutCartItem.Price) or nameof(CheckoutCartItem.LineTotal))
+        if (e.PropertyName is nameof(CheckoutCartItem.Quantity)
+            or nameof(CheckoutCartItem.Price)
+            or nameof(CheckoutCartItem.LineTotal)
+            or nameof(CheckoutCartItem.TaxRatePercent)
+            or nameof(CheckoutCartItem.NetLineTotal))
         {
             RecalculateTotals();
             OnPropertyChanged(nameof(CartItemsCount));
@@ -1333,8 +1377,14 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
     private void RaiseMoneyTextPropertiesChanged()
     {
         OnPropertyChanged(nameof(SubtotalText));
+        OnPropertyChanged(nameof(SubtotalAmountText));
         OnPropertyChanged(nameof(TaxText));
+        OnPropertyChanged(nameof(TaxAmountText));
         OnPropertyChanged(nameof(TotalText));
+        OnPropertyChanged(nameof(TotalAmountText));
+        OnPropertyChanged(nameof(CashRoundingAdjustmentText));
+        OnPropertyChanged(nameof(AmountDueText));
+        OnPropertyChanged(nameof(CashRoundingVisibility));
         OnPropertyChanged(nameof(TenderedText));
         OnPropertyChanged(nameof(ChangeDueText));
         OnPropertyChanged(nameof(QuickCash1Text));
@@ -1375,6 +1425,12 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
     private string FormatMoney(decimal amount)
     {
         return CurrencyDisplayHelper.FormatAmount(amount, CurrencyCode);
+    }
+
+    private string FormatSignedMoney(decimal amount)
+    {
+        var sign = amount >= 0m ? "+" : "-";
+        return $"{sign}{FormatMoney(Math.Abs(amount))}";
     }
 
     private void SyncTenderedInputText()
@@ -1467,6 +1523,46 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
 
         return Math.Round(value, 2, MidpointRounding.AwayFromZero);
     }
+
+    private static decimal NormalizeCashRoundingUnit(decimal value)
+    {
+        if (value < 0m)
+        {
+            return 0m;
+        }
+
+        return Math.Round(value, 2, MidpointRounding.AwayFromZero);
+    }
+
+    private static decimal CalculateCashRoundingAdjustment(decimal total, decimal unit)
+    {
+        var normalizedUnit = NormalizeCashRoundingUnit(unit);
+        if (normalizedUnit <= 0m || total <= 0m)
+        {
+            return 0m;
+        }
+
+        var roundedTotal = Math.Round(
+            Math.Round(total / normalizedUnit, 0, MidpointRounding.AwayFromZero) * normalizedUnit,
+            2,
+            MidpointRounding.AwayFromZero);
+
+        return Math.Round(roundedTotal - total, 2, MidpointRounding.AwayFromZero);
+    }
+
+    private decimal CashRoundingUnit
+    {
+        get => _cashRoundingUnit;
+        set
+        {
+            var normalized = NormalizeCashRoundingUnit(value);
+            if (SetProperty(ref _cashRoundingUnit, normalized))
+            {
+                UpdateCashRounding();
+            }
+        }
+    }
 }
+
 
 

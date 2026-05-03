@@ -21,14 +21,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Store Management" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold"/>
-                <TextBlock Text="Manage store details, receipt output, and tax settings used across the workspace." 
+                <TextBlock x:Uid="StoreManagement_Header_Title" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold"/>
+                <TextBlock x:Uid="StoreManagement_Header_Subtitle"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
             </StackPanel>
 
             <Button Grid.Column="1" 
                     CornerRadius="3"
-                    Content="Save" 
+                    x:Uid="StoreManagement_SaveButton"
                     Style="{StaticResource AccentButtonStyle}" 
                     Click="SaveStoreSettingsButton_Click"/>
         </Grid>
@@ -39,17 +39,17 @@
                 <!-- General Store Details -->
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Store Identity" FontWeight="SemiBold" FontSize="16"/>
-                        <TextBlock Text="These details appear on receipts and other customer-facing documents." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+                        <TextBlock x:Uid="StoreManagement_StoreIdentity_Title" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock x:Uid="StoreManagement_StoreIdentity_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
                         
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Store Name"/>
+                            <TextBlock x:Uid="StoreManagement_StoreName_Label"/>
                             <TextBox Text="{x:Bind ViewModel.StoreName, Mode=TwoWay}"
                                      CornerRadius="3"/>
                         </StackPanel>
 
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Store Address"/>
+                            <TextBlock x:Uid="StoreManagement_StoreAddress_Label"/>
                             <TextBox Text="{x:Bind ViewModel.StoreAddress, Mode=TwoWay}"
                                      MinHeight="80"
                                      AcceptsReturn="True"
@@ -62,7 +62,7 @@
                 <!-- Checkout Defaults -->
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Checkout Defaults" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock x:Uid="StoreManagement_CheckoutDefaults_Title" FontWeight="SemiBold" FontSize="16"/>
 
                         <Grid ColumnSpacing="12" RowSpacing="12">
                             <Grid.ColumnDefinitions>
@@ -71,20 +71,18 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Region"/>
+                                <TextBlock x:Uid="StoreManagement_Region_Label"/>
                                 <ComboBox ItemsSource="{x:Bind ViewModel.RegionOptions, Mode=OneWay}"
                                           SelectedItem="{x:Bind ViewModel.SelectedRegionOption, Mode=TwoWay}"
-                                          DisplayMemberPath="DisplayName"
                                           Width="280"
                                           HorizontalAlignment="Left"
                                           CornerRadius="3"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Spacing="4">
-                                <TextBlock Text="Currency"/>
+                                <TextBlock x:Uid="StoreManagement_Currency_Label"/>
                                 <ComboBox ItemsSource="{x:Bind ViewModel.CurrencyOptions, Mode=OneWay}"
                                           SelectedItem="{x:Bind ViewModel.SelectedCurrencyOption, Mode=TwoWay}"
-                                          DisplayMemberPath="DisplayName"
                                           MinWidth="320"
                                           HorizontalAlignment="Stretch"
                                           CornerRadius="3"/>
@@ -94,32 +92,97 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Printing Settings -->
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock x:Uid="StoreManagement_PrintingSettings_Title" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock x:Uid="StoreManagement_PrintingSettings_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+
+                        <StackPanel Spacing="4">
+                            <TextBlock x:Uid="StoreManagement_Printer_Label"/>
+                            <ComboBox ItemsSource="{x:Bind ViewModel.PrinterOptions, Mode=OneWay}"
+                                      SelectedItem="{x:Bind ViewModel.SelectedPrinterOption, Mode=TwoWay}"
+                                      MinWidth="320"
+                                      HorizontalAlignment="Stretch"
+                                      CornerRadius="3"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Language & Region -->
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock x:Uid="StoreManagement_LanguageRegion_Title" FontWeight="SemiBold" FontSize="16"/>
+
+                        <Grid ColumnSpacing="12" RowSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Spacing="4">
+                                <TextBlock x:Uid="StoreManagement_AppLanguage_Label"/>
+                                <ComboBox ItemsSource="{x:Bind ViewModel.LanguageOptions, Mode=OneWay}"
+                                          SelectedItem="{x:Bind ViewModel.SelectedAppLanguage, Mode=TwoWay}"
+                                          HorizontalAlignment="Stretch"
+                                          CornerRadius="3"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Dashboard Settings -->
+                <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+                    <StackPanel Spacing="16">
+                        <TextBlock x:Uid="StoreManagement_DashboardSettings_Title" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock x:Uid="StoreManagement_DashboardSettings_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+                        
+                        <StackPanel Spacing="4">
+                            <TextBlock x:Uid="StoreManagement_DailyTarget_Label"/>
+                            <NumberBox Value="{x:Bind ViewModel.DailyTargetValue, Mode=TwoWay}"
+                                       SpinButtonPlacementMode="Hidden"
+                                       Minimum="0"
+                                       Width="280"
+                                       HorizontalAlignment="Left"
+                                       CornerRadius="3"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!--  <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
+    <StackPanel Spacing="16">
+        <TextBlock Text="Tablet Mode" FontWeight="SemiBold" FontSize="16"/>
+        <TextBlock Text="Enable touch-friendly controls for devices with touch screens." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+
+        <CheckBox Content="Touch Mode"
+                  IsChecked="{x:Bind ViewModel.IsTouchModeEnabled, Mode=TwoWay}"/>
+    </StackPanel>
+</Border>
+                -->
+
                 <!-- Status readout -->
                 <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}" 
                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" 
                            FontWeight="SemiBold"
                            TextWrapping="Wrap"/>
-<!-- comment start here -->
+                <!-- Fresh Start / Reset Section 
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}"
                         BorderBrush="{ThemeResource SystemFillColorCriticalBrush}"
                         BorderThickness="1"
                         CornerRadius="6"
                         Padding="16">
                     <StackPanel Spacing="10">
-                        <TextBlock Text="Fresh Start"
+                        <TextBlock x:Uid="StoreManagement_FreshStart_Title"
                                    FontWeight="SemiBold"
                                    FontSize="16"/>
-                        <TextBlock Text="Delete the local catalog, users, receipts, preferences, secure credentials, and telemetry cache. The app will reopen like a fresh install."
+                        <TextBlock x:Uid="StoreManagement_FreshStart_Subtitle"
                                    TextWrapping="Wrap"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
-                        <Button Content="Reset app data"
+                        <Button x:Uid="StoreManagement_ResetButton"
                                 Click="ResetAppDataButton_Click"
                                 HorizontalAlignment="Left"
-                                ToolTipService.ToolTip="Wipes local app data and relaunches the app fresh."
                                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
                     </StackPanel>
-                </Border>
- <!-- comment start here -->
+                </Border> -->
             </StackPanel>
         </ScrollViewer>
     </Grid>

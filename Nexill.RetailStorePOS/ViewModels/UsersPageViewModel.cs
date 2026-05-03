@@ -4,7 +4,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using RetailStorePOS.App.Services;
 using RetailStorePOS.Data.Models;
-using RetailStorePOS.Data.Repositories;
+using RetailStorePOS.Data.Modules.UsersAuth;
 using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.WinUiLogin.ViewModels;
@@ -124,28 +124,28 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
     public int StandardUsers => Users.Count(user => !user.IsAdmin);
 
     public string EditModeLabel => _isNewUser
-        ? "Draft"
+        ? LocalizationHelper.GetString("Users_Mode_Draft")
         : _selectedUser == null
-            ? "Preview"
+            ? LocalizationHelper.GetString("Users_Mode_Preview")
             : IsEditUnlocked
-                ? "Editing Unlocked"
-                : "Editing Locked";
+                ? LocalizationHelper.GetString("Users_Mode_Unlocked")
+                : LocalizationHelper.GetString("Users_Mode_Locked");
 
     public string EditorTitle => _isNewUser
-        ? "Create User"
+        ? LocalizationHelper.GetString("Users_Editor_Title_Create")
         : _selectedUser != null
-            ? $"Profile: {EditDisplayName}"
-            : "Select a User";
+            ? LocalizationHelper.Format("Users_Editor_Title_Profile", EditDisplayName)
+            : LocalizationHelper.GetString("Users_Empty_Title/Text");
 
     public string EditorSubtitle => _isNewUser
-        ? "Set identity, sign-in credentials, and permissions for a new staff account."
+        ? LocalizationHelper.GetString("Users_Editor_Subtitle_Create")
         : _selectedUser != null
-            ? "Review identity, login details, and permissions before saving changes."
-            : "Choose a user from the roster to view account details.";
+            ? LocalizationHelper.GetString("Users_Editor_Subtitle_Review")
+            : LocalizationHelper.GetString("Users_Empty_Subtitle/Text");
 
     public string AccessLevelLabel => _isNewUser
-        ? (EditIsAdmin ? "NEW ADMIN" : "NEW STAFF")
-        : (EditIsAdmin ? "ADMINISTRATOR" : "CASHIER");
+        ? (EditIsAdmin ? LocalizationHelper.GetString("Users_Role_NewAdmin") : LocalizationHelper.GetString("Users_Role_NewStaff"))
+        : (EditIsAdmin ? LocalizationHelper.GetString("Users_Role_AdminLabel") : LocalizationHelper.GetString("Users_Role_CashierLabel"));
 
     public string StatusMessage
     {
@@ -303,7 +303,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         }
 
         IsEditUnlocked = true;
-        StatusMessage = $"Editing unlocked for '{EditDisplayName}'. Review changes and save when ready.";
+        StatusMessage = LocalizationHelper.Format("Users_Status_Unlocked", EditDisplayName);
     }
 
     private void DismissUnlockPrompt()
@@ -318,7 +318,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
             return true;
         }
 
-        StatusMessage = "Only administrators can manage users.";
+        StatusMessage = LocalizationHelper.GetString("Users_Status_AdminOnly");
         return false;
     }
 
@@ -433,13 +433,13 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
 
         if (string.IsNullOrWhiteSpace(EditDisplayName))
         {
-            StatusMessage = "Display name is required.";
+            StatusMessage = LocalizationHelper.GetString("Users_Status_DisplayNameRequired");
             return;
         }
 
         if (string.IsNullOrWhiteSpace(EditUsername))
         {
-            StatusMessage = "Username is required.";
+            StatusMessage = LocalizationHelper.GetString("Users_Status_UsernameRequired");
             return;
         }
 
@@ -451,13 +451,13 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
             {
                 if (string.IsNullOrEmpty(enteredPassword) && string.IsNullOrEmpty(EditPin))
                 {
-                    StatusMessage = "Admin user requires at least a password or PIN.";
+                    StatusMessage = LocalizationHelper.GetString("Users_Status_AdminCredentialsRequired");
                     return;
                 }
             }
             else if (string.IsNullOrEmpty(EditPin))
             {
-                StatusMessage = "PIN is required for cashiers.";
+                StatusMessage = LocalizationHelper.GetString("Users_Status_PinRequired");
                 return;
             }
         }
@@ -468,7 +468,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
             var hasStoredPin = !string.IsNullOrEmpty(_selectedUser.PinHash);
             if (!hasStoredPassword && !hasStoredPin && string.IsNullOrEmpty(enteredPassword) && string.IsNullOrEmpty(EditPin))
             {
-                StatusMessage = "Admin user requires at least a password or PIN.";
+                StatusMessage = LocalizationHelper.GetString("Users_Status_AdminCredentialsRequired");
                 return;
             }
         }
@@ -477,7 +477,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         {
             if (EditPin.Length != 4 || !EditPin.All(char.IsDigit))
             {
-                StatusMessage = "PIN must be exactly 4 digits.";
+                StatusMessage = LocalizationHelper.GetString("Users_Status_PinInvalid");
                 return;
             }
         }
@@ -493,7 +493,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
 
         if (_userRepository.UsernameExists(EditUsername, _selectedUser?.Id))
         {
-            StatusMessage = $"Username '{EditUsername}' is already in use.";
+            StatusMessage = LocalizationHelper.Format("Users_Status_UsernameInUse", EditUsername);
             return;
         }
 
@@ -530,7 +530,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
                 var newId = _userRepository.Create(user);
                 userToReselectId = newId;
                 _audit.Log("USER_CREATED", $"Created user: {user.Username}, Role: {(user.IsAdmin ? "Admin" : "Cashier")}", LoginRuntime.Auth.CurrentUser?.Id);
-                StatusMessage = $"User '{EditDisplayName}' created successfully.";
+                StatusMessage = LocalizationHelper.Format("Users_Status_Created", EditDisplayName);
                 _isNewUser = false;
             }
             else if (_selectedUser != null)
@@ -557,7 +557,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
 
                 _userRepository.Update(_selectedUser);
                 _audit.Log("USER_UPDATED", $"Updated user: {_selectedUser.Username}", LoginRuntime.Auth.CurrentUser?.Id);
-                StatusMessage = $"User '{EditDisplayName}' updated successfully.";
+                StatusMessage = LocalizationHelper.Format("Users_Status_Updated", EditDisplayName);
 
                 // If this is the "admin" user changing their password away from "1234", complete the onboarding phase permanently.
                 if (_selectedUser.Username == "admin" &&
@@ -592,17 +592,17 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         }
         catch (InvalidOperationException ex) when (string.Equals(ex.Message, "Username is already in use.", StringComparison.OrdinalIgnoreCase))
         {
-            StatusMessage = $"Username '{EditUsername}' is already in use.";
+            StatusMessage = LocalizationHelper.Format("Users_Status_UsernameInUse", EditUsername);
             LoginRuntime.ReportException(ex, "UsersPageViewModel.Save.DuplicateUsername");
         }
         catch (SqliteException ex) when (ex.SqliteErrorCode == 19)
         {
-            StatusMessage = $"Username '{EditUsername}' is already in use.";
+            StatusMessage = LocalizationHelper.Format("Users_Status_UsernameInUse", EditUsername);
             LoginRuntime.ReportException(ex, "UsersPageViewModel.Save.SqliteConstraint");
         }
         catch (Exception ex)
         {
-            StatusMessage = "Unable to save user. Please review the fields and try again.";
+            StatusMessage = LocalizationHelper.GetString("Users_Status_SaveError");
             LoginRuntime.ReportException(ex, "UsersPageViewModel.Save");
         }
     }
@@ -626,7 +626,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
 
         if (_selectedUser == null || _selectedUser.Id == LoginRuntime.Auth.CurrentUser?.Id)
         {
-            StatusMessage = "Cannot deactivate the current user.";
+            StatusMessage = LocalizationHelper.GetString("Users_Status_CannotDeactivateSelf");
             return;
         }
 
@@ -634,7 +634,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         var username = _selectedUser.Username;
         _userRepository.Deactivate(_selectedUser.Id);
         _audit.Log("USER_DEACTIVATED", $"Deactivated user: {username}", LoginRuntime.Auth.CurrentUser?.Id);
-        StatusMessage = $"User '{displayName}' has been deactivated.";
+        StatusMessage = LocalizationHelper.Format("Users_Status_Deactivated", displayName);
 
         ReloadUsers();
         Cancel();

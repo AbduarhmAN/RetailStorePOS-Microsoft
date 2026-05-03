@@ -5,6 +5,8 @@ namespace RetailStorePOS.App.Services;
 public interface ILocalPreferencesService
 {
     event EventHandler<LocalPreferencesChangedEventArgs>? PreferencesChanged;
+    string PreferencesPath { get; }
+    string PreferencesContractKey { get; }
 
     // Loads settings from disk. Returns default if file missing.
     Task<LocalPreferences> LoadPreferencesAsync();
@@ -17,6 +19,8 @@ public interface ILocalPreferencesService
     Task UpdateQuickCashAsync(decimal[] amounts);
     Task UpdateInstallMetadataAsync(DateTime installedAtUtc);
     Task UpdateSetupCompletionAsync(DateTime setupCompletedAtUtc, string? eventId = null);
+    Task UpdateDailyTargetAsync(decimal amount);
+    Task UpdateSuppressCrashFeedbackAsync(bool suppress);
 }
 
 public sealed class LocalPreferencesChangedEventArgs : EventArgs
@@ -55,4 +59,8 @@ public class LocalPreferences
     public DateTime? LastUpdateInstalledAt { get; set; }
 
     public string? SetupCompletedEventId { get; set; }
+
+    public decimal DailyTarget { get; set; } = 200000m;
+
+    public bool SuppressCrashFeedbackPrompt { get; set; } = false;
 }

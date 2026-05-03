@@ -1,16 +1,13 @@
-using System;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Drawing.Text;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.UI.Xaml.Controls;
 using RetailStorePOS.WinUiLogin.Models;
 
 namespace RetailStorePOS.WinUiLogin.Common;
 
 /// <summary>
-/// Prints a receipt silently and directly to the default Windows printer using System.Drawing.
+/// Prints a receipt silently and directly to the selected Windows printer, or the default printer when none is selected.
 /// Uses a professional 2-column layout (Description + Amount) matching industry-standard POS receipts.
 /// Supports multi-page pagination for long receipts.
 /// </summary>
@@ -20,6 +17,7 @@ public sealed class ReceiptPrintHelper : IDisposable
     private string? _storeName;
     private string? _storeAddress;
     private string? _currencyCode;
+    private string? _preferredPrinterName;
 
     // Pagination state
     private enum PrintPhase { Header, Items, Totals, Done }
@@ -32,12 +30,14 @@ public sealed class ReceiptPrintHelper : IDisposable
         ReceiptSummary receipt,
         string storeName,
         string? storeAddress,
-        string currencyCode)
+        string currencyCode,
+        string? preferredPrinterName = null)
     {
         _receipt = receipt;
         _storeName = storeName;
         _storeAddress = storeAddress;
         _currencyCode = currencyCode;
+        _preferredPrinterName = preferredPrinterName;
 
         if (_receipt is null || _receipt.Items.Count == 0)
         {
@@ -51,6 +51,7 @@ public sealed class ReceiptPrintHelper : IDisposable
         {
             using var printDoc = new PrintDocument();
             printDoc.PrinterSettings.PrintToFile = false;
+            ApplyPreferredPrinter(printDoc, _preferredPrinterName);
             printDoc.PrintPage += PrintDoc_PrintPage;
             printDoc.Print();
         }
@@ -197,6 +198,21 @@ public sealed class ReceiptPrintHelper : IDisposable
         }
 
         e.HasMorePages = false;
+    }
+
+    private static void ApplyPreferredPrinter(PrintDocument printDoc, string? preferredPrinterName)
+    {
+        if (string.IsNullOrWhiteSpace(preferredPrinterName))
+        {
+            return;
+        }
+
+        if (!PrinterSelectionHelper.IsInstalledPrinter(preferredPrinterName))
+        {
+            return;
+        }
+
+        printDoc.PrinterSettings.PrinterName = preferredPrinterName.Trim();
     }
 
     // ──── Drawing Helpers ────

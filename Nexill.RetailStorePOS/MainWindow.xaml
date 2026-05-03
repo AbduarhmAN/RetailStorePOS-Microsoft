@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
+    x:Uid="MainWindow"
     Title="Nexill">
 
         <Grid x:Name="RootGrid"
@@ -21,7 +22,8 @@
                 BorderBrush="#E2E8F0"
                 BorderThickness="0,0,0,1">
             <Grid x:Name="AppTitleBar"
-                  Padding="10,0,128,0">
+                  Padding="10,0,128,0"
+                  FlowDirection="LeftToRight">
                 <Border x:Name="TitleBarDragRegion"
                         Background="#F9FBFD" />
 
@@ -60,43 +62,93 @@
 
                         <StackPanel Spacing="0"
                                     VerticalAlignment="Center">
-                            <TextBlock Text="Retail Store"
+                            <TextBlock x:Name="BrandTitleText"
+                                       x:Uid="LoginPage_HeroBrandTitleText"
+                                       Text="Nexill"
                                        FontSize="13"
                                        FontWeight="SemiBold"
                                        Foreground="#243142" />
                             <TextBlock x:Name="ShellContextText"
+                                       x:Uid="MainWindow_ShellContextText"
                                        Text="Daily store control"
                                        FontSize="11"
                                        Foreground="#708095" />
                         </StackPanel>
                     </StackPanel>
 
-                    <Border x:Name="UserBadge"
-                            Grid.Column="1"
-                            Visibility="Collapsed"
-                            Background="#FFF"
-                            BorderBrush="#D7E1EA"
-                            BorderThickness="1"
-                            CornerRadius="3"
-                            Padding="10,4"
-                            Margin="0,0,50,0"
-                            VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal"
-                                    Spacing="10"
-                                    VerticalAlignment="Center">
-                            <PersonPicture x:Name="UserPicture"
-                                           Width="28"
-                                           Height="28" />
+                    <DropDownButton x:Name="UserBadge"
+                                    Grid.Column="1"
+                                    Visibility="Collapsed"
+                                    Padding="12,6"
+                                    CornerRadius="6"
+                                    Margin="1,1,50,1"
+                                    VerticalAlignment="Center" >
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
 
-                            <StackPanel Spacing="0"
+                            <Grid Width="32"
+                                  Height="32">
+                                <PersonPicture x:Name="UserPicture"
+                                               Width="32"
+                                               Height="32" />
+
+                                <Ellipse x:Name="RegisterStatusDot"
+                                         Width="10"
+                                         Height="10"
+                                         HorizontalAlignment="Right"
+                                         VerticalAlignment="Bottom"
+                                         Fill="#94A3B8"
+                                         Stroke="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                         StrokeThickness="2" />
+                            </Grid>
+
+                            <StackPanel Grid.Column="1"
+                                        Spacing="0"
                                         VerticalAlignment="Center">
                                 <TextBlock x:Name="UserNameText"
                                            FontSize="13"
                                            FontWeight="SemiBold"
-                                           Foreground="#1F2937" />
+                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="RegisterStatusText"
+                                           x:Uid="MainWindow_RegisterStatusText"
+                                           FontSize="11"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+
                             </StackPanel>
-                        </StackPanel>
-                    </Border>
+                        </Grid>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout x:Name="UserMenuFlyout"
+                                        Placement="BottomEdgeAlignedRight"
+                                        Opening="UserMenuFlyout_Opening">
+                                <MenuFlyout.MenuFlyoutPresenterStyle>
+                                    <Style TargetType="MenuFlyoutPresenter">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </MenuFlyout.MenuFlyoutPresenterStyle>
+                                <MenuFlyoutItem x:Name="CashInOutMenuItem"
+                                                x:Uid="MainWindow_CashInOutMenuItem"
+                                                Click="CashInOut_Click" />
+                                <MenuFlyoutItem x:Name="CloseRegisterMenuItem"
+                                                x:Uid="MainWindow_CloseRegisterMenuItem"
+                                                Click="CloseRegister_Click">
+                                </MenuFlyoutItem>
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem x:Name="LogoutMenuItem"
+                                                x:Uid="MainWindow_LogoutMenuItem"
+                                                Text="Logout"
+                                                Click="Logout_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xF3B1;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
                 </Grid>
             </Grid>
         </Border>
@@ -105,6 +157,7 @@
                Grid.Row="1" />
 
         <TeachingTip x:Name="FirstRunTutorialTip"
+                     x:Uid="MainWindow_Tutorial"
                      Grid.RowSpan="2"
                      Title="Main navigation"
                      Subtitle="Use this button to open and close the app navigation."
@@ -147,12 +200,14 @@
                         HorizontalAlignment="Center">
                     <Image Source="ms-appx:///Assets/Logo.png" Stretch="Uniform" />
                 </Border>
-                <TextBlock Text="Nexill Retail POS"
+                <TextBlock x:Uid="MainWindow_Splash_Title"
+                           Text="Nexill"
                            FontSize="30"
                            FontWeight="SemiBold"
                            Foreground="White"
                            HorizontalAlignment="Center" />
-                <TextBlock Text="Store management &amp; point of sale"
+                <TextBlock x:Uid="MainWindow_Splash_Subtitle"
+                           Text="Store management &amp; point of sale"
                            FontSize="13"
                            Foreground="#C4B5FD"
                            HorizontalAlignment="Center" />
@@ -170,12 +225,12 @@
                 <Grid Grid.Row="0">
                     <StackPanel HorizontalAlignment="Left" Spacing="2">
                         <TextBlock x:Name="SplashStatusTitle"
-                                   Text="Starting services..."
+                                   x:Uid="MainWindow_SplashStatusTitle"
                                    FontSize="11"
                                    FontWeight="SemiBold"
                                    Foreground="#E9D5FF" />
                         <TextBlock x:Name="SplashStatusDetail"
-                                   Text="Loading local database, services, and runtime."
+                                   x:Uid="MainWindow_SplashStatusDetail"
                                    FontSize="10"
                                    Foreground="#A78BFA" />
                     </StackPanel>

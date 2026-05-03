@@ -7,9 +7,13 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using RetailStorePOS.App.Modules.Products;
+using RetailStorePOS.Data.Modules.Contracts;
+using RetailStorePOS.Data.Modules.Products;
+using RetailStorePOS.Data.Modules.Sales;
+using RetailStorePOS.Data.Modules.Tax;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Models;
-
 using RetailStorePOS.WinUiLogin.ViewModels;
 using Windows.System;
 
@@ -17,7 +21,20 @@ namespace RetailStorePOS.WinUiLogin.Views;
 
 public sealed partial class CheckoutPage : Page
 {
+    private static readonly WorkflowBoundary CheckoutWorkflow = CheckoutWorkflowContract.CompleteSaleBoundary;
+    private static readonly IReadOnlyList<ModuleContract> CheckoutContracts = CheckoutWorkflowContract.Contracts;
+    private static SaleRepository SalesModule => CheckoutWorkflowContract.ResolveSalesCoordinator(LoginRuntime.Sales);
+    private static ProductSearchService ProductSearchModule => CheckoutWorkflowContract.ResolveCatalogLookup(LoginRuntime.ProductSearch);
+    private static ProductRepository ProductsModule => CheckoutWorkflowContract.ResolveProductOwner(LoginRuntime.Products);
+    private static TaxCategoryRepository TaxCategoriesModule => CheckoutWorkflowContract.ResolveTaxCategoryReader(LoginRuntime.TaxCategories);
+    private static TaxGroupRepository TaxGroupsModule => CheckoutWorkflowContract.ResolveTaxGroupReader(LoginRuntime.TaxGroups);
+    private static RegisterSessionRepository RegisterSessionsModule => CheckoutWorkflowContract.ResolveRegisterSessionManager(LoginRuntime.RegisterSessions);
+
     private static readonly TimeSpan TenderedDoubleEnterWindow = TimeSpan.FromMilliseconds(600);
+    private const double SearchResultMinTileWidth = 150;
+    private const double SearchResultTileHeight = 200;
+    private const double SearchResultTileGap = 8;
+    private const int SearchResultMaxColumns = 6;
 
     private readonly Flyout _priceOverrideFlyout = new();
     private readonly NumberBox _priceOverrideBox = new();
@@ -32,23 +49,132 @@ public sealed partial class CheckoutPage : Page
 
     public CheckoutPage()
     {
+        StartupTrace.Write("CheckoutPage.ctor:start");
         InitializeComponent();
+        EnsureCheckoutOfflineContractsReady();
 
         ViewModel = new CheckoutViewModel(
-            LoginRuntime.Sales,
+            SalesModule,
             LoginRuntime.Settings,
-            LoginRuntime.ProductSearch,
-            LoginRuntime.Products,
+            ProductSearchModule,
+            ProductsModule,
             LoginRuntime.Audit,
             LoginRuntime.LocalPreferences,
             LoginRuntime.Auth,
             DispatcherQueue
         );
+        this.DataContext = ViewModel;
 
+        Loaded += CheckoutPage_Loaded;
         Unloaded += CheckoutPage_Unloaded;
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
         ViewModel.CartItems.CollectionChanged += CartItems_CollectionChanged;
         InitializePriceOverrideFlyout();
+        StartupTrace.Write("CheckoutPage.ctor:end");
+    }
+
+    private void CheckoutPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        StartupTrace.Write("CheckoutPage.Loaded:start");
+        try
+        {
+            ViewModel.RefreshSettings();
+            StartupTrace.Write("CheckoutPage.Loaded:after RefreshSettings");
+            EnsureRegisterSession();
+            StartupTrace.Write("CheckoutPage.Loaded:after EnsureRegisterSession");
+            UpdateSearchResultsGridLayout();
+            StartupTrace.Write("CheckoutPage.Loaded:end");
+        }
+        catch (Exception ex)
+        {
+            ReportCheckoutException(ex, "CheckoutPage.Loaded");
+        }
+    }
+
+    private void EnsureRegisterSession()
+    {
+        try
+        {
+            var activeSession = RegisterSessionsModule.GetActiveSession();
+            if (activeSession != null)
+            {
+                // Register is open — hide overlay, show checkout
+                RegisterOverlay.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+                return;
+            }
+
+            // Register is NOT open — show the inline overlay (blocks only checkout content)
+            RegisterOverlay.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+        }
+        catch (Exception ex)
+        {
+            ReportCheckoutException(ex, "CheckoutPage.EnsureRegisterSession");
+        }
+    }
+
+    private async void OpenRegisterOverlayButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var dialog = new OpenRegisterDialog
+            {
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                var cash = dialog.OpeningCash;
+                if (double.IsNaN(cash) || double.IsInfinity(cash))
+                {
+                    cash = 0;
+                }
+
+                var amountCents = (long)Math.Round(cash * 100);
+                var note = dialog.Note;
+                var userId = LoginRuntime.Auth?.CurrentUser?.Id ?? 0;
+                RegisterSessionsModule.OpenRegister(userId, amountCents, note);
+
+                // Register opened — hide overlay
+                RegisterOverlay.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
+            }
+            // If user pressed Discard/Close on the dialog, overlay stays visible
+        }
+        catch (Exception ex)
+        {
+            ReportCheckoutException(ex, "CheckoutPage.OpenRegisterOverlayButton_Click");
+        }
+    }
+
+    private void SkipToNextPageLink_Click(object sender, RoutedEventArgs e)
+    {
+        // Navigate to the next permitted page, skipping checkout
+        MainWindow.Current?.NavigateToFirstAvailablePage("checkout");
+    }
+
+    private static void EnsureCheckoutOfflineContractsReady()
+    {
+        if (!CheckoutWorkflow.OfflineCritical)
+        {
+            throw new InvalidOperationException("Checkout workflow must remain offline-critical.");
+        }
+
+        foreach (var contract in CheckoutContracts)
+        {
+            if (!contract.OfflineAllowed)
+            {
+                throw new InvalidOperationException($"Checkout contract '{contract.ContractKey}' must remain available offline.");
+            }
+        }
+
+        _ = CheckoutWorkflow;
+        _ = CheckoutContracts;
+        _ = SalesModule;
+        _ = ProductSearchModule;
+        _ = ProductsModule;
+        _ = TaxCategoriesModule;
+        _ = TaxGroupsModule;
     }
 
     public CheckoutViewModel ViewModel { get; }
@@ -171,6 +297,16 @@ public sealed partial class CheckoutPage : Page
         e.Handled = true;
     }
 
+    private void SearchResultsListView_Loaded(object sender, RoutedEventArgs e)
+    {
+        UpdateSearchResultsGridLayout();
+    }
+
+    private void SearchResultsListView_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        UpdateSearchResultsGridLayout();
+    }
+
     private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         try
@@ -250,6 +386,42 @@ public sealed partial class CheckoutPage : Page
         ViewModel.TryAddSelectedProduct();
     }
 
+    private void UpdateSearchResultsGridLayout()
+    {
+        try
+        {
+            if (SearchResultsListView.ItemsPanelRoot is not ItemsWrapGrid panel)
+            {
+                return;
+            }
+
+            var availableWidth = SearchResultsListView.ActualWidth;
+            if (availableWidth <= 0)
+            {
+                return;
+            }
+
+            var columns = Math.Clamp(
+                (int)Math.Floor((availableWidth + SearchResultTileGap) / (SearchResultMinTileWidth + SearchResultTileGap)),
+                1,
+                SearchResultMaxColumns);
+
+            var itemWidth = Math.Floor((availableWidth - (SearchResultTileGap * (columns - 1))) / columns);
+            if (itemWidth <= 0)
+            {
+                return;
+            }
+
+            panel.MaximumRowsOrColumns = columns;
+            panel.ItemWidth = itemWidth;
+            panel.ItemHeight = SearchResultTileHeight;
+        }
+        catch (Exception ex)
+        {
+            ReportCheckoutException(ex, "CheckoutPage.UpdateSearchResultsGridLayout");
+        }
+    }
+
     private async void ClearCartButton_Click(object sender, RoutedEventArgs e)
     {
         try
@@ -264,10 +436,10 @@ public sealed partial class CheckoutPage : Page
             var dialog = new ContentDialog
             {
                 XamlRoot = XamlRoot,
-                Title = "Clear current sale?",
-                Content = "This will remove all items from the current sale.",
-                PrimaryButtonText = "Clear",
-                CloseButtonText = "Cancel",
+                Title = LocalizationHelper.GetString("Checkout_ClearCart_Title"),
+                Content = LocalizationHelper.GetString("Checkout_ClearCart_Content"),
+                PrimaryButtonText = LocalizationHelper.GetString("Checkout_ClearCart_PrimaryButton"),
+                CloseButtonText = LocalizationHelper.GetString("Checkout_ClearCart_CloseButton"),
                 DefaultButton = ContentDialogButton.Close
             };
 
@@ -335,7 +507,8 @@ public sealed partial class CheckoutPage : Page
                     receipt,
                     ViewModel.StoreName,
                     ViewModel.StoreAddress,
-                    ViewModel.CurrencyCode);
+                    ViewModel.CurrencyCode,
+                    LoginRuntime.Settings.GetPreferredPrinterName());
 
                 return;
             }
@@ -424,14 +597,14 @@ public sealed partial class CheckoutPage : Page
 
         var titleText = new TextBlock
         {
-            Text = "Override price",
+            Text = LocalizationHelper.GetString("Checkout_PriceOverride_Title"),
             FontSize = 16,
             FontWeight = FontWeights.SemiBold
         };
 
         var helperText = new TextBlock
         {
-            Text = "Set the new selling price for this cart line.",
+            Text = LocalizationHelper.GetString("Checkout_PriceOverride_Help"),
             TextWrapping = TextWrapping.Wrap,
             Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
         };
@@ -446,14 +619,14 @@ public sealed partial class CheckoutPage : Page
         _priceOverrideDeltaText.TextWrapping = TextWrapping.Wrap;
         _priceOverrideDeltaText.Foreground = (Brush)Application.Current.Resources["AccentTextFillColorPrimaryBrush"];
 
-        _priceOverrideApplyButton.Content = "Apply";
+        _priceOverrideApplyButton.Content = LocalizationHelper.GetString("Checkout_PriceOverride_Apply");
         _priceOverrideApplyButton.Style = (Style)Application.Current.Resources["AccentButtonStyle"];
         _priceOverrideApplyButton.IsEnabled = false;
         _priceOverrideApplyButton.Click += PriceOverrideApplyButton_Click;
 
         var cancelButton = new Button
         {
-            Content = "Cancel",
+            Content = LocalizationHelper.GetString("Checkout_PriceOverride_Cancel"),
             Padding = new Thickness(12, 6, 12, 6)
         };
         cancelButton.Click += (_, _) => _priceOverrideFlyout.Hide();
@@ -464,7 +637,7 @@ public sealed partial class CheckoutPage : Page
         };
         currentBlock.Children.Add(new TextBlock
         {
-            Text = "Current price",
+            Text = LocalizationHelper.GetString("Checkout_PriceOverride_CurrentLabel"),
             FontSize = 11,
             FontWeight = FontWeights.SemiBold,
             Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
@@ -478,7 +651,7 @@ public sealed partial class CheckoutPage : Page
         };
         boxBlock.Children.Add(new TextBlock
         {
-            Text = "New price",
+            Text = LocalizationHelper.GetString("Checkout_PriceOverride_NewLabel"),
             FontSize = 11,
             FontWeight = FontWeights.SemiBold,
             Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
@@ -516,7 +689,7 @@ public sealed partial class CheckoutPage : Page
     {
         _priceOverrideTargetItem = item;
         _priceOverrideCurrentText.Text = item.PriceText;
-        _priceOverrideOriginalText.Text = $"Original: {ViewModel.FormatMoneyText(item.OriginalPrice)}";
+        _priceOverrideOriginalText.Text = string.Format(LocalizationHelper.GetString("Checkout_PriceOverride_OriginalFormat"), ViewModel.FormatMoneyText(item.OriginalPrice));
         _priceOverrideOriginalText.Visibility = item.IsPriceOverridden ? Visibility.Visible : Visibility.Collapsed;
         _priceOverrideBox.Value = (double)item.Price;
         _priceOverrideBox.Text = item.Price.ToString(CultureInfo.InvariantCulture);
@@ -577,18 +750,18 @@ public sealed partial class CheckoutPage : Page
 
             if (nextPrice == currentPrice)
             {
-                _priceOverrideDeltaText.Text = "Enter a different amount to change the price.";
+                _priceOverrideDeltaText.Text = LocalizationHelper.GetString("Checkout_PriceOverride_DifferentAmount");
                 _priceOverrideApplyButton.IsEnabled = false;
                 return;
             }
 
             if (nextPrice > currentPrice)
             {
-                _priceOverrideDeltaText.Text = $"Increase by {ViewModel.FormatMoneyText(nextPrice - currentPrice)}.";
+                _priceOverrideDeltaText.Text = string.Format(LocalizationHelper.GetString("Checkout_PriceOverride_IncreaseFormat"), ViewModel.FormatMoneyText(nextPrice - currentPrice));
             }
             else
             {
-                _priceOverrideDeltaText.Text = $"Discount by {ViewModel.FormatMoneyText(currentPrice - nextPrice)}.";
+                _priceOverrideDeltaText.Text = string.Format(LocalizationHelper.GetString("Checkout_PriceOverride_DiscountFormat"), ViewModel.FormatMoneyText(currentPrice - nextPrice));
             }
 
             _priceOverrideApplyButton.IsEnabled = nextPrice >= 0m;

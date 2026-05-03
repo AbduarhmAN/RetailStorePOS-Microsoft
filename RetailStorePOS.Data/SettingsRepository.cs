@@ -1,7 +1,8 @@
 using System.Globalization;
-using RetailStorePOS.Data.Models;
+using RetailStorePOS.Data.Modules.Contracts;
+using RetailStorePOS.Data.Modules.Tax;
 
-namespace RetailStorePOS.Data.Repositories;
+namespace RetailStorePOS.Data.Modules.Settings;
 
 public sealed class SettingsRepository
 {
@@ -14,12 +15,12 @@ public sealed class SettingsRepository
 
     public string GetCurrencyCode()
     {
-        return GetSetting("currency_code", "USD");
+        return GetSetting(SettingsPlatformContract.CurrencyCodeKey, "USD");
     }
 
     public string GetRegionCode()
     {
-        return GetSetting("region_code", RegionInfo.CurrentRegion.TwoLetterISORegionName);
+        return GetSetting(SettingsPlatformContract.RegionCodeKey, RegionInfo.CurrentRegion.TwoLetterISORegionName);
     }
 
     public void SetCurrencyCode(string currencyCode)
@@ -29,7 +30,7 @@ public sealed class SettingsRepository
             throw new ArgumentException("Currency code is required.", nameof(currencyCode));
         }
 
-        SetSetting("currency_code", currencyCode.Trim().ToUpperInvariant());
+        SetSetting(SettingsPlatformContract.CurrencyCodeKey, currencyCode.Trim().ToUpperInvariant());
     }
 
     public void SetRegionCode(string regionCode)
@@ -39,13 +40,13 @@ public sealed class SettingsRepository
             throw new ArgumentException("Region code is required.", nameof(regionCode));
         }
 
-        SetSetting("region_code", regionCode.Trim().ToUpperInvariant());
+        SetSetting(SettingsPlatformContract.RegionCodeKey, regionCode.Trim().ToUpperInvariant());
     }
 
     public TaxSettings GetTaxSettings()
     {
-        var enabled = GetSetting("tax_enabled", "0") == "1";
-        var rateText = GetSetting("tax_rate_percent", "0");
+        var enabled = GetSetting(SettingsPlatformContract.TaxEnabledKey, "0") == "1";
+        var rateText = GetSetting(SettingsPlatformContract.TaxRatePercentKey, "0");
 
         if (!decimal.TryParse(rateText, NumberStyles.Any, CultureInfo.InvariantCulture, out var rate))
         {
@@ -61,27 +62,92 @@ public sealed class SettingsRepository
 
     public void SetTaxSettings(TaxSettings settings)
     {
-        SetSetting("tax_enabled", settings.Enabled ? "1" : "0");
-        SetSetting("tax_rate_percent", settings.RatePercent.ToString(CultureInfo.InvariantCulture));
+        SetSetting(SettingsPlatformContract.TaxEnabledKey, settings.Enabled ? "1" : "0");
+        SetSetting(SettingsPlatformContract.TaxRatePercentKey, settings.RatePercent.ToString(CultureInfo.InvariantCulture));
     }
 
-    public string GetStoreName() => GetSetting("store_name", "My Store");
-    public string GetStoreAddress() => GetSetting("store_address", "");
+    public string GetStoreName() => GetSetting(SettingsPlatformContract.StoreNameKey, "My Store");
+    public string GetStoreAddress() => GetSetting(SettingsPlatformContract.StoreAddressKey, "");
+    public string? GetPreferredPrinterName() => GetSetting(SettingsPlatformContract.PreferredPrinterNameKey, string.Empty) is var value && !string.IsNullOrWhiteSpace(value) ? value : null;
+    public bool GetTouchModeEnabled() => GetSetting(SettingsPlatformContract.TouchModeEnabledKey, "0") == "1";
 
-    public void SetStoreName(string value) => SetSetting("store_name", value.Trim());
-    public void SetStoreAddress(string value) => SetSetting("store_address", value.Trim());
+    public void SetStoreName(string value) => SetSetting(SettingsPlatformContract.StoreNameKey, value.Trim());
+    public void SetStoreAddress(string value) => SetSetting(SettingsPlatformContract.StoreAddressKey, value.Trim());
+    public void SetPreferredPrinterName(string? value) => SetSetting(SettingsPlatformContract.PreferredPrinterNameKey, value?.Trim() ?? string.Empty);
+    public void SetTouchModeEnabled(bool enabled) => SetSetting(SettingsPlatformContract.TouchModeEnabledKey, enabled ? "1" : "0");
 
-    public string GetTaxRoundingStrategy() => GetSetting("tax_rounding_strategy", "HALF_UP");
-    public void SetTaxRoundingStrategy(string value) => SetSetting("tax_rounding_strategy", value);
+    public string GetTaxRoundingStrategy() => GetSetting(SettingsPlatformContract.TaxRoundingStrategyKey, "HALF_UP");
+    public void SetTaxRoundingStrategy(string value) => SetSetting(SettingsPlatformContract.TaxRoundingStrategyKey, value);
 
-    public string GetCashRoundingUnit() => GetSetting("cash_rounding_unit", "0.01");
-    public void SetCashRoundingUnit(string value) => SetSetting("cash_rounding_unit", value);
+    public string GetCashRoundingUnit() => GetSetting(SettingsPlatformContract.CashRoundingUnitKey, "0.01");
+    public void SetCashRoundingUnit(string value) => SetSetting(SettingsPlatformContract.CashRoundingUnitKey, value);
 
-    public bool IsOnboardingPhaseCleared() => GetSetting("onboarding_phase_cleared", "0") == "1";
-    public void ClearOnboardingPhase() => SetSetting("onboarding_phase_cleared", "1");
+    public bool IsOnboardingPhaseCleared() => GetSetting(SettingsPlatformContract.OnboardingPhaseClearedKey, "0") == "1";
+    public void ClearOnboardingPhase() => SetSetting(SettingsPlatformContract.OnboardingPhaseClearedKey, "1");
 
-    public bool IsFirstRunTutorialCleared() => GetSetting("first_run_tutorial_cleared", "0") == "1";
-    public void ClearFirstRunTutorial() => SetSetting("first_run_tutorial_cleared", "1");
+    public bool IsFirstRunTutorialCleared() => GetSetting(SettingsPlatformContract.FirstRunTutorialClearedKey, "0") == "1";
+    public void ClearFirstRunTutorial() => SetSetting(SettingsPlatformContract.FirstRunTutorialClearedKey, "1");
+
+    public string? GetActiveRunId() => GetSetting(SettingsPlatformContract.TelemetryActiveRunIdKey, string.Empty) is var v && !string.IsNullOrEmpty(v) ? v : null;
+    public void SetActiveRunId(string? runId) => SetSetting(SettingsPlatformContract.TelemetryActiveRunIdKey, runId ?? "");
+
+    public string? GetActiveRunStartedAt() => GetSetting(SettingsPlatformContract.TelemetryActiveRunStartedAtUtcKey, string.Empty) is var v && !string.IsNullOrEmpty(v) ? v : null;
+    public void SetActiveRunStartedAt(string? startedAt) => SetSetting(SettingsPlatformContract.TelemetryActiveRunStartedAtUtcKey, startedAt ?? "");
+
+    public string? GetLastActivityAt() => GetSetting(SettingsPlatformContract.TelemetryLastActivityAtUtcKey, string.Empty) is var v && !string.IsNullOrEmpty(v) ? v : null;
+    public void SetLastActivityAt(string? lastActivityAt) => SetSetting(SettingsPlatformContract.TelemetryLastActivityAtUtcKey, lastActivityAt ?? "");
+
+    public string? GetLastActivitySource() => GetSetting(SettingsPlatformContract.TelemetryLastActivitySourceKey, string.Empty) is var v && !string.IsNullOrEmpty(v) ? v : null;
+    public void SetLastActivitySource(string? source) => SetSetting(SettingsPlatformContract.TelemetryLastActivitySourceKey, source ?? "");
+
+    public string GetAppLanguage() => GetSetting(SettingsPlatformContract.AppLanguageKey, "en");
+    public void SetAppLanguage(string tag) => SetSetting(SettingsPlatformContract.AppLanguageKey, tag);
+
+    public string GetStoreLanguage() => GetSetting(SettingsPlatformContract.StoreLanguageKey, "en");
+    public void SetStoreLanguage(string tag) => SetSetting(SettingsPlatformContract.StoreLanguageKey, tag);
+
+    public RetailStorePOS.Data.Models.TelemetryRuntimeState GetTelemetryState()
+    {
+        return new RetailStorePOS.Data.Models.TelemetryRuntimeState
+        {
+            ActiveRunId = GetActiveRunId(),
+            ActiveRunStartedAt = DateTime.TryParse(GetActiveRunStartedAt(), null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var startedAt) ? startedAt : null,
+            LastActivityAt = DateTime.TryParse(GetLastActivityAt(), null, System.Globalization.DateTimeStyles.AdjustToUniversal, out var lastActivityAt) ? lastActivityAt : null,
+            LastActivitySource = GetLastActivitySource()
+        };
+    }
+
+    public void SetTelemetryState(RetailStorePOS.Data.Models.TelemetryRuntimeState state)
+    {
+        SetActiveRunId(state.ActiveRunId);
+        SetActiveRunStartedAt(state.ActiveRunStartedAt?.ToString("O"));
+        SetLastActivityAt(state.LastActivityAt?.ToString("O"));
+        SetLastActivitySource(state.LastActivitySource);
+    }
+
+    public void SetTelemetryState(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction transaction, RetailStorePOS.Data.Models.TelemetryRuntimeState state)
+    {
+        SetSetting(connection, transaction, SettingsPlatformContract.TelemetryActiveRunIdKey, state.ActiveRunId ?? "");
+        SetSetting(connection, transaction, SettingsPlatformContract.TelemetryActiveRunStartedAtUtcKey, state.ActiveRunStartedAt?.ToString("O") ?? "");
+        SetSetting(connection, transaction, SettingsPlatformContract.TelemetryLastActivityAtUtcKey, state.LastActivityAt?.ToString("O") ?? "");
+        SetSetting(connection, transaction, SettingsPlatformContract.TelemetryLastActivitySourceKey, state.LastActivitySource ?? "");
+    }
+
+    private void SetSetting(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction transaction, string key, string value)
+    {
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = @"
+INSERT INTO settings (key, value)
+VALUES (@key, @value)
+ON CONFLICT(key) DO UPDATE SET value = excluded.value;";
+
+        command.Parameters.AddWithValue("@key", key);
+        command.Parameters.AddWithValue("@value", value);
+        command.ExecuteNonQuery();
+    }
+
+    public Microsoft.Data.Sqlite.SqliteConnection OpenConnection() => _factory.OpenConnection();
 
     private string GetSetting(string key, string defaultValue)
     {

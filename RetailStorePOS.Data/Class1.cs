@@ -1,23 +1,21 @@
 using Microsoft.Data.Sqlite;
+using RetailStorePOS.Data.Modules.Contracts;
 
-namespace RetailStorePOS.Data;
+namespace RetailStorePOS.Data.Modules.Migrations;
 
 public static class DatabaseInitializer
 {
     public static void Initialize(string databasePath)
     {
-        if (string.IsNullOrWhiteSpace(databasePath))
-        {
-            throw new ArgumentException("Database path is required.", nameof(databasePath));
-        }
+        var localDatabasePath = MigrationPlatformContract.NormalizeDatabasePath(databasePath);
 
-        var directory = Path.GetDirectoryName(databasePath);
+        var directory = Path.GetDirectoryName(localDatabasePath);
         if (!string.IsNullOrWhiteSpace(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        using var connection = new SqliteConnection($"Data Source={databasePath}");
+        using var connection = new SqliteConnection($"Data Source={localDatabasePath}");
         connection.Open();
 
         using var command = connection.CreateCommand();
@@ -42,7 +40,9 @@ CREATE TABLE IF NOT EXISTS products (
     last_sale_at TEXT,
     cashier_name TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL,
-    updated_at TEXT NOT NULL
+    updated_at TEXT NOT NULL,
+    thumbnail_path TEXT,
+    product_dna TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_products_barcode ON products (barcode);
@@ -141,10 +141,6 @@ CREATE TABLE IF NOT EXISTS tax_categories (
 
 CREATE INDEX IF NOT EXISTS idx_tax_categories_name ON tax_categories (name);
 
--- Add tax_category_id to products if not exists
--- SQLite doesn't support ADD COLUMN IF NOT EXISTS, so we check via pragma
--- For new databases, we'll create the column. For existing, we'll handle in migration.
-
 -- Insert default tax categories if not exist
 INSERT INTO tax_categories (name, rate_percent, is_default)
 SELECT 'No Tax', 0, 1
@@ -202,10 +198,6 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at ON audit_logs (created_at);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_user_id ON audit_logs (user_id);
 
--- ═══════════════════════════════════════════════════════════════════════
--- TAX AUTHORITIES — Who receives the money
--- Covers: Behavior #3 (Tax Authority Reporting)
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS tax_authorities (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -214,13 +206,6 @@ CREATE TABLE IF NOT EXISTS tax_authorities (
     created_at TEXT NOT NULL
 );
 
--- ═══════════════════════════════════════════════════════════════════════
--- TAX RULES — The Heart of the Calculation Engine (Hot Cache)
--- Covers: Models 1-10, Behaviors 1, 7, 8
--- calc_type: PERCENTAGE | FIXED_AMOUNT | TIERED | PER_UNIT_MEASURE
---            | PERCENTAGE_ON_MARGIN | REVERSE_CHARGE
--- scope:     PRODUCT | ORDER
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS tax_rules (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -248,11 +233,6 @@ CREATE TABLE IF NOT EXISTS tax_rules (
 CREATE INDEX IF NOT EXISTS idx_tax_rules_active
     ON tax_rules (is_active, effective_from, effective_until);
 
--- ═══════════════════════════════════════════════════════════════════════
--- TAX RULE TIERS — Graduated Bracket Rates
--- Covers: Model 9 (Tiered/Slab Rates)
--- Only used when parent tax_rules.calc_type = 'TIERED'
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS tax_rule_tiers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     tax_rule_id INTEGER NOT NULL,
@@ -265,11 +245,6 @@ CREATE TABLE IF NOT EXISTS tax_rule_tiers (
 CREATE INDEX IF NOT EXISTS idx_tax_rule_tiers_rule
     ON tax_rule_tiers (tax_rule_id);
 
--- ═══════════════════════════════════════════════════════════════════════
--- TAX GROUPS — Named Tax Combinations
--- 'Standard Retail' = State + County + City taxes
--- 'Tax Exempt' = empty group (no rules)
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS tax_groups (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
@@ -278,11 +253,6 @@ CREATE TABLE IF NOT EXISTS tax_groups (
     created_at TEXT NOT NULL
 );
 
--- ═══════════════════════════════════════════════════════════════════════
--- TAX GROUP RULES — Many-to-Many Junction (Groups <-> Rules)
--- Covers: Models 3 (Additive) and 4 (Compounding)
--- Same sequence_order = additive. Higher = compounding.
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS tax_group_rules (
     group_id INTEGER NOT NULL,
     rule_id INTEGER NOT NULL,
@@ -292,11 +262,6 @@ CREATE TABLE IF NOT EXISTS tax_group_rules (
     FOREIGN KEY (rule_id) REFERENCES tax_rules(id) ON DELETE CASCADE
 );
 
--- ═══════════════════════════════════════════════════════════════════════
--- TAX RULE RATE HISTORY — Cold Audit Archive (Dual-Write Pattern)
--- Covers: Behavior #7 (Rate Change Versioning)
--- Checkout reads ONLY tax_rules.rate_value (hot). This is for audits.
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS tax_rule_rate_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     tax_rule_id INTEGER NOT NULL,
@@ -311,11 +276,6 @@ CREATE TABLE IF NOT EXISTS tax_rule_rate_history (
 CREATE INDEX IF NOT EXISTS idx_tax_rate_history_rule
     ON tax_rule_rate_history (tax_rule_id, changed_at);
 
--- ═══════════════════════════════════════════════════════════════════════
--- ORDER TAX OVERRIDES — Audit Defense Table
--- Covers: Behavior #6 (Tax Override Audit Trail), Model 11 (Customer Exemptions)
--- Two-person authorization chain: cashier initiates, manager approves.
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS order_tax_overrides (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     sale_id INTEGER NOT NULL,
@@ -336,10 +296,6 @@ CREATE TABLE IF NOT EXISTS order_tax_overrides (
 CREATE INDEX IF NOT EXISTS idx_order_tax_overrides_sale
     ON order_tax_overrides (sale_id);
 
--- ═══════════════════════════════════════════════════════════════════════
--- TENDER TYPES — Payment Methods & Tax Exemption Flags
--- Covers: Behavior #9 (Payment-Method Tax Exemptions — SNAP/EBT/WIC)
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS tender_types (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE,
@@ -348,10 +304,6 @@ CREATE TABLE IF NOT EXISTS tender_types (
     is_active INTEGER NOT NULL DEFAULT 1
 );
 
--- ═══════════════════════════════════════════════════════════════════════
--- BUNDLE COMPONENTS — Composite Product Breakdown
--- Covers: Behavior #10 (Proportional Bundle Tax Allocation)
--- ═══════════════════════════════════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS bundle_components (
     bundle_product_id INTEGER NOT NULL,
     component_product_id INTEGER NOT NULL,
@@ -362,7 +314,7 @@ CREATE TABLE IF NOT EXISTS bundle_components (
     FOREIGN KEY (component_product_id) REFERENCES products(id) ON DELETE CASCADE
 );
 
--- Seed: Default tender types
+-- Seed defaults
 INSERT INTO tender_types (name, is_tax_exempt_tender, is_active)
 SELECT 'Cash', 0, 1
 WHERE NOT EXISTS (SELECT 1 FROM tender_types WHERE name = 'Cash');
@@ -371,12 +323,10 @@ INSERT INTO tender_types (name, is_tax_exempt_tender, is_active)
 SELECT 'Card', 0, 1
 WHERE NOT EXISTS (SELECT 1 FROM tender_types WHERE name = 'Card');
 
--- Seed: Default tax group (empty = no tax)
 INSERT INTO tax_groups (name, is_default, is_active, created_at)
 SELECT 'No Tax', 1, 1, datetime('now')
 WHERE NOT EXISTS (SELECT 1 FROM tax_groups WHERE name = 'No Tax');
 
--- Seed: Rounding settings
 INSERT INTO settings (key, value)
 SELECT 'tax_rounding_strategy', 'PER_LINE'
 WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key = 'tax_rounding_strategy');
@@ -387,173 +337,346 @@ WHERE NOT EXISTS (SELECT 1 FROM settings WHERE key = 'cash_rounding_unit');
 ";
         command.ExecuteNonQuery();
 
-        // Migration 12: Global Search Indices
-        using (var searchIndexCmd = connection.CreateCommand())
-        {
-            searchIndexCmd.CommandText = @"
-CREATE INDEX IF NOT EXISTS idx_sales_receipt ON sales (receipt_number);
-CREATE INDEX IF NOT EXISTS idx_sales_cashier ON sales (cashier_name COLLATE NOCASE);
-CREATE INDEX IF NOT EXISTS idx_sales_created ON sales (created_at);
-CREATE INDEX IF NOT EXISTS idx_sales_payment ON sales (payment_type);";
-            searchIndexCmd.ExecuteNonQuery();
-        }
+        // Ensure columns referenced by startup-time repositories exist even if their
+        // full migration (backfill/indexing) is deferred to the maintenance path.
+        EnsureStartupSchemaCompatibility(connection);
 
-        // Run migrations for existing databases
-        RunMigrations(connection);
+        // Run only StartupSafe migrations for the splash path
+        RunMigrations(connection, MigrationCategory.StartupSafe);
     }
 
-    private static void RunMigrations(SqliteConnection connection)
+    public static (int Version, bool Success) RunMaintenanceMigrations(string databasePath)
     {
-        // Migration 1: Add tax_category_id to products if missing
-        if (!ColumnExists(connection, "products", "tax_category_id"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN tax_category_id INTEGER DEFAULT 1;";
-            cmd.ExecuteNonQuery();
-        }
+        var localDatabasePath = MigrationPlatformContract.NormalizeDatabasePath(databasePath);
+        using var connection = new SqliteConnection($"Data Source={localDatabasePath}");
+        connection.Open();
 
-        // Migration 2: Add tax columns to sale_items if missing
-        if (!ColumnExists(connection, "sale_items", "tax_rate_percent"))
+        try
         {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN tax_rate_percent REAL NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
+            // Task 7.4 Validation: Pre-migration integrity check
+            ValidateDatabase(connection, "pre_maintenance");
 
-        if (!ColumnExists(connection, "sale_items", "tax_cents"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN tax_cents INTEGER NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
+            // Run all pending migrations regardless of category
+            RunMigrations(connection);
 
-        // Migration 3: Add can_override_price to users if missing
-        if (!ColumnExists(connection, "users", "can_override_price"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE users ADD COLUMN can_override_price INTEGER NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
-        // Migration 4: Add quantity to products if missing
-        if (!ColumnExists(connection, "products", "quantity"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN quantity REAL NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
+            // Task 7.4 Validation: Post-migration final check
+            ValidateDatabase(connection, "post_maintenance");
 
-        // Migration 5: Add dual-zone inventory columns if missing
-        if (!ColumnExists(connection, "products", "quantity_store"))
+            return (GetUserVersion(connection), true);
+        }
+        catch
+        {
+            return (GetUserVersion(connection), false);
+        }
+    }
+
+    private static void ValidateDatabase(SqliteConnection connection, string phase)
+    {
+        try
         {
             using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN quantity_store REAL NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
 
-            using var backfillCmd = connection.CreateCommand();
-            backfillCmd.CommandText = @"
+            // Core SQLite integrity check
+            cmd.CommandText = "PRAGMA quick_check;";
+            var result = cmd.ExecuteScalar()?.ToString();
+            if (result != "ok")
+            {
+                throw new InvalidOperationException($"Database quick_check failed during {phase}: {result}");
+            }
+
+            // Relationship integrity check
+            cmd.CommandText = "PRAGMA foreign_key_check;";
+            using var reader = cmd.ExecuteReader();
+            if (reader.Read())
+            {
+                throw new InvalidOperationException($"Database foreign_key_check failed during {phase}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Database validation failed: {ex.Message}");
+            throw;
+        }
+    }
+
+    private static void RunMigrations(SqliteConnection connection, MigrationCategory? maxCategory = null)
+    {
+        var currentVersion = GetUserVersion(connection);
+        var migrations = GetMigrationSteps();
+
+        foreach (var migration in migrations.Where(m => m.Version > currentVersion))
+        {
+            if (maxCategory.HasValue && migration.Category > maxCategory.Value)
+            {
+                // Skip heavier migrations in the splash path
+                continue;
+            }
+
+            if (maxCategory == MigrationCategory.StartupSafe && !MigrationPlatformContract.ShouldRunInStartupPath(migration.Category))
+            {
+                continue;
+            }
+
+            // Task 7.4: Ensure each step is isolated and validated
+            using var transaction = connection.BeginTransaction();
+            try
+            {
+                migration.Execute(connection);
+
+                // Update version BEFORE committing so it's atomic with the change
+                using var verCmd = connection.CreateCommand();
+                verCmd.Transaction = transaction;
+                verCmd.CommandText = $"PRAGMA user_version = {migration.Version};";
+                verCmd.ExecuteNonQuery();
+
+                // For heavy migrations, validate before committing
+                if (MigrationPlatformContract.ShouldValidateBeforeCommit(migration.Category))
+                {
+                    ValidateDatabase(connection, $"step_{migration.Version}");
+                }
+
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                System.Diagnostics.Debug.WriteLine($"Migration {migration.Version} failed: {ex.Message}");
+                throw;
+            }
+        }
+    }
+
+    private static int GetUserVersion(SqliteConnection connection)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = "PRAGMA user_version;";
+        return Convert.ToInt32(cmd.ExecuteScalar());
+    }
+
+    private static void SetUserVersion(SqliteConnection connection, int version)
+    {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"PRAGMA user_version = {version};";
+        cmd.ExecuteNonQuery();
+    }
+
+    private static List<MigrationStep> GetMigrationSteps()
+    {
+        return new List<MigrationStep>
+        {
+            new MigrationStep
+            {
+                Version = 1,
+                Description = "Add tax_category_id to products",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "products", "tax_category_id"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN tax_category_id INTEGER DEFAULT 1;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 2,
+                Description = "Add tax columns to sale_items",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "sale_items", "tax_rate_percent"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN tax_rate_percent REAL NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+                    }
+                    if (!ColumnExists(conn, "sale_items", "tax_cents"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN tax_cents INTEGER NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 3,
+                Description = "Add can_override_price to users",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "users", "can_override_price"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE users ADD COLUMN can_override_price INTEGER NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 4,
+                Description = "Add quantity to products",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "products", "quantity"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN quantity REAL NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 5,
+                Description = "Add dual-zone inventory columns and backfill",
+                Category = MigrationCategory.HeavyBackfill,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "products", "quantity_store"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN quantity_store REAL NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+
+                        using var backfillCmd = conn.CreateCommand();
+                        backfillCmd.CommandText = @"
 UPDATE products
 SET quantity_store = quantity
 WHERE COALESCE(quantity_store, 0) = 0
   AND COALESCE(quantity, 0) <> 0;";
-            backfillCmd.ExecuteNonQuery();
-        }
+                        backfillCmd.ExecuteNonQuery();
+                    }
 
-        if (!ColumnExists(connection, "products", "quantity_warehouse"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN quantity_warehouse REAL NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
+                    if (!ColumnExists(conn, "products", "quantity_warehouse"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN quantity_warehouse REAL NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+                    }
 
-        if (!ColumnExists(connection, "products", "min_threshold_store"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN min_threshold_store REAL NOT NULL DEFAULT 5;";
-            cmd.ExecuteNonQuery();
-        }
+                    if (!ColumnExists(conn, "products", "min_threshold_store"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN min_threshold_store REAL NOT NULL DEFAULT 5;";
+                        cmd.ExecuteNonQuery();
+                    }
 
-        if (!ColumnExists(connection, "products", "min_threshold_warehouse"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN min_threshold_warehouse REAL NOT NULL DEFAULT 10;";
-            cmd.ExecuteNonQuery();
-        }
-
-        // Migration 6: Add cost_price_cents to products if missing
-        if (!ColumnExists(connection, "products", "cost_price_cents"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN cost_price_cents INTEGER NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
-        if (!ColumnExists(connection, "products", "purchased_at"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN purchased_at TEXT;";
-            cmd.ExecuteNonQuery();
-        }
-
-        if (!ColumnExists(connection, "products", "last_sale_at"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN last_sale_at TEXT;";
-            cmd.ExecuteNonQuery();
-        }
-
-        if (!ColumnExists(connection, "products", "cashier_name"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN cashier_name TEXT NOT NULL DEFAULT '';";
-            cmd.ExecuteNonQuery();
-        }
-
-        if (!ColumnExists(connection, "sales", "cashier_name"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE sales ADD COLUMN cashier_name TEXT NOT NULL DEFAULT '';";
-            cmd.ExecuteNonQuery();
-        }
-
-        using (var backfillPurchasedAt = connection.CreateCommand())
-        {
-            backfillPurchasedAt.CommandText = @"
+                    if (!ColumnExists(conn, "products", "min_threshold_warehouse"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN min_threshold_warehouse REAL NOT NULL DEFAULT 10;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 6,
+                Description = "Add cost_price_cents to products and backfill purchased_at",
+                Category = MigrationCategory.HeavyBackfill,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "products", "cost_price_cents"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN cost_price_cents INTEGER NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+                    }
+                    if (!ColumnExists(conn, "products", "purchased_at"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN purchased_at TEXT;";
+                        cmd.ExecuteNonQuery();
+                    }
+                    if (!ColumnExists(conn, "products", "last_sale_at"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN last_sale_at TEXT;";
+                        cmd.ExecuteNonQuery();
+                    }
+                    if (!ColumnExists(conn, "products", "cashier_name"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN cashier_name TEXT NOT NULL DEFAULT '';";
+                        cmd.ExecuteNonQuery();
+                    }
+                    if (!ColumnExists(conn, "sales", "cashier_name"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE sales ADD COLUMN cashier_name TEXT NOT NULL DEFAULT '';";
+                        cmd.ExecuteNonQuery();
+                    }
+                    using var backfillPurchasedAt = conn.CreateCommand();
+                    backfillPurchasedAt.CommandText = @"
 UPDATE products
 SET purchased_at = COALESCE(purchased_at, created_at)
 WHERE purchased_at IS NULL;";
-            backfillPurchasedAt.ExecuteNonQuery();
-        }
-
-        // Migration 7: Add tax_group_id to products (new tax engine)
-        if (!ColumnExists(connection, "products", "tax_group_id"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE products ADD COLUMN tax_group_id INTEGER REFERENCES tax_groups(id);";
-            cmd.ExecuteNonQuery();
-        }
-
-        // Migration 8: Add tax_snapshot JSON to sale_items (immutable receipt history)
-        if (!ColumnExists(connection, "sale_items", "tax_snapshot"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN tax_snapshot TEXT;";
-            cmd.ExecuteNonQuery();
-        }
-
-        // Migration 9: Add refund link to sale_items (Behavior #4 — never recalculate)
-        if (!ColumnExists(connection, "sale_items", "original_sale_item_id"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN original_sale_item_id INTEGER;";
-            cmd.ExecuteNonQuery();
-        }
-
-        // Migration 10: Backfill tax_group_id from legacy tax_categories
-        if (ColumnExists(connection, "products", "tax_category_id") &&
-            ColumnExists(connection, "products", "tax_group_id") &&
-            TableExists(connection, "tax_categories"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = @"
+                    backfillPurchasedAt.ExecuteNonQuery();
+                }
+            },
+            new MigrationStep
+            {
+                Version = 7,
+                Description = "Add tax_group_id to products",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "products", "tax_group_id"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN tax_group_id INTEGER REFERENCES tax_groups(id);";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 8,
+                Description = "Add tax_snapshot JSON to sale_items",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "sale_items", "tax_snapshot"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN tax_snapshot TEXT;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 9,
+                Description = "Add refund link to sale_items",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "sale_items", "original_sale_item_id"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE sale_items ADD COLUMN original_sale_item_id INTEGER;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 10,
+                Description = "Backfill tax_group_id from legacy tax_categories",
+                Category = MigrationCategory.HeavyBackfill,
+                Execute = conn =>
+                {
+                    if (ColumnExists(conn, "products", "tax_category_id") &&
+                        ColumnExists(conn, "products", "tax_group_id") &&
+                        TableExists(conn, "tax_categories"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = @"
 UPDATE products
 SET tax_group_id = COALESCE(
     (SELECT tg.id FROM tax_groups tg
@@ -562,16 +685,228 @@ SET tax_group_id = COALESCE(
     (SELECT id FROM tax_groups WHERE is_default = 1 LIMIT 1)
 )
 WHERE tax_group_id IS NULL;";
-            cmd.ExecuteNonQuery();
-        }
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 11,
+                Description = "Add is_auto_managed to tax_groups",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "tax_groups", "is_auto_managed"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE tax_groups ADD COLUMN is_auto_managed INTEGER NOT NULL DEFAULT 0;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 12,
+                Description = "Global Search Indices",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    using var searchIndexCmd = conn.CreateCommand();
+                    searchIndexCmd.CommandText = @"
+CREATE INDEX IF NOT EXISTS idx_sales_receipt ON sales (receipt_number);
+CREATE INDEX IF NOT EXISTS idx_sales_cashier ON sales (cashier_name COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS idx_sales_created ON sales (created_at);
+CREATE INDEX IF NOT EXISTS idx_sales_payment ON sales (payment_type);";
+                    searchIndexCmd.ExecuteNonQuery();
+                }
+            },
+            new MigrationStep
+            {
+                Version = 13,
+                Description = "Add (install_id, occurred_at) index to installation_events",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = "CREATE INDEX IF NOT EXISTS idx_installation_events_install_occurred ON installation_events (install_id, occurred_at);";
+                    cmd.ExecuteNonQuery();
+                }
+            },
+            new MigrationStep
+            {
+                Version = 14,
+                Description = "Add run_id column to installation_events",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "installation_events", "run_id"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE installation_events ADD COLUMN run_id TEXT;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 15,
+                Description = "Add estimation columns to installation_events",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "installation_events", "last_activity_at"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE installation_events ADD COLUMN last_activity_at TEXT;";
+                        cmd.ExecuteNonQuery();
+                    }
+                    if (!ColumnExists(conn, "installation_events", "last_activity_source"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE installation_events ADD COLUMN last_activity_source TEXT;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 16,
+                Description = "Create register_sessions table",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = @"
+CREATE TABLE IF NOT EXISTS register_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    opening_amount_cents INTEGER NOT NULL,
+    opening_note TEXT,
+    opened_at TEXT NOT NULL,
+    closed_at TEXT,
+    closing_amount_cents INTEGER,
+    closing_note TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+CREATE INDEX IF NOT EXISTS idx_register_sessions_open ON register_sessions (closed_at);
+CREATE INDEX IF NOT EXISTS idx_register_sessions_user ON register_sessions (user_id, opened_at);";
+                    cmd.ExecuteNonQuery();
+                }
+            },
+            new MigrationStep
+            {
+                Version = 17,
+                Description = "Create register_cash_adjustments table",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = @"
+CREATE TABLE IF NOT EXISTS register_cash_adjustments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    user_id INTEGER,
+    adjustment_type TEXT NOT NULL CHECK (adjustment_type IN ('IN', 'OUT')),
+    amount_cents INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES register_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+CREATE INDEX IF NOT EXISTS idx_register_cash_adjustments_session ON register_cash_adjustments (session_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_register_cash_adjustments_user ON register_cash_adjustments (user_id, created_at);";
+                    cmd.ExecuteNonQuery();
+                }
+            },
+            new MigrationStep
+            {
+                Version = 18,
+                Description = "Add thumbnail_path to products",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "products", "thumbnail_path"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE products ADD COLUMN thumbnail_path TEXT;";
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            },
+            new MigrationStep
+            {
+                Version = 19,
+                Description = "Add product_dna column with unique index and backfill",
+                Category = MigrationCategory.HeavyBackfill,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "products", "product_dna"))
+                    {
+                        using var addCol = conn.CreateCommand();
+                        addCol.CommandText = "ALTER TABLE products ADD COLUMN product_dna TEXT;";
+                        addCol.ExecuteNonQuery();
+                    }
 
-        // Migration 11: Add is_auto_managed to tax_groups
-        if (!ColumnExists(connection, "tax_groups", "is_auto_managed"))
-        {
-            using var cmd = connection.CreateCommand();
-            cmd.CommandText = "ALTER TABLE tax_groups ADD COLUMN is_auto_managed INTEGER NOT NULL DEFAULT 0;";
-            cmd.ExecuteNonQuery();
-        }
+                    // Backfill existing products that have no DNA
+                    using var selectCmd = conn.CreateCommand();
+                    selectCmd.CommandText = "SELECT id, name, created_at FROM products WHERE product_dna IS NULL;";
+                    using var reader = selectCmd.ExecuteReader();
+
+                    var updates = new List<(long Id, string Dna)>();
+                    while (reader.Read())
+                    {
+                        var id = reader.GetInt64(0);
+                        var name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
+                        var createdAtStr = reader.IsDBNull(2) ? null : reader.GetString(2);
+
+                        DateTime createdAt;
+                        if (!string.IsNullOrWhiteSpace(createdAtStr) &&
+                            DateTime.TryParse(createdAtStr, System.Globalization.CultureInfo.InvariantCulture,
+                                System.Globalization.DateTimeStyles.RoundtripKind, out var parsed))
+                        {
+                            createdAt = parsed;
+                        }
+                        else
+                        {
+                            createdAt = DateTime.UtcNow;
+                        }
+
+                        var dna = RetailStorePOS.Data.Modules.Products.ProductDnaGenerator.Generate(name, createdAt);
+                        updates.Add((id, dna));
+                    }
+                    reader.Close();
+
+                    // Ensure uniqueness: if a collision occurs, append the product ID
+                    var usedDnas = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    using var updateCmd = conn.CreateCommand();
+                    updateCmd.CommandText = "UPDATE products SET product_dna = @dna WHERE id = @id;";
+                    var dnaParam = updateCmd.Parameters.Add("@dna", Microsoft.Data.Sqlite.SqliteType.Text);
+                    var idParam = updateCmd.Parameters.Add("@id", Microsoft.Data.Sqlite.SqliteType.Integer);
+                    updateCmd.Prepare();
+
+                    foreach (var (id, dna) in updates)
+                    {
+                        var finalDna = dna;
+                        if (!usedDnas.Add(finalDna))
+                        {
+                            // Collision detected — append product ID to make it unique
+                            var suffix = id.ToString("X4");
+                            finalDna = $"{finalDna}-{suffix}";
+                        }
+                        usedDnas.Add(finalDna);
+
+                        dnaParam.Value = finalDna;
+                        idParam.Value = id;
+                        updateCmd.ExecuteNonQuery();
+                    }
+
+                    // Create unique index after all rows are backfilled
+                    using var idxCmd = conn.CreateCommand();
+                    idxCmd.CommandText = "CREATE UNIQUE INDEX IF NOT EXISTS idx_products_dna ON products(product_dna);";
+                    idxCmd.ExecuteNonQuery();
+                }
+            }
+        };
     }
 
     private static bool ColumnExists(SqliteConnection connection, string tableName, string columnName)
@@ -589,6 +924,16 @@ WHERE tax_group_id IS NULL;";
         return false;
     }
 
+    private static void EnsureStartupSchemaCompatibility(SqliteConnection connection)
+    {
+        if (TableExists(connection, "products") && !ColumnExists(connection, "products", "product_dna"))
+        {
+            using var addProductDnaColumn = connection.CreateCommand();
+            addProductDnaColumn.CommandText = "ALTER TABLE products ADD COLUMN product_dna TEXT;";
+            addProductDnaColumn.ExecuteNonQuery();
+        }
+    }
+
     private static bool TableExists(SqliteConnection connection, string tableName)
     {
         using var cmd = connection.CreateCommand();
@@ -597,4 +942,3 @@ WHERE tax_group_id IS NULL;";
         return Convert.ToInt64(cmd.ExecuteScalar()) > 0;
     }
 }
-

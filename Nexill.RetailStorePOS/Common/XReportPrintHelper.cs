@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Drawing.Text;
-using System.Linq;
-using RetailStorePOS.Data.Models;
+using RetailStorePOS.Data.Modules.Sales;
 
 namespace RetailStorePOS.WinUiLogin.Common;
 
 /// <summary>
-/// Prints an X Report silently and directly to the default Windows printer using System.Drawing.
+/// Prints an X Report silently and directly to the selected Windows printer, or the default printer when none is selected.
 /// Uses the same receipt-width Courier layout as the PDF generator but bypasses PDF entirely.
 /// Mirrors the ReceiptPrintHelper pattern for consistent thermal/desktop printing.
 /// </summary>
@@ -22,9 +19,9 @@ public sealed class XReportPrintHelper : IDisposable
     private int _currentLineIndex;
 
     /// <summary>
-    /// Prints the X Report directly to the default printer — no PDF, no dialog.
+    /// Prints the X Report directly to the selected printer — no PDF, no dialog.
     /// </summary>
-    public void PrintXReport(IEnumerable<Sale> sales, DateTime date, string storeName)
+    public void PrintXReport(IEnumerable<Sale> sales, DateTime date, string storeName, string? preferredPrinterName = null)
     {
         _lines = BuildReportLines(sales, date, storeName).ToList();
         _currentLineIndex = 0;
@@ -36,6 +33,7 @@ public sealed class XReportPrintHelper : IDisposable
             using var printDoc = new PrintDocument();
             printDoc.DocumentName = $"XReport_{date:yyyyMMdd}";
             printDoc.PrinterSettings.PrintToFile = false;
+            ApplyPreferredPrinter(printDoc, preferredPrinterName);
             printDoc.PrintPage += PrintDoc_PrintPage;
             printDoc.Print();
         }
@@ -126,6 +124,21 @@ public sealed class XReportPrintHelper : IDisposable
         }
 
         e.HasMorePages = false;
+    }
+
+    private static void ApplyPreferredPrinter(PrintDocument printDoc, string? preferredPrinterName)
+    {
+        if (string.IsNullOrWhiteSpace(preferredPrinterName))
+        {
+            return;
+        }
+
+        if (!PrinterSelectionHelper.IsInstalledPrinter(preferredPrinterName))
+        {
+            return;
+        }
+
+        printDoc.PrinterSettings.PrinterName = preferredPrinterName.Trim();
     }
 
     // ──── Report Content Builder ────

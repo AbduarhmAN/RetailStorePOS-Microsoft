@@ -1,22 +1,33 @@
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using RetailStorePOS.App.Modules.Products;
+using RetailStorePOS.Data.Modules.Contracts;
 using RetailStorePOS.Data.Models;
+using RetailStorePOS.Data.Modules.Products;
+using RetailStorePOS.Data.Modules.Tax;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Models;
-using RetailStorePOS.Data.Services;
+using RetailStorePOS.App.Services;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
-using System;
-using System.Threading.Tasks;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
 public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 {
+    private static readonly WorkflowBoundary ProductMaintenanceWorkflow = InventoryWorkflowContract.ProductMaintenanceBoundary;
+    private static readonly IReadOnlyList<ModuleContract> ProductMaintenanceContracts = InventoryWorkflowContract.Contracts;
+    private static ProductRepository ProductsModule => InventoryWorkflowContract.ResolveProductCatalog(LoginRuntime.Products);
+    private static ProductSearchService ProductSearchModule => InventoryWorkflowContract.ResolveCatalogSearch(LoginRuntime.ProductSearch);
+    private static TaxCategoryRepository TaxCategoriesModule => InventoryWorkflowContract.ResolveTaxCategoryReference(LoginRuntime.TaxCategories);
+    private static TaxRuleRepository TaxRulesModule => InventoryWorkflowContract.ResolveTaxRuleReference(LoginRuntime.TaxRules);
+    private static TaxGroupRepository TaxGroupsModule => InventoryWorkflowContract.ResolveTaxGroupReference(LoginRuntime.TaxGroups);
+
     private string _searchTerm = string.Empty;
     private ProductListItem? _selectedProduct;
     private bool _isEditingSelectedProduct;
@@ -25,10 +36,24 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     private InfoBarSeverity _statusSeverity = InfoBarSeverity.Informational;
     private bool _suppressDraftPropertyChanged;
     private bool _isReloading;
+    private bool _isImportInProgress;
+    private bool _isImportCancelRequested;
+    private int _importTotalRows;
+    private int _importProcessedRows;
+    private int _importCreatedCount;
+    private int _importUpdatedCount;
+    private int _importSkippedCount;
+    private double _importProgressPercent;
+    private string _importFailureTipTitle = string.Empty;
+    private string _importFailureTipMessage = string.Empty;
+    private bool _isImportFailureTipOpen;
+    private CancellationTokenSource? _importCancellationSource;
 
     public ProductsPage()
     {
         InitializeComponent();
+        _ = ProductMaintenanceWorkflow;
+        _ = ProductMaintenanceContracts;
         Draft.PropertyChanged += Draft_PropertyChanged;
         LoginRuntime.Auth.LoginStateChanged += OnLoginStateChanged;
         Loaded += ProductsPage_Loaded;
@@ -39,13 +64,13 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
 
     public ObservableCollection<ProductListItem> Products { get; } = new();
-    
+
     // Legacy mapping support
     private ObservableCollection<TaxCategory> _taxCategories = new();
 
     // New unified mapping support
     public ObservableCollection<TaxPickerItem> TaxPickerItems { get; } = new();
-    
+
     private TaxPickerItem? _selectedTaxPickerItem;
     public TaxPickerItem? SelectedTaxPickerItem
     {
@@ -143,7 +168,20 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         }
     }
 
-    public bool CanBrowseProducts => !IsEditingSelectedProduct && !IsAddingProduct;
+    public bool IsImportInProgress
+    {
+        get => _isImportInProgress;
+        private set
+        {
+            if (SetProperty(ref _isImportInProgress, value))
+            {
+                RaiseImportStateProperties();
+                RaiseEditorStateProperties();
+            }
+        }
+    }
+
+    public bool CanBrowseProducts => !IsEditingSelectedProduct && !IsAddingProduct && !IsImportInProgress;
 
     public bool IsAddingProduct
     {
@@ -157,6 +195,54 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         }
     }
 
+    public Visibility ImportProgressVisibility => IsImportInProgress ? Visibility.Visible : Visibility.Collapsed;
+
+    public bool IsImportProgressIndeterminate => IsImportInProgress && _importTotalRows <= 0;
+
+    public double ImportProgressPercent => _importProgressPercent;
+
+    public string ImportProgressTitle => _isImportCancelRequested
+        ? LocalizationHelper.GetString("Products_ImportProgress_Canceling")
+        : LocalizationHelper.GetString("Products_ImportProgress_Title");
+
+    public string ImportProgressDetail => _importTotalRows <= 0
+        ? LocalizationHelper.GetString("Products_ImportProgress_Preparing")
+        : LocalizationHelper.Format(
+            "Products_ImportProgress_Detail",
+            _importProcessedRows.ToString("N0", CultureInfo.CurrentCulture),
+            _importTotalRows.ToString("N0", CultureInfo.CurrentCulture),
+            _importCreatedCount.ToString("N0", CultureInfo.CurrentCulture),
+            _importUpdatedCount.ToString("N0", CultureInfo.CurrentCulture),
+            _importSkippedCount.ToString("N0", CultureInfo.CurrentCulture));
+
+    public string ImportProgressPercentText => IsImportProgressIndeterminate
+        ? string.Empty
+        : LocalizationHelper.Format(
+            "Products_ImportProgress_Percent",
+            Math.Round(_importProgressPercent, MidpointRounding.AwayFromZero).ToString("N0", CultureInfo.CurrentCulture));
+
+    public bool CanCancelImport => IsImportInProgress && !_isImportCancelRequested;
+
+    public string ImportCancelButtonText => LocalizationHelper.GetString("Products_ImportProgress_Cancel");
+
+    public bool CanUseProductDetails => !IsImportInProgress;
+
+    public string ImportFailureTipTitle
+    {
+        get => _importFailureTipTitle;
+        private set => SetProperty(ref _importFailureTipTitle, value);
+    }
+
+    public string ImportFailureTipMessage
+    {
+        get => _importFailureTipMessage;
+        private set => SetProperty(ref _importFailureTipMessage, value);
+    }
+
+    public Visibility ImportFailureTipVisibility => _isImportFailureTipOpen ? Visibility.Visible : Visibility.Collapsed;
+
+    public string ImportFailureTipSkipText => LocalizationHelper.GetString("Products_ImportFailureTip_Skip");
+
     public bool CanSaveSelectedProduct => HasSelection && IsEditingSelectedProduct && HasPendingChanges() && IsDraftValid();
     public bool CanSaveNewProduct => IsAddingProduct
         && !string.IsNullOrWhiteSpace(Draft.Name)
@@ -166,29 +252,31 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         ? CanSaveNewProduct
         : (HasSelection && !IsEditingSelectedProduct) || CanSaveSelectedProduct;
 
-    public string RightPanelTitleText => IsAddingProduct ? "New Product" : "Selected Product";
+    public string RightPanelTitleText => IsAddingProduct 
+        ? LocalizationHelper.GetString("Products_Panel_NewProduct") 
+        : LocalizationHelper.GetString("Products_Panel_SelectedProduct");
     public Visibility AddProductVisibility => IsAddingProduct ? Visibility.Visible : Visibility.Collapsed;
     public Visibility DeleteButtonVisibility => HasSelection && !IsEditingSelectedProduct && !IsAddingProduct ? Visibility.Visible : Visibility.Collapsed;
 
     public string CatalogSummaryText => string.IsNullOrWhiteSpace(SearchTerm)
-        ? "Showing the live catalog from the local database."
-        : $"Filtering results for \"{SearchTerm.Trim()}\".";
+        ? LocalizationHelper.GetString("Products_Search_Summary_All")
+        : LocalizationHelper.Format("Products_Search_Summary_Filter", SearchTerm.Trim());
 
     public string ProductsCountText => Products.Count == 1
-        ? "1 product"
-        : $"{Products.Count:N0} products";
+        ? LocalizationHelper.GetString("Products_Count_Format_Single")
+        : LocalizationHelper.Format("Products_Count_Format_Plural", Products.Count.ToString("N0"));
 
     public string SearchStatusText => string.IsNullOrWhiteSpace(SearchTerm)
-        ? "Browse the full catalog."
-        : "Search updates instantly as you type.";
+        ? LocalizationHelper.GetString("Products_Search_Status_All")
+        : LocalizationHelper.GetString("Products_Search_Status_Typing");
 
     public string CatalogInventoryAlertText => BuildCatalogInventoryAlertText();
 
     public bool HasCatalogInventoryAlerts
-        => Products.Any(product => product.Product.HasShelfLowAlert || product.Product.HasWarehouseLowAlert || product.Product.HasLegacyStockAlert);
+        => Products.Any(product => product.Product.IsShelfOutOfStock || product.Product.IsWarehouseOutOfStock || product.Product.HasShelfLowAlert || product.Product.HasWarehouseLowAlert || product.Product.HasLegacyStockAlert);
 
     public InfoBarSeverity CatalogInventoryAlertSeverity
-        => Products.Any(product => product.Product.HasLegacyStockAlert)
+        => Products.Any(product => product.Product.HasLegacyStockAlert || product.Product.IsShelfOutOfStock || product.Product.IsWarehouseOutOfStock)
             ? InfoBarSeverity.Error
             : Products.Any(product => product.Product.HasShelfLowAlert || product.Product.HasWarehouseLowAlert)
                 ? InfoBarSeverity.Warning
@@ -214,25 +302,27 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         private set => SetProperty(ref _statusSeverity, value);
     }
 
-    public Visibility StatusVisibility => string.IsNullOrWhiteSpace(StatusMessage)
-        ? Visibility.Collapsed
-        : Visibility.Visible;
+    public Visibility StatusVisibility => IsStatusOpen
+        ? Visibility.Visible
+        : Visibility.Collapsed;
 
-    public string SelectedProductNameText => SelectedProduct?.Name ?? "No product selected";
+    public bool IsStatusOpen => !string.IsNullOrWhiteSpace(StatusMessage);
+
+    public string SelectedProductNameText => SelectedProduct?.Name ?? LocalizationHelper.GetString("Products_Selection_None");
 
     public string SelectedProductSubtitleText => SelectedProduct is null
-        ? "Choose a product to inspect or edit its details."
+        ? LocalizationHelper.GetString("Products_Selection_Subtitle_None")
         : IsEditingSelectedProduct
-            ? "Editing this product inline. Save or cancel to leave edit mode."
-            : "Live catalog details from the database.";
+            ? LocalizationHelper.GetString("Products_Selection_Subtitle_Editing")
+            : LocalizationHelper.GetString("Products_Selection_Subtitle_Normal");
 
     public string SelectedProductModeText => IsAddingProduct
-        ? "Fill in the fields below and press Save to create a new product."
+        ? LocalizationHelper.GetString("Products_Mode_Adding")
         : SelectedProduct is null
-        ? "Choose a product to inspect its details."
+        ? LocalizationHelper.GetString("Products_Mode_None")
         : IsEditingSelectedProduct
-            ? "Edit mode is on. The catalog list is locked until you save or cancel."
-            : "Read-only details with an inline edit action.";
+            ? LocalizationHelper.GetString("Products_Mode_Editing")
+            : LocalizationHelper.GetString("Products_Mode_Normal");
 
     public string SelectedProductBarcodeText => FormatText(SelectedProduct?.Product.Barcode);
     public string SelectedProductSkuText => FormatText(SelectedProduct?.Product.Sku);
@@ -243,9 +333,9 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     public string SelectedProductCostPriceText => SelectedProduct is null
         ? "—"
         : ProductPriceFormatter.Format(SelectedProduct.Product.CostPrice);
-    public string SelectedProductTaxText 
+    public string SelectedProductTaxText
     {
-        get 
+        get
         {
             if (SelectedProduct is null) return "—";
             var groupId = SelectedProduct.Product.TaxGroupId ?? 1;
@@ -267,12 +357,12 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             // Resolve auto-managed profiles by querying the database
             try
             {
-                var group = LoginRuntime.TaxGroups.GetAllWithRules().FirstOrDefault(g => g.Id == groupId);
+                var group = TaxGroupsModule.GetAllWithRules().FirstOrDefault(g => g.Id == groupId);
                 if (group != null)
                 {
                     if (group.IsAutoManaged && group.Rules.Count == 1)
-                        return $"{group.Rules[0].Name} — {group.Rules[0].DisplaySummary} ({group.Rules[0].InclusiveLabel})";
-                    return $"{group.Name} ({group.RulesSummary})";
+                        return LocalizationHelper.Format("Products_Tax_AutoManaged_Format", group.Rules[0].Name, FormatTaxRuleDisplaySummary(group.Rules[0]), FormatTaxRuleInclusiveLabel(group.Rules[0]));
+                    return $"{group.Name} ({FormatTaxGroupRulesSummary(group)})";
                 }
             }
             catch { /* Graceful fallback */ }
@@ -314,16 +404,25 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         ? Visibility.Visible
         : Visibility.Collapsed;
 
-    public string SelectedProductActionText => IsAddingProduct ? "Save" : IsEditingSelectedProduct ? "Save" : "Edit";
+    public string SelectedProductActionText => IsAddingProduct 
+        ? LocalizationHelper.GetString("Products_Action_Save") 
+        : IsEditingSelectedProduct 
+            ? LocalizationHelper.GetString("Products_Action_Save") 
+            : LocalizationHelper.GetString("Products_Action_Edit");
     public Symbol SelectedProductActionSymbol => (IsAddingProduct || IsEditingSelectedProduct) ? Symbol.Save : Symbol.Edit;
 
     public string SelectedProductEditHintText => IsEditingSelectedProduct
-        ? "Save writes your changes to the local catalog, inventory locations, and thresholds."
+        ? LocalizationHelper.GetString("Products_Edit_Hint")
         : string.Empty;
 
     public string SelectedProductDraftTaxRateText => GetTaxCategoryRateText(Draft.TaxCategoryId);
 
     public Visibility HasSelectionVisibility => HasSelection ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility ProductImageContainerVisibility => HasSelection || IsAddingProduct ? Visibility.Visible : Visibility.Collapsed;
+    public Visibility ProductImageEditorVisibility => IsEditingSelectedProduct || IsAddingProduct ? Visibility.Visible : Visibility.Collapsed;
+    public string ProductImageActionText => Draft.HasImage
+        ? LocalizationHelper.GetString("Products_ImageAction_ChangePicture")
+        : LocalizationHelper.GetString("Products_ImageAction_AddPicture");
     public Visibility NoSelectionVisibility => !HasSelection && !IsAddingProduct ? Visibility.Visible : Visibility.Collapsed;
     public Visibility SelectedProductViewVisibility => HasSelection && !IsEditingSelectedProduct && !IsAddingProduct ? Visibility.Visible : Visibility.Collapsed;
     public Visibility SelectedProductEditVisibility => HasSelection && IsEditingSelectedProduct && !IsAddingProduct ? Visibility.Visible : Visibility.Collapsed;
@@ -349,12 +448,14 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         catch (Exception ex)
         {
             LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.Loaded");
-            SetStatus("Unable to load products right now.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_Load"), InfoBarSeverity.Error);
         }
     }
 
     private void ProductsPage_Unloaded(object sender, RoutedEventArgs e)
     {
+        RequestImportCancellation();
+        DismissImportFailureTip();
         LoginRuntime.Auth.LoginStateChanged -= OnLoginStateChanged;
         Unloaded -= ProductsPage_Unloaded;
     }
@@ -373,7 +474,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         {
             TracePageState("ReloadProducts:start");
             var previousId = SelectedProduct?.Id;
-            var products = LoginRuntime.ProductSearch.Search(SearchTerm, 500);
+            var products = ProductSearchModule.Search(SearchTerm, 500);
 
             Products.Clear();
             foreach (var product in products)
@@ -403,7 +504,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         catch (Exception ex)
         {
             LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.ReloadProducts");
-            SetStatus("Unable to refresh the catalog right now.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_Refresh"), InfoBarSeverity.Error);
         }
         finally
         {
@@ -415,7 +516,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     {
         try
         {
-            var categories = LoginRuntime.TaxCategories.GetAll().ToList();
+            var categories = TaxCategoriesModule.GetAll().ToList();
             TaxCategories = new ObservableCollection<TaxCategory>(categories);
 
             if (TaxCategories.Count == 0)
@@ -433,7 +534,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         catch (Exception ex)
         {
             LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.LoadTaxCategories");
-            SetStatus("Unable to load tax categories right now.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_TaxLoad"), InfoBarSeverity.Error);
         }
     }
 
@@ -443,13 +544,13 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         {
             TaxPickerItems.Clear();
 
-            var allRules = LoginRuntime.TaxRules.GetAll().ToList();
-            var allProfiles = LoginRuntime.TaxGroups.GetAllWithRules()
+            var allRules = TaxRulesModule.GetAll().ToList();
+            var allProfiles = TaxGroupsModule.GetAllWithRules()
                                 .Where(g => !g.IsAutoManaged)
                                 .ToList();
 
             // Group 1: Common
-            TaxPickerItems.Add(new TaxPickerItem { Kind = TaxPickerKind.Header, DisplayName = "Common" });
+            TaxPickerItems.Add(new TaxPickerItem { Kind = TaxPickerKind.Header, DisplayName = LocalizationHelper.GetString("Products_Tax_Header_Common") });
             var noTax = allProfiles.FirstOrDefault(g => g.IsDefault);
             if (noTax != null) TaxPickerItems.Add(BuildProfileItem(noTax));
             foreach (var rule in allRules.Take(5))
@@ -458,13 +559,13 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             // Group 2: Tax Profiles
             if (allProfiles.Any(g => !g.IsDefault))
             {
-                TaxPickerItems.Add(new TaxPickerItem { Kind = TaxPickerKind.Header, DisplayName = "Tax Profiles" });
+                TaxPickerItems.Add(new TaxPickerItem { Kind = TaxPickerKind.Header, DisplayName = LocalizationHelper.GetString("Products_Tax_Header_Profiles") });
                 foreach (var profile in allProfiles.Where(g => !g.IsDefault))
                     TaxPickerItems.Add(BuildProfileItem(profile));
             }
 
             // Group 3: All Individual Rates
-            TaxPickerItems.Add(new TaxPickerItem { Kind = TaxPickerKind.Header, DisplayName = "All Individual Rates" });
+            TaxPickerItems.Add(new TaxPickerItem { Kind = TaxPickerKind.Header, DisplayName = LocalizationHelper.GetString("Products_Tax_Header_AllRates") });
             foreach (var rule in allRules)
                 TaxPickerItems.Add(BuildRuleItem(rule));
 
@@ -482,8 +583,8 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         Kind = TaxPickerKind.Rule,
         Rule = rule,
         DisplayName = rule.Name,
-        Subtitle = $"{rule.DisplaySummary} • per {rule.Scope.ToLower()}",
-        InfoChipText = $"{rule.DisplaySummary} ({rule.InclusiveLabel}), applied per {rule.ScopeLabel.ToLower()} at checkout."
+        Subtitle = LocalizationHelper.Format("Products_Tax_Subtitle_Format", FormatTaxRuleDisplaySummary(rule), FormatTaxRuleScopeLabel(rule)),
+        InfoChipText = LocalizationHelper.Format("Products_Tax_InfoChip_Format", FormatTaxRuleDisplaySummary(rule), FormatTaxRuleInclusiveLabel(rule), FormatTaxRuleScopeLabel(rule))
     };
 
     private TaxPickerItem BuildProfileItem(TaxGroup group) => new()
@@ -491,14 +592,43 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         Kind = TaxPickerKind.Profile,
         Profile = group,
         DisplayName = group.Name,
-        Subtitle = group.DisplaySummary,
-        InfoChipText = group.RulesSummary
+        Subtitle = FormatTaxGroupDisplaySummary(group),
+        InfoChipText = FormatTaxGroupRulesSummary(group)
     };
+
+    private static string FormatTaxRuleDisplaySummary(TaxRule rule) => rule.CalcType switch
+    {
+        "PERCENTAGE" => $"{rule.RateValue:G}%",
+        "FIXED_AMOUNT" => ProductPriceFormatter.Format(rule.RateValue),
+        "TIERED" => LocalizationHelper.GetString("Products_Tax_Display_TieredRates"),
+        "PER_UNIT_MEASURE" => LocalizationHelper.Format("Products_Tax_Display_PerUnit_Format", ProductPriceFormatter.Format(rule.RateValue)),
+        "PERCENTAGE_ON_MARGIN" => LocalizationHelper.Format("Products_Tax_Display_PercentageOnMargin_Format", $"{rule.RateValue:G}%"),
+        "REVERSE_CHARGE" => LocalizationHelper.GetString("Products_Tax_Display_ReverseCharge"),
+        _ => rule.RateValue.ToString("G", CultureInfo.CurrentCulture)
+    };
+
+    private static string FormatTaxRuleInclusiveLabel(TaxRule rule)
+        => LocalizationHelper.GetString(rule.IsInclusive ? "Products_Tax_Inclusive" : "Products_Tax_Exclusive");
+
+    private static string FormatTaxRuleScopeLabel(TaxRule rule)
+        => LocalizationHelper.GetString(string.Equals(rule.Scope, "ORDER", StringComparison.OrdinalIgnoreCase)
+            ? "Products_Tax_Scope_Order"
+            : "Products_Tax_Scope_Product");
+
+    private static string FormatTaxGroupDisplaySummary(TaxGroup group)
+        => group.IsActive
+            ? group.Name
+            : LocalizationHelper.Format("Products_Tax_Inactive_Format", group.Name);
+
+    private static string FormatTaxGroupRulesSummary(TaxGroup group)
+        => group.Rules is { Count: > 0 }
+            ? string.Join(", ", group.Rules.Select(FormatTaxRuleDisplaySummary))
+            : LocalizationHelper.GetString("Products_Tax_NoRules");
 
     private void TaxPicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (sender is not ComboBox combo || combo.SelectedItem is not TaxPickerItem item) return;
-        
+
         if (item.IsHeader)
         {
             // Revert selection if user somehow clicks a header
@@ -524,7 +654,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         // If it was an auto-managed profile, we need to match the single rule
         try
         {
-            var matchGroup = LoginRuntime.TaxGroups.GetAllWithRules().FirstOrDefault(g => g.Id == Draft.TaxGroupId);
+            var matchGroup = TaxGroupsModule.GetAllWithRules().FirstOrDefault(g => g.Id == Draft.TaxGroupId);
             if (matchGroup is { IsAutoManaged: true } && matchGroup.Rules.Count == 1)
             {
                 var ruleId = matchGroup.Rules[0].Id;
@@ -601,7 +731,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         ResetTaxPickerToDefault();
         // Set IsAddingProduct last so all visibility/state properties compute correctly
         IsAddingProduct = true;
-        SetStatus("Fill in the details for the new product and press Save.", InfoBarSeverity.Informational);
+        SetStatus(LocalizationHelper.GetString("Products_Mode_Adding"), InfoBarSeverity.Informational);
         RaiseSelectedProductProperties();
         RaiseEditorStateProperties();
         TracePageState("AddButton:end");
@@ -624,25 +754,150 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             var file = await picker.PickSingleFileAsync();
             if (file is null) return;
 
-            SetStatus("Importing CSV ...", InfoBarSeverity.Informational);
+            DismissImportFailureTip();
+            SetStatus(LocalizationHelper.GetString("Products_Status_Importing"), InfoBarSeverity.Informational);
+            BeginImportOperation();
 
             var service = new ProductImportService(LoginRuntime.ConnectionFactory);
-            
-            var result = await Task.Run(() => 
-                service.ImportFromCsv(file.Path, null, System.Threading.CancellationToken.None)
-            );
+            var importDirectory = System.IO.Path.GetDirectoryName(System.IO.Path.GetFullPath(file.Path)) ?? string.Empty;
+            var importFileStem = System.IO.Path.GetFileNameWithoutExtension(file.Path);
+            var importImageDirectories = Directory.Exists(importDirectory)
+                ? Directory.GetDirectories(importDirectory, "*_images", SearchOption.TopDirectoryOnly)
+                : Array.Empty<string>();
+            var progress = new Progress<ProductImportProgress>(progressUpdate =>
+            {
+                if (DispatcherQueue.HasThreadAccess)
+                {
+                    UpdateImportProgress(progressUpdate);
+                    return;
+                }
 
+                _ = DispatcherQueue.TryEnqueue(() => UpdateImportProgress(progressUpdate));
+            });
+            var cancellationToken = _importCancellationSource?.Token ?? CancellationToken.None;
+
+            var result = await Task.Run<ImportResult?>(() =>
+            {
+                try
+                {
+                    var imageService = new ProductImageService();
+                    var importedThumbnailCache = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+                    string? ResolveImportedSourcePath(string imagePath)
+                    {
+                        if (string.IsNullOrWhiteSpace(imagePath))
+                        {
+                            return null;
+                        }
+
+                        var fileName = System.IO.Path.GetFileName(imagePath);
+                        var declaredFolderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(imagePath)?.TrimEnd(System.IO.Path.DirectorySeparatorChar, System.IO.Path.AltDirectorySeparatorChar));
+                        var candidates = new List<string>();
+
+                        if (System.IO.Path.IsPathRooted(imagePath))
+                        {
+                            candidates.Add(System.IO.Path.GetFullPath(imagePath));
+                        }
+                        else
+                        {
+                            candidates.Add(System.IO.Path.GetFullPath(System.IO.Path.Combine(importDirectory, imagePath)));
+                            candidates.Add(System.IO.Path.GetFullPath(System.IO.Path.Combine(importDirectory, fileName)));
+                            candidates.Add(System.IO.Path.GetFullPath(System.IO.Path.Combine(importDirectory, $"{importFileStem}_images", fileName)));
+
+                            if (!string.IsNullOrWhiteSpace(declaredFolderName))
+                            {
+                                candidates.Add(System.IO.Path.GetFullPath(System.IO.Path.Combine(importDirectory, declaredFolderName, fileName)));
+                            }
+
+                            foreach (var imageDirectory in importImageDirectories)
+                            {
+                                candidates.Add(System.IO.Path.GetFullPath(System.IO.Path.Combine(imageDirectory, fileName)));
+                            }
+                        }
+
+                        return candidates
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .FirstOrDefault(System.IO.File.Exists);
+                    }
+
+                    string? ResolveImportedThumbnail(ProductCsvRow row)
+                    {
+                        if (string.IsNullOrWhiteSpace(row.ImagePath))
+                        {
+                            return null;
+                        }
+
+                        var sourcePath = ResolveImportedSourcePath(row.ImagePath);
+                        if (string.IsNullOrWhiteSpace(sourcePath))
+                        {
+                            return null;
+                        }
+
+                        if (importedThumbnailCache.TryGetValue(sourcePath, out var cachedThumbnailPath))
+                        {
+                            return cachedThumbnailPath;
+                        }
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var generatedThumbnailPath = imageService.GenerateThumbnailAsync(sourcePath).GetAwaiter().GetResult();
+                        importedThumbnailCache[sourcePath] = generatedThumbnailPath;
+                        return generatedThumbnailPath;
+                    }
+
+                    return service.ImportFromCsv(
+                        file.Path,
+                        progress,
+                        cancellationToken,
+                        ResolveImportedThumbnail);
+                }
+                catch (OperationCanceledException)
+                {
+                    return null;
+                }
+            });
+
+            if (result is null)
+            {
+                EndImportOperation();
+                SetStatus(LocalizationHelper.GetString("Products_Status_ImportCanceled"), InfoBarSeverity.Informational);
+                return;
+            }
+
+            EndImportOperation();
             LoginRuntime.RaiseProductsUpdated();
             ReloadProducts();
 
-            SetStatus($"Import complete: {result.CreatedCount} created, {result.UpdatedCount} updated, {result.SkippedCount} skipped.", 
+            SetStatus(
+                LocalizationHelper.Format(
+                    "Products_Status_ImportComplete",
+                    result.CreatedCount.ToString("N0", CultureInfo.CurrentCulture),
+                    result.UpdatedCount.ToString("N0", CultureInfo.CurrentCulture),
+                    result.SkippedCount.ToString("N0", CultureInfo.CurrentCulture)),
                 result.SkippedCount > 0 ? InfoBarSeverity.Warning : InfoBarSeverity.Success);
+
+            if (result.HasErrors)
+            {
+                ShowImportWarningsTip(result.Errors);
+            }
         }
         catch (Exception ex)
         {
+            EndImportOperation();
             LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.ImportDataButton_Click");
-            SetStatus($"Import failed: {ex.Message}", InfoBarSeverity.Error);
+            ShowImportFailureTip(ex.Message);
+            SetStatus(LocalizationHelper.GetString("Products_Status_ImportFailed"), InfoBarSeverity.Error);
         }
+    }
+
+    private void CancelImportButton_Click(object sender, RoutedEventArgs e)
+    {
+        RequestImportCancellation();
+    }
+
+    private void ImportFailureTipSkipButton_Click(object sender, RoutedEventArgs e)
+    {
+        DismissImportFailureTip();
     }
 
     private async void ExportDataButton_Click(object sender, RoutedEventArgs e)
@@ -662,14 +917,15 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             var file = await picker.PickSaveFileAsync();
             if (file is null) return;
 
-            SetStatus("Exporting CSV ...", InfoBarSeverity.Informational);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Exporting"), InfoBarSeverity.Informational);
 
-            var products = LoginRuntime.Products.GetAll();
+            var products = ProductsModule.GetAll();
             var service = new ProductExportService();
+            var imageService = new ProductImageService();
 
-            await Task.Run(() => service.ExportToCsv(file.Path, products));
+            await Task.Run(() => service.ExportToCsv(file.Path, products, p => imageService.ResolveThumbnailPath(p.ThumbnailPath)));
 
-            SetStatus("Export complete.", InfoBarSeverity.Success);
+            SetStatus(LocalizationHelper.GetString("Products_Status_ExportComplete"), InfoBarSeverity.Success);
         }
         catch (Exception ex)
         {
@@ -678,11 +934,11 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         }
     }
 
-    private void SelectedProductActionButton_Click(object sender, RoutedEventArgs e)
+    private async void SelectedProductActionButton_Click(object sender, RoutedEventArgs e)
     {
         if (IsAddingProduct)
         {
-            SaveNewProduct();
+            await SaveNewProduct();
             return;
         }
 
@@ -693,11 +949,47 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
         if (IsEditingSelectedProduct)
         {
-            SaveSelectedProduct();
+            await SaveSelectedProduct();
             return;
         }
 
         BeginEdit();
+    }
+
+    private async void ChangePictureButton_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var picker = new FileOpenPicker();
+            picker.ViewMode = PickerViewMode.Thumbnail;
+            picker.SuggestedStartLocation = PickerLocationId.PicturesLibrary;
+            picker.FileTypeFilter.Add(".jpg");
+            picker.FileTypeFilter.Add(".jpeg");
+            picker.FileTypeFilter.Add(".png");
+
+            var hwnd = WindowNative.GetWindowHandle(MainWindow.Current);
+            InitializeWithWindow.Initialize(picker, hwnd);
+
+            var file = await picker.PickSingleFileAsync();
+            if (file != null)
+            {
+                Draft.PendingSourceImagePath = file.Path;
+                Draft.PendingRemoveImage = false;
+                RaiseEditorStateProperties();
+            }
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.ChangePictureButton_Click");
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_ImagePick"), InfoBarSeverity.Error);
+        }
+    }
+
+    private void RemovePictureButton_Click(object sender, RoutedEventArgs e)
+    {
+        Draft.PendingSourceImagePath = null;
+        Draft.PendingRemoveImage = true;
+        RaiseEditorStateProperties();
     }
 
     private void CancelEditButton_Click(object sender, RoutedEventArgs e)
@@ -719,7 +1011,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         catch (Exception ex)
         {
             LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.TransferStockButton_Click");
-            SetStatus("Unable to open the transfer dialog right now.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_TransferOpen"), InfoBarSeverity.Error);
         }
     }
 
@@ -737,17 +1029,17 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             product.QuantityWarehouse -= transferAmount;
             product.QuantityStore += transferAmount;
 
-            LoginRuntime.Products.Update(product);
+            ProductsModule.Update(product);
             LoginRuntime.RaiseProductsUpdated();
 
             ReloadProducts();
 
-            SetStatus($"Transferred {transferAmount} items to Store.", InfoBarSeverity.Success);
+            SetStatus(LocalizationHelper.Format("Products_Status_Transferred", transferAmount), InfoBarSeverity.Success);
         }
         catch (Exception ex)
         {
             LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.TransferStockDialog_PrimaryButtonClick");
-            SetStatus("Unable to transfer stock right now.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_Transfer"), InfoBarSeverity.Error);
         }
     }
 
@@ -761,7 +1053,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         Draft.LoadFrom(SelectedProduct.Product);
         SelectMatchingTaxPickerItem();
         IsEditingSelectedProduct = true;
-        SetStatus("Editing mode enabled. Update the fields, then press Save or Cancel.", InfoBarSeverity.Informational);
+        SetStatus(LocalizationHelper.GetString("Products_Status_EditMode"), InfoBarSeverity.Informational);
         RaiseEditorStateProperties();
     }
 
@@ -806,12 +1098,12 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         Draft.LoadFrom(SelectedProduct.Product);
         SelectMatchingTaxPickerItem();
         IsEditingSelectedProduct = false;
-        SetStatus("Changes discarded.", InfoBarSeverity.Informational);
+        SetStatus(LocalizationHelper.GetString("Products_Status_Discarded"), InfoBarSeverity.Informational);
         RaiseEditorStateProperties();
         TracePageState("CancelEdit:edit-end");
     }
 
-    private void SaveSelectedProduct()
+    private async Task SaveSelectedProduct()
     {
         if (SelectedProduct is null)
         {
@@ -820,7 +1112,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
         if (string.IsNullOrWhiteSpace(Draft.Name))
         {
-            SetStatus("Product name is required.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_NameRequired"), InfoBarSeverity.Error);
             return;
         }
 
@@ -831,63 +1123,85 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         {
             if (!Draft.TryGetPrice(out price))
             {
-                SetStatus("Enter a valid price.", InfoBarSeverity.Error);
+                SetStatus(LocalizationHelper.GetString("Products_Status_Error_InvalidPrice"), InfoBarSeverity.Error);
                 return;
             }
 
             if (price < 0)
             {
-                SetStatus("Price must be zero or greater.", InfoBarSeverity.Error);
+                SetStatus(LocalizationHelper.GetString("Products_Status_Error_PriceNegative"), InfoBarSeverity.Error);
                 return;
             }
 
             if (!Draft.TryGetCostPrice(out costPrice))
             {
-                SetStatus("Enter a valid cost price.", InfoBarSeverity.Error);
+                SetStatus(LocalizationHelper.GetString("Products_Status_Error_InvalidCostPrice"), InfoBarSeverity.Error);
                 return;
             }
 
             if (costPrice < 0)
             {
-                SetStatus("Cost price must be zero or greater.", InfoBarSeverity.Error);
+                SetStatus(LocalizationHelper.GetString("Products_Status_Error_CostPriceNegative"), InfoBarSeverity.Error);
                 return;
             }
         }
 
         if (!Draft.TryGetStoreQuantity(out var storeQuantity))
         {
-            SetStatus("Enter a valid store quantity.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_InvalidStoreQty"), InfoBarSeverity.Error);
             return;
         }
 
         if (!Draft.TryGetWarehouseQuantity(out var warehouseQuantity))
         {
-            SetStatus("Enter a valid warehouse quantity.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_InvalidWarehouseQty"), InfoBarSeverity.Error);
             return;
         }
 
         if (storeQuantity < 0 || warehouseQuantity < 0)
         {
-            SetStatus("Inventory quantities must be zero or greater.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_QtyNegative"), InfoBarSeverity.Error);
             return;
         }
 
         if (!Draft.TryGetStoreThreshold(out var storeThreshold))
         {
-            SetStatus("Enter a valid store threshold.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_InvalidStoreThreshold"), InfoBarSeverity.Error);
             return;
         }
 
         if (!Draft.TryGetWarehouseThreshold(out var warehouseThreshold))
         {
-            SetStatus("Enter a valid warehouse threshold.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_InvalidWarehouseThreshold"), InfoBarSeverity.Error);
             return;
         }
 
         if (storeThreshold < 0 || warehouseThreshold < 0)
         {
-            SetStatus("Inventory thresholds must be zero or greater.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_Error_ThresholdNegative"), InfoBarSeverity.Error);
             return;
+        }
+
+        string? finalThumbnailPath = SelectedProduct.Product.ThumbnailPath;
+
+        try
+        {
+            if (Draft.PendingRemoveImage)
+            {
+                var imageService = new ProductImageService();
+                imageService.TryCleanupThumbnail(finalThumbnailPath);
+                finalThumbnailPath = null;
+            }
+            else if (!string.IsNullOrEmpty(Draft.PendingSourceImagePath))
+            {
+                var imageService = new ProductImageService();
+                imageService.TryCleanupThumbnail(finalThumbnailPath);
+                finalThumbnailPath = await imageService.GenerateThumbnailAsync(Draft.PendingSourceImagePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.SaveSelectedProduct.ImageProcessing");
         }
 
         var product = new Product
@@ -906,15 +1220,16 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             MinThresholdStore = storeThreshold,
             MinThresholdWarehouse = warehouseThreshold,
             PurchasedAt = Draft.PurchasedAtDate.UtcDateTime,
-            LastSaleAt = SelectedProduct.Product.LastSaleAt
+            LastSaleAt = SelectedProduct.Product.LastSaleAt,
+            ThumbnailPath = finalThumbnailPath
         };
 
-        LoginRuntime.Products.Update(product);
+        ProductsModule.Update(product);
         LoginRuntime.RaiseProductsUpdated();
 
         IsEditingSelectedProduct = false;
         ReloadProducts();
-        SetStatus("Product updated.", InfoBarSeverity.Success);
+        SetStatus(LocalizationHelper.GetString("Products_Status_Updated"), InfoBarSeverity.Success);
         SearchTextBox.Focus(FocusState.Programmatic);
     }
 
@@ -922,24 +1237,30 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     {
         if (SelectedProduct is null || IsEditingSelectedProduct || IsAddingProduct) return;
         var id = SelectedProduct.Id;
-        LoginRuntime.Products.Delete(id);
+        var thumbnailPath = SelectedProduct.Product.ThumbnailPath;
+        ProductsModule.Delete(id);
+
+        if (!string.IsNullOrEmpty(thumbnailPath))
+        {
+            new ProductImageService().TryCleanupThumbnail(thumbnailPath);
+        }
         LoginRuntime.RaiseProductsUpdated();
-        SetStatus("Product deleted.", InfoBarSeverity.Success);
+        SetStatus(LocalizationHelper.GetString("Products_Status_Deleted"), InfoBarSeverity.Success);
         ReloadProducts();
     }
 
-    private void SaveNewProduct()
+    private async Task SaveNewProduct()
     {
         TracePageState("SaveNewProduct:start");
         if (string.IsNullOrWhiteSpace(Draft.Name))
         {
-            SetStatus("Product name is required.", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_NameRequired"), InfoBarSeverity.Error);
             return;
         }
 
         if (!Draft.TryGetPrice(out var price) || price < 0)
         {
-            SetStatus("Enter a valid sell price (0 or more).", InfoBarSeverity.Error);
+            SetStatus(LocalizationHelper.GetString("Products_Status_InvalidPrice"), InfoBarSeverity.Error);
             return;
         }
 
@@ -948,6 +1269,21 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         Draft.TryGetWarehouseQuantity(out var warehouseQty);
         Draft.TryGetStoreThreshold(out var storeThreshold);
         Draft.TryGetWarehouseThreshold(out var warehouseThreshold);
+
+        string? finalThumbnailPath = null;
+
+        try
+        {
+            if (!string.IsNullOrEmpty(Draft.PendingSourceImagePath))
+            {
+                var imageService = new ProductImageService();
+                finalThumbnailPath = await imageService.GenerateThumbnailAsync(Draft.PendingSourceImagePath);
+            }
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "WinUiLogin.ProductsPage.SaveNewProduct.ImageProcessing");
+        }
 
         var product = new Product
         {
@@ -964,12 +1300,13 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             MinThresholdStore = storeThreshold > 0 ? storeThreshold : 5,
             MinThresholdWarehouse = warehouseThreshold > 0 ? warehouseThreshold : 10,
             PurchasedAt = DateTime.UtcNow,
+            ThumbnailPath = finalThumbnailPath,
             CashierName = LoginRuntime.Auth.CurrentUser?.DisplayName
                           ?? LoginRuntime.Auth.CurrentUser?.Username
                           ?? "Cashier"
         };
 
-        LoginRuntime.Products.Create(product);
+        ProductsModule.Create(product);
         LoginRuntime.RaiseProductsUpdated();
         IsAddingProduct = false;
         Draft.Reset();
@@ -983,7 +1320,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             ProductsListView.SelectedItem = SelectedProduct;
         }
 
-        SetStatus($"Product \u2018{product.Name}\u2019 added to catalog.", InfoBarSeverity.Success);
+        SetStatus(LocalizationHelper.Format("Products_Status_AddedFormat", product.Name), InfoBarSeverity.Success);
         RaiseEditorStateProperties();
         TracePageState("SaveNewProduct:end");
     }
@@ -1009,7 +1346,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
             var rule = SelectedTaxPickerItem.Rule!;
             try
             {
-                return LoginRuntime.TaxGroups.GetOrCreateAutoManagedProfile(rule.Id, rule.Name);
+                return TaxGroupsModule.GetOrCreateAutoManagedProfile(rule.Id, rule.Name);
             }
             catch (Exception ex)
             {
@@ -1067,6 +1404,130 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedProductInventoryAlertSeverity));
         OnPropertyChanged(nameof(SelectedProductInventoryAlertVisibility));
         OnPropertyChanged(nameof(SelectedProductDraftTaxRateText));
+        OnPropertyChanged(nameof(ProductImageContainerVisibility));
+        OnPropertyChanged(nameof(ProductImageEditorVisibility));
+        OnPropertyChanged(nameof(ProductImageActionText));
+    }
+
+    private void BeginImportOperation()
+    {
+        _importCancellationSource?.Dispose();
+        _importCancellationSource = new CancellationTokenSource();
+        _isImportCancelRequested = false;
+        _importTotalRows = 0;
+        _importProcessedRows = 0;
+        _importCreatedCount = 0;
+        _importUpdatedCount = 0;
+        _importSkippedCount = 0;
+        _importProgressPercent = 0;
+        IsImportInProgress = true;
+        RaiseImportProgressProperties();
+    }
+
+    private void UpdateImportProgress(ProductImportProgress progress)
+    {
+        _importTotalRows = progress.TotalRows;
+        _importProcessedRows = progress.ProcessedRows;
+        _importCreatedCount = progress.CreatedCount;
+        _importUpdatedCount = progress.UpdatedCount;
+        _importSkippedCount = progress.SkippedCount;
+        _importProgressPercent = progress.ProgressPercent;
+        RaiseImportProgressProperties();
+    }
+
+    private void RequestImportCancellation()
+    {
+        if (!IsImportInProgress || _isImportCancelRequested)
+        {
+            return;
+        }
+
+        _isImportCancelRequested = true;
+        _importCancellationSource?.Cancel();
+        RaiseImportStateProperties();
+        RaiseImportProgressProperties();
+    }
+
+    private void EndImportOperation()
+    {
+        _importCancellationSource?.Dispose();
+        _importCancellationSource = null;
+        _isImportCancelRequested = false;
+        _importTotalRows = 0;
+        _importProcessedRows = 0;
+        _importCreatedCount = 0;
+        _importUpdatedCount = 0;
+        _importSkippedCount = 0;
+        _importProgressPercent = 0;
+        IsImportInProgress = false;
+        RaiseImportProgressProperties();
+    }
+
+    private void RaiseImportStateProperties()
+    {
+        OnPropertyChanged(nameof(ImportProgressVisibility));
+        OnPropertyChanged(nameof(IsImportProgressIndeterminate));
+        OnPropertyChanged(nameof(ImportProgressTitle));
+        OnPropertyChanged(nameof(ImportProgressPercent));
+        OnPropertyChanged(nameof(ImportProgressPercentText));
+        OnPropertyChanged(nameof(CanCancelImport));
+        OnPropertyChanged(nameof(ImportCancelButtonText));
+        OnPropertyChanged(nameof(CanUseProductDetails));
+    }
+
+    private void RaiseImportProgressProperties()
+    {
+        OnPropertyChanged(nameof(ImportProgressTitle));
+        OnPropertyChanged(nameof(ImportProgressDetail));
+        OnPropertyChanged(nameof(ImportProgressPercent));
+        OnPropertyChanged(nameof(ImportProgressPercentText));
+        OnPropertyChanged(nameof(IsImportProgressIndeterminate));
+        OnPropertyChanged(nameof(CanCancelImport));
+    }
+
+    private void ShowImportFailureTip(string errorMessage)
+    {
+        ImportFailureTipTitle = LocalizationHelper.GetString("Products_ImportFailureTip_Title");
+        ImportFailureTipMessage = string.IsNullOrWhiteSpace(errorMessage)
+            ? LocalizationHelper.GetString("Products_ImportFailureTip_DefaultMessage")
+            : LocalizationHelper.Format("Products_ImportFailureTip_Message", errorMessage);
+        SetImportFailureTipOpen(true);
+    }
+
+    private void ShowImportWarningsTip(IEnumerable<string> warnings)
+    {
+        var messages = warnings
+            .Where(message => !string.IsNullOrWhiteSpace(message))
+            .Take(5)
+            .ToList();
+
+        if (messages.Count == 0)
+        {
+            return;
+        }
+
+        ImportFailureTipTitle = LocalizationHelper.GetString("Products_ImportWarningTip_Title");
+        ImportFailureTipMessage = LocalizationHelper.GetString("Products_ImportWarningTip_Message")
+            + Environment.NewLine
+            + Environment.NewLine
+            + string.Join(Environment.NewLine, messages);
+        SetImportFailureTipOpen(true);
+    }
+
+    private void DismissImportFailureTip()
+    {
+        SetImportFailureTipOpen(false);
+    }
+
+    private void SetImportFailureTipOpen(bool isOpen)
+    {
+        if (_isImportFailureTipOpen == isOpen)
+        {
+            return;
+        }
+
+        _isImportFailureTipOpen = isOpen;
+        OnPropertyChanged(nameof(ImportFailureTipVisibility));
     }
 
     private void RaiseEditorStateProperties()
@@ -1085,6 +1546,9 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedProductViewVisibility));
         OnPropertyChanged(nameof(SelectedProductEditVisibility));
         OnPropertyChanged(nameof(AddProductVisibility));
+        OnPropertyChanged(nameof(ProductImageContainerVisibility));
+        OnPropertyChanged(nameof(ProductImageEditorVisibility));
+        OnPropertyChanged(nameof(ProductImageActionText));
         OnPropertyChanged(nameof(NoSelectionVisibility));
         OnPropertyChanged(nameof(DeleteButtonVisibility));
         OnPropertyChanged(nameof(RightPanelTitleText));
@@ -1107,10 +1571,23 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
         OnPropertyChanged(nameof(SelectedProductDraftTaxRateText));
     }
 
+    private DispatcherTimer? _statusTimer;
     private void SetStatus(string message, InfoBarSeverity severity)
     {
         StatusMessage = message;
         StatusSeverity = severity;
+
+        _statusTimer?.Stop();
+        if (!string.IsNullOrWhiteSpace(message) && severity != InfoBarSeverity.Error)
+        {
+            _statusTimer ??= new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+            _statusTimer.Tick += (s, e) => 
+            {
+                StatusMessage = string.Empty;
+                _statusTimer.Stop();
+            };
+            _statusTimer.Start();
+        }
     }
 
     private bool HasPendingChanges()
@@ -1138,6 +1615,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
                || !string.Equals(Normalize(Draft.Barcode), Normalize(product.Barcode), StringComparison.Ordinal)
                || !string.Equals(Normalize(Draft.Sku), Normalize(product.Sku), StringComparison.Ordinal)
                || !string.Equals(Normalize(Draft.Unit), Normalize(product.Unit), StringComparison.Ordinal)
+               || HasPendingImageChanges(product)
                || ResolveTaxGroupId() != (product.TaxGroupId ?? 1)
                || (Draft.TryGetStoreQuantity(out var storeQuantity) && storeQuantity != product.QuantityStore)
                || (Draft.TryGetWarehouseQuantity(out var warehouseQuantity) && warehouseQuantity != product.QuantityWarehouse)
@@ -1173,8 +1651,23 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
                && warehouseQty >= 0
                && Draft.TryGetStoreThreshold(out var storeThresholdOnly)
                && storeThresholdOnly >= 0
-               && Draft.TryGetWarehouseThreshold(out var warehouseThresholdOnly)
-               && warehouseThresholdOnly >= 0;
+                   && Draft.TryGetWarehouseThreshold(out var warehouseThresholdOnly)
+                   && warehouseThresholdOnly >= 0;
+    }
+
+    private bool HasPendingImageChanges(Product product)
+    {
+        if (Draft.PendingRemoveImage)
+        {
+            return !string.IsNullOrWhiteSpace(product.ThumbnailPath);
+        }
+
+        if (!string.IsNullOrWhiteSpace(Draft.PendingSourceImagePath))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     private string GetTaxCategoryName(long taxCategoryId)
@@ -1218,21 +1711,29 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
     {
         var messages = new List<string>();
 
-        if (product.HasShelfLowAlert)
+        if (product.IsShelfOutOfStock)
         {
-            messages.Add($"Shelf low: {product.QuantityStore:N0} on the floor, threshold {product.MinThresholdStore:N0}.");
+            messages.Add(LocalizationHelper.Format("Products_Inventory_ShelfOut_Format", product.QuantityStore.ToString("N0"), product.MinThresholdStore.ToString("N0")));
+        }
+        else if (product.HasShelfLowAlert)
+        {
+            messages.Add(LocalizationHelper.Format("Products_Inventory_ShelfLow_Format", product.QuantityStore.ToString("N0"), product.MinThresholdStore.ToString("N0")));
         }
 
-        if (product.HasWarehouseLowAlert)
+        if (product.IsWarehouseOutOfStock)
         {
-            messages.Add($"Warehouse low: {product.QuantityWarehouse:N0} in back stock, threshold {product.MinThresholdWarehouse:N0}.");
+            messages.Add(LocalizationHelper.Format("Products_Inventory_WarehouseOut_Format", product.QuantityWarehouse.ToString("N0"), product.MinThresholdWarehouse.ToString("N0")));
+        }
+        else if (product.HasWarehouseLowAlert)
+        {
+            messages.Add(LocalizationHelper.Format("Products_Inventory_WarehouseLow_Format", product.QuantityWarehouse.ToString("N0"), product.MinThresholdWarehouse.ToString("N0")));
         }
 
         if (product.HasLegacyStockAlert)
         {
             var purchasedText = FormatDate(product.PurchasedAt);
             var lastSaleText = FormatDate(product.LastSaleAt);
-            messages.Add($"Legacy stock: purchased {purchasedText}, last sale {lastSaleText}.");
+            messages.Add(LocalizationHelper.Format("Products_Inventory_LegacyStock_Format", purchasedText, lastSaleText));
         }
 
         return string.Join(" ", messages);
@@ -1240,6 +1741,8 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
     private string BuildCatalogInventoryAlertText()
     {
+        var shelfOut = Products.Count(product => product.Product.IsShelfOutOfStock);
+        var warehouseOut = Products.Count(product => product.Product.IsWarehouseOutOfStock);
         var shelfLow = Products.Count(product => product.Product.HasShelfLowAlert);
         var warehouseLow = Products.Count(product => product.Product.HasWarehouseLowAlert);
         var legacy = Products.Count(product => product.Product.HasLegacyStockAlert);
@@ -1247,32 +1750,44 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
         if (legacy > 0)
         {
-            messages.Add($"{legacy} legacy {ItemLabel(legacy)} need review.");
+            messages.Add(LocalizationHelper.Format("Products_Inventory_LegacyNeedReview", legacy, ItemLabel(legacy)));
+        }
+
+        if (shelfOut > 0)
+        {
+            messages.Add(LocalizationHelper.Format("Products_Inventory_ShelfOutOfStock", shelfOut, ItemLabel(shelfOut)));
+        }
+
+        if (warehouseOut > 0)
+        {
+            messages.Add(LocalizationHelper.Format("Products_Inventory_WarehouseOutOfStock", warehouseOut, ItemLabel(warehouseOut)));
         }
 
         if (shelfLow > 0)
         {
-            messages.Add($"{shelfLow} shelf {ItemLabel(shelfLow)} below threshold.");
+            messages.Add(LocalizationHelper.Format("Products_Inventory_ShelfBelowThreshold", shelfLow, ItemLabel(shelfLow)));
         }
 
         if (warehouseLow > 0)
         {
-            messages.Add($"{warehouseLow} warehouse {ItemLabel(warehouseLow)} below threshold.");
+            messages.Add(LocalizationHelper.Format("Products_Inventory_WarehouseBelowThreshold", warehouseLow, ItemLabel(warehouseLow)));
         }
 
         return messages.Count == 0
-            ? "Inventory is healthy across the catalog."
+            ? LocalizationHelper.GetString("Products_Inventory_HealthyAcrossCatalog")
             : string.Join(" ", messages);
     }
 
     private static string ItemLabel(int count)
     {
-        return count == 1 ? "product" : "products";
+        return count == 1 
+            ? LocalizationHelper.GetString("Products_Inventory_Product") 
+            : LocalizationHelper.GetString("Products_Inventory_Products");
     }
 
     private static InfoBarSeverity GetInventoryAlertSeverity(Product product)
     {
-        if (product.HasLegacyStockAlert)
+        if (product.HasLegacyStockAlert || product.IsShelfOutOfStock || product.IsWarehouseOutOfStock)
         {
             return InfoBarSeverity.Error;
         }
@@ -1287,7 +1802,7 @@ public sealed partial class ProductsPage : Page, INotifyPropertyChanged
 
     private static bool HasInventoryAlert(Product product)
     {
-        return product.HasShelfLowAlert || product.HasWarehouseLowAlert || product.HasLegacyStockAlert;
+        return product.IsShelfOutOfStock || product.IsWarehouseOutOfStock || product.HasShelfLowAlert || product.HasWarehouseLowAlert || product.HasLegacyStockAlert;
     }
 
     private static bool SameCalendarDay(DateTimeOffset draftDate, DateTimeOffset productDate)
@@ -1415,6 +1930,9 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
     private DateTimeOffset _initialPurchasedAtDate = DateTimeOffset.Now;
     private long _taxCategoryId = 1;
     private long _taxGroupId = 1;
+    private string? _pendingSourceImagePath;
+    private bool _pendingRemoveImage;
+    private string? _savedThumbnailPath;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -1488,6 +2006,70 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
         get => _purchasedAtDate;
         set => SetProperty(ref _purchasedAtDate, value);
     }
+    
+    public string? PendingSourceImagePath
+    {
+        get => _pendingSourceImagePath;
+        set
+        {
+            if (SetProperty(ref _pendingSourceImagePath, value))
+            {
+                OnPropertyChanged(nameof(PreviewImageSource));
+                OnPropertyChanged(nameof(HasImage));
+                OnPropertyChanged(nameof(HasNoImage));
+            }
+        }
+    }
+
+    public bool PendingRemoveImage
+    {
+        get => _pendingRemoveImage;
+        set
+        {
+            if (SetProperty(ref _pendingRemoveImage, value))
+            {
+                OnPropertyChanged(nameof(PreviewImageSource));
+                OnPropertyChanged(nameof(HasImage));
+                OnPropertyChanged(nameof(HasNoImage));
+            }
+        }
+    }
+
+    public Microsoft.UI.Xaml.Media.ImageSource? PreviewImageSource
+    {
+        get
+        {
+            if (PendingRemoveImage) return null;
+            if (!string.IsNullOrEmpty(PendingSourceImagePath)) return CreateThumbnailImageSource(PendingSourceImagePath, 240);
+            if (string.IsNullOrEmpty(_savedThumbnailPath)) return null;
+
+            var service = new ProductImageService();
+            return CreateThumbnailImageSource(service.ResolveThumbnailPath(_savedThumbnailPath), 240);
+        }
+    }
+
+    private static Microsoft.UI.Xaml.Media.ImageSource? CreateThumbnailImageSource(string? path, int decodePixelWidth)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return null;
+        try
+        {
+            var image = new Microsoft.UI.Xaml.Media.Imaging.BitmapImage
+            {
+                DecodePixelWidth = Math.Max(1, decodePixelWidth)
+            };
+            image.UriSource = new Uri(path, UriKind.Absolute);
+            return image;
+        }
+        catch { return null; }
+    }
+
+    public bool HasImage => PreviewImageSource != null;
+    public bool HasNoImage => !HasImage;
+
+    private void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
 
     public DateTimeOffset InitialPurchasedAtDate => _initialPurchasedAtDate;
 
@@ -1531,6 +2113,12 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
         TraceDraftState("LoadFrom:after PurchasedAtDate");
         TaxCategoryId = product.TaxCategoryId;
         TaxGroupId = product.TaxGroupId ?? 1;
+        _savedThumbnailPath = product.ThumbnailPath;
+        PendingSourceImagePath = null;
+        PendingRemoveImage = false;
+        OnPropertyChanged(nameof(PreviewImageSource));
+        OnPropertyChanged(nameof(HasImage));
+        OnPropertyChanged(nameof(HasNoImage));
         TraceDraftState("LoadFrom:end");
     }
 
@@ -1562,6 +2150,12 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
         TraceDraftState("Reset:after PurchasedAtDate");
         TaxCategoryId = 1;
         TaxGroupId = 1;
+        _savedThumbnailPath = null;
+        PendingSourceImagePath = null;
+        PendingRemoveImage = false;
+        OnPropertyChanged(nameof(PreviewImageSource));
+        OnPropertyChanged(nameof(HasImage));
+        OnPropertyChanged(nameof(HasNoImage));
         TraceDraftState("Reset:end");
     }
 
@@ -1697,5 +2291,3 @@ public sealed partial class ProductEditDraft : INotifyPropertyChanged
         return true;
     }
 }
-
-

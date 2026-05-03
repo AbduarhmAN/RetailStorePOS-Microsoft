@@ -22,6 +22,7 @@ internal static class StartupTrace
                 }
 
                 File.AppendAllText(LogPath, line, Encoding.UTF8);
+                System.Diagnostics.Debug.Write(line);
             }
         }
         catch

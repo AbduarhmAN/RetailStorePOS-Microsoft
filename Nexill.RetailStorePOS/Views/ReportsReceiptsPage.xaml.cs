@@ -1,8 +1,7 @@
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using RetailStorePOS.WinUiLogin.ViewModels;
-using System;
 using RetailStorePOS.WinUiLogin.Common;
+using RetailStorePOS.WinUiLogin.ViewModels;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
@@ -31,7 +30,7 @@ public sealed partial class ReportsReceiptsPage : Page
     private async void ViewModel_XReportGenerated(object? sender, string pdfPath)
     {
         _latestXReportPdfPath = pdfPath;
-        XReportStatusText.Text = $"PDF saved to: {pdfPath}";
+        XReportStatusText.Text = string.Format(LocalizationHelper.GetString("ReportsReceipts_XReport_StatusFormat"), pdfPath);
 
         try
         {
@@ -49,10 +48,11 @@ public sealed partial class ReportsReceiptsPage : Page
         try
         {
             var sales = await Task.Run(() => LoginRuntime.Sales.GetSalesByDate(DateTime.Today));
-            var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
+            var storeName = LoginRuntime.Settings.GetStoreName() ?? LocalizationHelper.GetString("ReportsReceipts_StoreFallback");
+            var preferredPrinterName = LoginRuntime.Settings.GetPreferredPrinterName();
 
             using var printHelper = new XReportPrintHelper();
-            printHelper.PrintXReport(sales, DateTime.Today, storeName);
+            printHelper.PrintXReport(sales, DateTime.Today, storeName, preferredPrinterName);
         }
         catch (Exception ex)
         {
@@ -71,5 +71,13 @@ public sealed partial class ReportsReceiptsPage : Page
     private void XReportDialog_CloseClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
         _latestXReportPdfPath = null;
+    }
+
+    private void ReprintButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is RetailStorePOS.Data.Modules.Sales.Sale sale)
+        {
+            ViewModel.ReprintReceiptCommand.Execute(sale);
+        }
     }
 }

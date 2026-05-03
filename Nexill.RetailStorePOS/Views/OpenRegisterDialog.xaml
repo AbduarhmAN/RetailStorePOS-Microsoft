@@ -1,0 +1,64 @@
+<ContentDialog
+    x:Class="RetailStorePOS.WinUiLogin.Views.OpenRegisterDialog"
+    x:Uid="OpenRegisterDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RetailStorePOS.WinUiLogin.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    DefaultButton="Primary"
+    RequestedTheme="Light" CornerRadius="10">
+
+    <ContentDialog.Title>
+        <TextBlock x:Uid="OpenRegisterDialog_Title" Text="Open Cash Register" />
+    </ContentDialog.Title>
+
+    <ContentDialog.PrimaryButtonStyle>
+        <Style TargetType="Button" BasedOn="{StaticResource AccentButtonStyle}">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </ContentDialog.PrimaryButtonStyle>
+
+    <ContentDialog.SecondaryButtonStyle>
+        <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="60"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="CornerRadius" Value="4"/>
+        </Style>
+    </ContentDialog.SecondaryButtonStyle>
+
+    <StackPanel Spacing="16" Width="400" Margin="0,10,0,0">
+        <TextBlock x:Uid="OpenRegisterDialog_IntroText" 
+                   Text="Enter the amount of cash currently in the drawer to start your shift." 
+                   TextWrapping="Wrap" 
+                   Foreground="#666666" 
+                   FontSize="14"/>
+
+        <StackPanel Spacing="4">
+            <TextBlock x:Uid="OpenRegisterDialog_OpeningCashHeader" Text="Opening Cash" FontWeight="SemiBold" FontSize="14"/>
+            <NumberBox x:Name="OpeningCashBox" 
+                       x:Uid="OpenRegisterDialog_OpeningCashBox"
+                       Value="0" 
+                       PlaceholderText="0.00"
+                       Minimum="0"
+                       SmallChange="1"
+                       LargeChange="10"
+                       HorizontalAlignment="Stretch"/>
+        </StackPanel>
+
+        <StackPanel Spacing="4">
+            <TextBlock x:Uid="OpenRegisterDialog_NotesHeader" Text="Notes (Optional)" FontWeight="SemiBold" FontSize="14"/>
+            <TextBox x:Name="NoteBox" 
+                     x:Uid="OpenRegisterDialog_NoteBox"
+                     PlaceholderText="Add a note for this shift..."
+                     AcceptsReturn="True"
+                     Height="100"
+                     MaxLength="500"/>
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>

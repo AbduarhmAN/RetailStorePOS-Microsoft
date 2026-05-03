@@ -23,8 +23,7 @@
                         SelectionChanged="SettingsNavView_SelectionChanged">
             <NavigationView.MenuItems>
                 <NavigationViewItem x:Name="CheckoutNavItem"
-                                    Content="Checkout"
-                                    ToolTipService.ToolTip="Checkout"
+                                    x:Uid="SettingsPage_Nav_Checkout"
                                     Tag="checkout">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Shop" />
@@ -32,8 +31,7 @@
                 </NavigationViewItem>
 
                 <NavigationViewItem x:Name="ProductsNavItem"
-                                    Content="Products"
-                                    ToolTipService.ToolTip="Products"
+                                    x:Uid="SettingsPage_Nav_Products"
                                     Tag="products">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Library" />
@@ -41,8 +39,7 @@
                 </NavigationViewItem>
 
                 <NavigationViewItem x:Name="ReportsNavItem"
-                                    Content="Reports"
-                                    ToolTipService.ToolTip="Reports"
+                                    x:Uid="SettingsPage_Nav_Reports"
                                     Tag="reports">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xE9F9;" />
@@ -50,8 +47,7 @@
                 </NavigationViewItem>
 
                 <NavigationViewItem x:Name="SettingsRootNav"
-                                    Content="Settings"
-                                    ToolTipService.ToolTip="Settings"
+                                    x:Uid="SettingsPage_Nav_Settings"
                                     Tag="settings-root"
                                     SelectsOnInvoked="False">
                     <NavigationViewItem.Icon>
@@ -60,8 +56,7 @@
 
                     <NavigationViewItem.MenuItems>
                         <NavigationViewItem x:Name="StoreNav"
-                                            Content="Store Management"
-                                            ToolTipService.ToolTip="Store Management"
+                                            x:Uid="SettingsPage_Nav_Store"
                                             Tag="store">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="Shop" />
@@ -69,8 +64,7 @@
                         </NavigationViewItem>
 
                         <NavigationViewItem x:Name="TaxNav"
-                                            Content="Tax Configuration"
-                                            ToolTipService.ToolTip="Tax Configuration"
+                                            x:Uid="SettingsPage_Nav_Tax"
                                             Tag="tax">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="Calculator" />
@@ -78,8 +72,7 @@
                         </NavigationViewItem>
 
                         <NavigationViewItem x:Name="UsersNav"
-                                            Content="Users &amp; Roles"
-                                            ToolTipService.ToolTip="Users &amp; Roles"
+                                            x:Uid="SettingsPage_Nav_Users"
                                             Tag="users">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="People" />
@@ -87,8 +80,7 @@
                         </NavigationViewItem>
 
                         <NavigationViewItem x:Name="PrefsNav"
-                                            Content="My Preferences"
-                                            ToolTipService.ToolTip="My Preferences"
+                                            x:Uid="SettingsPage_Nav_Prefs"
                                             Tag="prefs">
                             <NavigationViewItem.Icon>
                                 <SymbolIcon Symbol="ContactInfo" />
@@ -100,8 +92,7 @@
 
             <NavigationView.FooterMenuItems>
                 <NavigationViewItem x:Name="AboutNavItem"
-                                    Content="About"
-                                    ToolTipService.ToolTip="About"
+                                    x:Uid="SettingsPage_Nav_About"
                                     Tag="about">
                     <NavigationViewItem.Icon>
                         <SymbolIcon Symbol="Help" />
@@ -109,8 +100,7 @@
                 </NavigationViewItem>
 
                 <NavigationViewItem x:Name="SignOutNavItem"
-                                    Content="Sign out"
-                                    ToolTipService.ToolTip="Sign out"
+                                    x:Uid="SettingsPage_Nav_SignOut"
                                     Tag="signout">
                     <NavigationViewItem.Icon>
                         <FontIcon Glyph="&#xF3B1;" />

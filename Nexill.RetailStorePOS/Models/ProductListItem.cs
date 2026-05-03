@@ -1,4 +1,4 @@
-using RetailStorePOS.Data.Models;
+using RetailStorePOS.Data.Modules.Products;
 using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.WinUiLogin.Models;
@@ -18,6 +18,7 @@ public sealed class ProductListItem
     public string? Sku => Product.Sku;
     public string? Unit => Product.Unit;
     public decimal Price => Product.Price;
+    public string? ThumbnailPath => Product.ThumbnailPath;
     public string BarcodeText => string.IsNullOrWhiteSpace(Product.Barcode) ? "—" : Product.Barcode!;
     public string SkuText => string.IsNullOrWhiteSpace(Product.Sku) ? "—" : Product.Sku!;
     public string UnitText => string.IsNullOrWhiteSpace(Product.Unit) ? "—" : Product.Unit!;
@@ -25,12 +26,12 @@ public sealed class ProductListItem
     public string StoreQuantityText => ProductPriceFormatter.FormatNumber(Product.QuantityStore);
     public string WarehouseQuantityText => ProductPriceFormatter.FormatNumber(Product.QuantityWarehouse);
     public string TotalQuantityText => ProductPriceFormatter.FormatNumber(Product.TotalQuantity);
-    public string StockSummaryText => $"Store {StoreQuantityText} · Inventory {WarehouseQuantityText} · Total {TotalQuantityText}";
+    public string StockSummaryText => LocalizationHelper.Format("Products_StockSummary_Format", StoreQuantityText, WarehouseQuantityText, TotalQuantityText);
     public string InventoryHealthText => Product.HasLegacyStockAlert
-        ? "Legacy stock alert"
-        : Product.HasShelfLowAlert || Product.HasWarehouseLowAlert
-            ? "Inventory attention needed"
-            : "Inventory healthy";
+        ? LocalizationHelper.GetString("Products_Inventory_LegacyAlert")
+        : Product.IsShelfOutOfStock || Product.IsWarehouseOutOfStock || Product.HasShelfLowAlert || Product.HasWarehouseLowAlert
+            ? LocalizationHelper.GetString("Products_Inventory_AttentionNeeded")
+            : LocalizationHelper.GetString("Products_Inventory_Healthy");
     public long TaxCategoryId => Product.TaxCategoryId;
     public decimal TaxRatePercent => Product.TaxRatePercent;
 }
@@ -39,11 +40,7 @@ internal static class ProductPriceFormatter
 {
     public static string Format(decimal amount)
     {
-        var numericAmount = CurrencyDisplayHelper.FormatNumber(amount);
-        var currencyLabel = CurrencyDisplayHelper.ResolveConfiguredDisplayCode();
-        return string.IsNullOrWhiteSpace(currencyLabel)
-            ? numericAmount
-            : $"{numericAmount} {currencyLabel}";
+        return CurrencyDisplayHelper.FormatConfiguredAmount(amount);
     }
 
     public static string FormatNumber(decimal amount)
@@ -61,5 +58,3 @@ internal static class ProductPriceFormatter
         return CurrencyDisplayHelper.FormatDateTime(value);
     }
 }
-
-

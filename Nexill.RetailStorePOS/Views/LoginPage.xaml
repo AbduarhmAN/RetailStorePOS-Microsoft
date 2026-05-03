@@ -10,29 +10,27 @@
     mc:Ignorable="d"
     Background="Transparent">
 
-    <Grid Background="#EEF3FA">
+    <Grid x:Name="LoginRoot" Background="#F8FAFC">
         <Grid.Resources>
-            <LinearGradientBrush x:Key="HeroBackgroundBrush"
-                                 StartPoint="0,0"
-                                 EndPoint="1,1">
-                <GradientStop Color="#11214A" Offset="0" />
-                <GradientStop Color="#18346E" Offset="0.46" />
-                <GradientStop Color="#4F2F92" Offset="1" />
-            </LinearGradientBrush>
+            <ImageBrush x:Key="HeroBackgroundBrush"
+                        ImageSource="ms-appx:///Assets/LoginBackground.png"
+                        Stretch="UniformToFill"
+                        AlignmentX="Center"
+                        AlignmentY="Center" />
 
             <LinearGradientBrush x:Key="PrimaryActionBrush"
                                  StartPoint="0,0"
                                  EndPoint="1,1">
-                <GradientStop Color="#27458F" Offset="0" />
-                <GradientStop Color="#5B46F4" Offset="1" />
+                <GradientStop Color="#0B72F0" Offset="0" />
+                <GradientStop Color="#6D35F4" Offset="1" />
             </LinearGradientBrush>
 
             <Style x:Key="ModeTabButtonStyle" TargetType="Button">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="BorderBrush" Value="Transparent" />
                 <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="CornerRadius" Value="10" />
-                <Setter Property="Padding" Value="8,6" />
+                <Setter Property="CornerRadius" Value="13" />
+                <Setter Property="Padding" Value="12,10" />
                 <Setter Property="HorizontalAlignment" Value="Stretch" />
                 <Setter Property="VerticalAlignment" Value="Stretch" />
                 <Setter Property="UseSystemFocusVisuals" Value="False" />
@@ -55,59 +53,150 @@
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="BorderBrush" Value="Transparent" />
                 <Setter Property="BorderThickness" Value="0" />
-                <Setter Property="CornerRadius" Value="18" />
+                <Setter Property="CornerRadius" Value="16" />
                 <Setter Property="Padding" Value="0" />
-                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
             </Style>
 
             <Style x:Key="RoundedTextBoxStyle" TargetType="TextBox">
-                <Setter Property="MinHeight" Value="38" />
+                <Setter Property="MinHeight" Value="50" />
                 <Setter Property="CornerRadius" Value="12" />
-                <Setter Property="Padding" Value="10,0" />
-                <Setter Property="BorderBrush" Value="#D8E2F0" />
+                <Setter Property="Padding" Value="14,0" />
+                <Setter Property="BorderBrush" Value="#CBD5E1" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="UseSystemFocusVisuals" Value="False" />
+                <Setter Property="FontSize" Value="16" />
             </Style>
 
             <Style x:Key="RoundedPasswordBoxStyle" TargetType="PasswordBox">
-                <Setter Property="MinHeight" Value="38" />
+                <Setter Property="MinHeight" Value="50" />
                 <Setter Property="CornerRadius" Value="12" />
-                <Setter Property="Padding" Value="10,0" />
-                <Setter Property="BorderBrush" Value="#D8E2F0" />
+                <Setter Property="Padding" Value="14,0" />
+                <Setter Property="BorderBrush" Value="#CBD5E1" />
                 <Setter Property="BorderThickness" Value="1" />
                 <Setter Property="UseSystemFocusVisuals" Value="False" />
+                <Setter Property="FontSize" Value="16" />
+            </Style>
+
+            <Style x:Key="LoginPrimaryButtonStyle"
+                   TargetType="Button"
+                   BasedOn="{StaticResource AccentBlueButtonStyle}">
+                <Setter Property="Background" Value="{StaticResource PrimaryActionBrush}" />
+                <Setter Property="Height" Value="56" />
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="FontSize" Value="16" />
+                <Setter Property="FontWeight" Value="SemiBold" />
             </Style>
         </Grid.Resources>
 
-        <Grid ColumnSpacing="16"
-              Padding="12">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="LoginResponsiveStates">
+                <VisualState x:Name="NarrowState">
+                    <VisualState.Setters>
+                        <Setter Target="HeroColumn.Width" Value="0" />
+                        <Setter Target="FormColumn.Width" Value="*" />
+                        <Setter Target="HeroPanel.Visibility" Value="Collapsed" />
+                        <Setter Target="LoginPane.Padding" Value="10" />
+                        <Setter Target="LoginCard.Padding" Value="18" />
+                        <Setter Target="LoginCard.CornerRadius" Value="18" />
+                        <Setter Target="LoginCardContent.RowSpacing" Value="16" />
+                        <Setter Target="WelcomeText.FontSize" Value="16" />
+                        <Setter Target="ModeTitleText.FontSize" Value="38" />
+                        <Setter Target="ModeTabStrip.Height" Value="52" />
+                        <Setter Target="ModeIndicator.Height" Value="52" />
+                        <Setter Target="CashierTabText.FontSize" Value="16" />
+                        <Setter Target="AdminTabText.FontSize" Value="16" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="MediumState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="760" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeroColumn.Width" Value="0.52*" />
+                        <Setter Target="FormColumn.Width" Value="1*" />
+                        <Setter Target="HeroPanel.Visibility" Value="Visible" />
+                        <Setter Target="HeroPanel.Padding" Value="32,42" />
+                        <Setter Target="HeroLogoBox.Width" Value="72" />
+                        <Setter Target="HeroLogoBox.Height" Value="72" />
+                        <Setter Target="HeroBrandTitleText.FontSize" Value="22" />
+                        <Setter Target="HeroBrandSubtitleText.FontSize" Value="17" />
+                        <Setter Target="HeroHeadlineText.FontSize" Value="30" />
+                        <Setter Target="HeroBodyText.FontSize" Value="15" />
+                        <Setter Target="HeroSupportText.FontSize" Value="13" />
+                        <Setter Target="LoginPane.Padding" Value="0,3,3,3" />
+                        <Setter Target="LoginCard.Padding" Value="22" />
+                        <Setter Target="LoginCard.CornerRadius" Value="20" />
+                        <Setter Target="LoginCardContent.RowSpacing" Value="16" />
+                        <Setter Target="WelcomeText.FontSize" Value="17" />
+                        <Setter Target="ModeTitleText.FontSize" Value="42" />
+                        <Setter Target="ModeTabStrip.Height" Value="56" />
+                        <Setter Target="ModeIndicator.Height" Value="56" />
+                        <Setter Target="CashierTabText.FontSize" Value="17" />
+                        <Setter Target="AdminTabText.FontSize" Value="17" />
+                    </VisualState.Setters>
+                </VisualState>
+
+                <VisualState x:Name="WideState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1160" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="HeroColumn.Width" Value="0.60*" />
+                        <Setter Target="FormColumn.Width" Value="1*" />
+                        <Setter Target="HeroPanel.Visibility" Value="Visible" />
+                        <Setter Target="HeroPanel.Padding" Value="42,52" />
+                        <Setter Target="HeroLogoBox.Width" Value="76" />
+                        <Setter Target="HeroLogoBox.Height" Value="76" />
+                        <Setter Target="HeroBrandTitleText.FontSize" Value="23" />
+                        <Setter Target="HeroBrandSubtitleText.FontSize" Value="18" />
+                        <Setter Target="HeroHeadlineText.FontSize" Value="32" />
+                        <Setter Target="HeroBodyText.FontSize" Value="15" />
+                        <Setter Target="HeroSupportText.FontSize" Value="14" />
+                        <Setter Target="LoginPane.Padding" Value="0,3,3,3" />
+                        <Setter Target="LoginCard.Padding" Value="26" />
+                        <Setter Target="LoginCard.CornerRadius" Value="20" />
+                        <Setter Target="LoginCardContent.RowSpacing" Value="18" />
+                        <Setter Target="WelcomeText.FontSize" Value="18" />
+                        <Setter Target="ModeTitleText.FontSize" Value="48" />
+                        <Setter Target="ModeTabStrip.Height" Value="60" />
+                        <Setter Target="ModeIndicator.Height" Value="60" />
+                        <Setter Target="CashierTabText.FontSize" Value="18" />
+                        <Setter Target="AdminTabText.FontSize" Value="18" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <Grid x:Name="LoginShellGrid" ColumnSpacing="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.06*" />
-                <ColumnDefinition Width="0.94*" />
+                <ColumnDefinition x:Name="HeroColumn" Width="0.60*" />
+                <ColumnDefinition x:Name="FormColumn" Width="1*" />
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0"
-                    CornerRadius="30"
+            <Border x:Name="HeroPanel"
+                    Grid.Column="0"
+                    CornerRadius="0"
                     Background="{StaticResource HeroBackgroundBrush}"
-                    Padding="14"
-                    BorderBrush="#22FFFFFF"
-                    BorderThickness="1">
+                    Padding="42,52"
+                    BorderThickness="0">
                 <Grid RowSpacing="18">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <StackPanel Orientation="Horizontal"
-                                Spacing="10"
-                                HorizontalAlignment="Center">
-                        <Border Width="86"
-                                Height="86"
-                                CornerRadius="22"
+                                Spacing="18"
+                                HorizontalAlignment="Left">
+                        <Border x:Name="HeroLogoBox"
+                                Width="76"
+                                Height="76"
+                                CornerRadius="18"
                                 Background="#FFFFFF"
                                 BorderThickness="0"
-                                Padding="2">
+                                Padding="8">
                             <Image Source="ms-appx:///Assets/Logo.png"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"
@@ -116,137 +205,103 @@
 
                         <StackPanel VerticalAlignment="Center"
                                     Spacing="1">
-                            <TextBlock Text="Retail Store"
-                                       FontSize="18"
+                            <TextBlock x:Name="HeroBrandTitleText"
+                                       x:Uid="LoginPage_HeroBrandTitleText"
+                                       FontSize="23"
                                        FontWeight="SemiBold"
                                        Foreground="#F8FAFC" />
-                            <TextBlock Text="Retail login workspace"
-                                       FontSize="12"
-                                       Foreground="#C9D6F2" />
+                            <TextBlock x:Name="HeroBrandSubtitleText"
+                                       x:Uid="LoginPage_HeroBrandSubtitleText"
+                                       FontSize="18"
+                                       Foreground="#EAF3FF" />
                         </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Row="1"
-                                MaxWidth="360"
-                                Spacing="10"
-                                HorizontalAlignment="Center"
+                                MaxWidth="440"
+                                Spacing="12"
+                                HorizontalAlignment="Left"
                                 VerticalAlignment="Center">
-                        <TextBlock Text="Fast cashier access. Secure admin control."
-                                   FontSize="28"
+                        <TextBlock x:Name="HeroHeadlineText"
+                                   x:Uid="LoginPage_HeroHeadlineText"
+                                   FontSize="32"
                                    FontWeight="SemiBold"
-                                   TextAlignment="Center"
+                                   TextAlignment="Left"
                                    TextWrapping="Wrap"
                                    Foreground="#FFFFFF" />
-                        <TextBlock Text="Choose a mode, sign in, and keep the store moving without extra steps."
-                                   FontSize="14"
-                                   LineHeight="20"
-                                   TextAlignment="Center"
+                        <TextBlock x:Name="HeroBodyText"
+                                   x:Uid="LoginPage_HeroBodyText"
+                                   FontSize="15"
+                                   LineHeight="24"
+                                   TextAlignment="Left"
                                    TextWrapping="Wrap"
-                                   Foreground="#D6E0F3" />
+                                   Foreground="#EAF3FF" />
                         <TextBlock x:Name="HeroSupportText"
-                                   Text="Cashier mode keeps the line moving."
-                                   FontSize="13"
-                                   TextAlignment="Center"
+                                   x:Uid="LoginPage_HeroSupportText"
+                                   FontSize="14"
+                                   TextAlignment="Left"
                                    TextWrapping="Wrap"
-                                   Foreground="#E2E8F0" />
-                    </StackPanel>
-
-                    <StackPanel Grid.Row="2"
-                                Orientation="Horizontal"
-                                HorizontalAlignment="Center"
-                                Spacing="8">
-                        <Border Background="#18FFFFFF"
-                                BorderBrush="#28FFFFFF"
-                                BorderThickness="1"
-                                CornerRadius="14"
-                                Padding="11,6">
-                            <TextBlock Text="Cashier flow"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F8FAFC" />
-                        </Border>
-                        <Border Background="#18FFFFFF"
-                                BorderBrush="#28FFFFFF"
-                                BorderThickness="1"
-                                CornerRadius="14"
-                                Padding="11,6">
-                            <TextBlock Text="Admin security"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F8FAFC" />
-                        </Border>
-                        <Border Background="#18FFFFFF"
-                                BorderBrush="#28FFFFFF"
-                                BorderThickness="1"
-                                CornerRadius="14"
-                                Padding="11,6">
-                            <TextBlock Text="Store ready"
-                                       FontSize="11"
-                                       FontWeight="SemiBold"
-                                       Foreground="#F8FAFC" />
-                        </Border>
+                                   Foreground="#DDEBFF" />
                     </StackPanel>
                 </Grid>
             </Border>
 
-            <Grid Grid.Column="1"
-                  Padding="0,2,0,2">
-                <ScrollViewer VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <Border Background="#FFFFFF"
-                            BorderBrush="#D9E2F0"
-                            BorderThickness="1"
-                            CornerRadius="30"
-                            Padding="16,16">
-                        <StackPanel MaxWidth="560"
-                                    Spacing="12"
-                                    HorizontalAlignment="Stretch">
+            <Grid x:Name="LoginPane"
+                  Grid.Column="1"
+                  Padding="0,3,3,3"
+                  VerticalAlignment="Stretch">
+                <Border x:Name="LoginCard"
+                        Background="#FFFFFF"
+                        BorderBrush="#E5E7EB"
+                        BorderThickness="1"
+                        CornerRadius="20"
+                        Padding="26"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+                        <Grid x:Name="LoginCardContent"
+                              RowSpacing="18"
+                              HorizontalAlignment="Stretch">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <StackPanel Grid.Row="0"
+                                        Spacing="18"
+                                        HorizontalAlignment="Stretch">
                             <Grid ColumnSpacing="10">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <StackPanel Spacing="1">
-                                    <TextBlock Text="Welcome back"
-                                               FontSize="12"
-                                               FontWeight="SemiBold"
-                                               Foreground="#5B46F4" />
+                                <StackPanel Spacing="8">
+                                    <TextBlock x:Name="WelcomeText"
+                                               x:Uid="LoginPage_WelcomeText"
+                                               FontSize="18"
+                                               Foreground="#0B63F6" />
                                     <TextBlock x:Name="ModeTitleText"
-                                               Text="Cashier sign-in"
-                                               FontSize="26"
+                                               x:Uid="LoginPage_ModeTitleText"
+                                               FontSize="48"
                                                FontWeight="SemiBold"
                                                Foreground="#0F172A" />
-                                    <TextBlock x:Name="ModeSubtitleText"
+                                    <TextBlock x:Name="ModeSubtitleText" x:Uid="LoginPage_ModeSubtitleText"
                                                Text="Select a mode, then sign in."
-                                               FontSize="13"
+                                               FontSize="14"
                                                LineHeight="18"
                                                TextWrapping="Wrap"
+                                               Visibility="Collapsed"
                                                Foreground="#64748B" />
                                 </StackPanel>
-
-                                <Border Grid.Column="1"
-                                        Width="72"
-                                        Height="72"
-                                        CornerRadius="18"
-                                        Background="#FFFFFF"
-                                        BorderThickness="0"
-                                        Padding="2"
-                                        VerticalAlignment="Center">
-                                    <Image Source="ms-appx:///Assets/Logo.png"
-                                           HorizontalAlignment="Center"
-                                           VerticalAlignment="Center"
-                                           Stretch="Uniform" />
-                                </Border>
                             </Grid>
 
-                            <Border Background="#F4F7FB"
-                                    BorderBrush="#E5EAF3"
+                            <Border Background="#FFFFFF"
+                                    BorderBrush="#D9DFEA"
                                     BorderThickness="1"
-                                    CornerRadius="12"
-                                    Padding="2">
+                                    CornerRadius="14"
+                                    Padding="0">
                                 <Grid x:Name="ModeTabStrip"
-                                      Height="44"
+                                      Height="60"
                                       SizeChanged="ModeTabStrip_SizeChanged">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -255,9 +310,9 @@
 
                                     <Border x:Name="ModeIndicator"
                                             Width="0"
-                                            Height="36"
+                                            Height="60"
                                             Background="{StaticResource PrimaryActionBrush}"
-                                            CornerRadius="10"
+                                            CornerRadius="13"
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Center">
                                         <Border.RenderTransform>
@@ -269,13 +324,13 @@
                                             Click="CashierTabButton_Click"
                                             Style="{StaticResource ModeTabButtonStyle}">
                                         <StackPanel Orientation="Horizontal"
-                                                    Spacing="5"
+                                                    Spacing="14"
                                                     HorizontalAlignment="Center">
                                             <SymbolIcon x:Name="CashierTabIcon"
                                                         Symbol="Contact" />
                                             <TextBlock x:Name="CashierTabText"
-                                                       Text="Cashier"
-                                                       FontSize="13"
+                                                       x:Uid="LoginPage_CashierTabText"
+                                                       FontSize="18"
                                                        FontWeight="SemiBold" />
                                         </StackPanel>
                                     </Button>
@@ -285,13 +340,13 @@
                                             Click="AdminTabButton_Click"
                                             Style="{StaticResource ModeTabButtonStyle}">
                                         <StackPanel Orientation="Horizontal"
-                                                    Spacing="5"
+                                                    Spacing="14"
                                                     HorizontalAlignment="Center">
                                             <SymbolIcon x:Name="AdminTabIcon"
                                                         Symbol="Setting" />
                                             <TextBlock x:Name="AdminTabText"
-                                                       Text="Admin"
-                                                       FontSize="13"
+                                                       x:Uid="LoginPage_AdminTabText"
+                                                       FontSize="18"
                                                        FontWeight="SemiBold" />
                                         </StackPanel>
                                     </Button>
@@ -304,8 +359,15 @@
                                      Severity="Informational"
                                      Visibility="Collapsed"
                                      Message="" />
+                            </StackPanel>
 
-                            <Grid MinHeight="352">
+                            <ScrollViewer Grid.Row="1"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled"
+                                          VerticalContentAlignment="Top"
+                                          HorizontalContentAlignment="Stretch">
+                            <Grid x:Name="LoginModeContentHost"
+                                  VerticalAlignment="Top">
                                 <Border x:Name="CashierLoginPanel"
                                         Background="Transparent">
                                     <Border.Transitions>
@@ -315,20 +377,21 @@
                                         </TransitionCollection>
                                     </Border.Transitions>
 
-                                    <StackPanel Spacing="12">
-                                        <Grid>
+                                    <StackPanel Spacing="18">
+                                        <Grid Visibility="Collapsed">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
 
                                             <StackPanel Spacing="3">
-                                                <TextBlock Text="Cashier access"
+                                                <TextBlock x:Uid="LoginPage_CashierPanelTitle"
+                                                           Text="Cashier access"
                                                            FontSize="15"
                                                            FontWeight="SemiBold"
                                                            Foreground="#0F172A" />
                                                 <TextBlock x:Name="CashierHelperText"
-                                                           Text="Choose a cashier card, then enter the PIN."
+                                                           x:Uid="LoginPage_CashierHelperText"
                                                            TextWrapping="Wrap"
                                                            FontSize="13"
                                                            Foreground="#64748B" />
@@ -342,7 +405,7 @@
                                                     Padding="7,3"
                                                     VerticalAlignment="Top">
                                                 <TextBlock x:Name="CashierCountBadgeText"
-                                                           Text="Ready"
+                                                           x:Uid="LoginPage_CashierCountBadgeText"
                                                            FontSize="11"
                                                            FontWeight="SemiBold"
                                                            Foreground="#4338CA" />
@@ -357,11 +420,13 @@
                                                 Padding="12,10"
                                                 Visibility="Collapsed">
                                             <StackPanel Spacing="6">
-                                                <TextBlock Text="No cashier profiles available"
+                                                <TextBlock x:Uid="LoginPage_CashierEmptyState_Title"
+                                                           Text="No cashier profiles available"
                                                            FontSize="15"
                                                            FontWeight="SemiBold"
                                                            Foreground="#0F172A" />
-                                                <TextBlock Text="Add an active staff user with a PIN in Users to enable quick cashier sign-in cards."
+                                                <TextBlock x:Uid="LoginPage_CashierEmptyState_Body"
+                                                           Text="Add an active staff user with a PIN in Users to enable quick cashier sign-in cards."
                                                            TextWrapping="Wrap"
                                                            FontSize="13"
                                                            Foreground="#64748B" />
@@ -369,7 +434,6 @@
                                         </Border>
 
                                         <ItemsControl x:Name="StaffListView"
-                                                      MinHeight="146"
                                                       ScrollViewer.HorizontalScrollMode="Disabled"
                                                       ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                                       ScrollViewer.VerticalScrollMode="Disabled"
@@ -377,7 +441,7 @@
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate>
                                                     <ItemsWrapGrid Orientation="Horizontal"
-                                                                   MaximumRowsOrColumns="3" />
+                                                                   MaximumRowsOrColumns="2" />
                                                 </ItemsPanelTemplate>
                                             </ItemsControl.ItemsPanel>
 
@@ -385,77 +449,81 @@
                                                 <DataTemplate x:DataType="viewModels:LoginStaffOption">
                                                     <Button Click="CashierCardButton_Click"
                                                             Tag="{x:Bind}"
+                                                            Margin="0,0,16,16"
                                                             Style="{StaticResource CashierCardButtonStyle}">
-                                                        <Border Width="156"
-                                                                Height="138"
-                                                                Padding="12"
+                                                        <Border Width="286"
+                                                                Height="112"
+                                                                Padding="18,14"
                                                                 Background="{x:Bind CardBackgroundBrush, Mode=OneWay}"
                                                                 BorderBrush="{x:Bind CardBorderBrush, Mode=OneWay}"
-                                                                BorderThickness="2"
-                                                                CornerRadius="18">
-                                                            <Grid RowSpacing="8">
-                                                                <Grid.RowDefinitions>
-                                                                    <RowDefinition Height="Auto" />
-                                                                    <RowDefinition Height="Auto" />
-                                                                    <RowDefinition Height="*" />
-                                                                </Grid.RowDefinitions>
+                                                                BorderThickness="1.5"
+                                                                CornerRadius="14">
+                                                            <Grid ColumnSpacing="18">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
 
-                                                                <Grid>
-                                                                    <Grid.ColumnDefinitions>
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                        <ColumnDefinition Width="*" />
-                                                                        <ColumnDefinition Width="Auto" />
-                                                                    </Grid.ColumnDefinitions>
+                                                                <Border Width="58"
+                                                                        Height="58"
+                                                                        CornerRadius="29"
+                                                                        Background="{x:Bind BadgeBackgroundBrush, Mode=OneWay}"
+                                                                        VerticalAlignment="Center">
+                                                                   <TextBlock Text="{x:Bind Initial}"
+                                                                               FontSize="31"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{x:Bind InitialForegroundBrush, Mode=OneWay}"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Center" />
+                                                                </Border>
 
-                                                                    <Border Width="44"
-                                                                            Height="44"
-                                                                            CornerRadius="13"
-                                                                            Background="{x:Bind BadgeBackgroundBrush, Mode=OneWay}">
-                                                                        <TextBlock Text="{x:Bind Initial}"
-                                                                                   FontSize="20"
-                                                                                   FontWeight="SemiBold"
-                                                                                   Foreground="{x:Bind InitialForegroundBrush, Mode=OneWay}"
-                                                                                   HorizontalAlignment="Center"
-                                                                                   VerticalAlignment="Center" />
-                                                                    </Border>
-
-                                                                    <Border Grid.Column="2"
-                                                                            Width="24"
-                                                                            Height="24"
-                                                                            CornerRadius="12"
-                                                                            Background="#5B46F4"
-                                                                            Visibility="{x:Bind SelectionGlyphVisibility, Mode=OneWay}">
-                                                                        <FontIcon Glyph="&#xE73E;"
-                                                                                  FontFamily="Segoe Fluent Icons"
-                                                                                  FontSize="11"
-                                                                                  Foreground="White"
-                                                                                  HorizontalAlignment="Center"
-                                                                                  VerticalAlignment="Center" />
-                                                                    </Border>
-                                                                </Grid>
-
-                                                                <StackPanel Grid.Row="1"
-                                                                            Spacing="2">
+                                                                <StackPanel Grid.Column="1"
+                                                                            Spacing="5"
+                                                                            VerticalAlignment="Center"
+                                                                            
+                                                                           >
                                                                     <TextBlock Text="{x:Bind DisplayName}"
+                                                                               
+                                                                               FontSize="18"
+                                                                               TextWrapping="Wrap"
+                                                                               MaxLines="1"
                                                                                TextTrimming="CharacterEllipsis"
-                                                                               FontSize="13"
                                                                                FontWeight="SemiBold"
                                                                                Foreground="{x:Bind NameForegroundBrush, Mode=OneWay}" />
-                                                                    <TextBlock Text="{x:Bind User.RoleLabel, Mode=OneWay}"
-                                                                               FontSize="10"
-                                                                               Foreground="#64748B" />
+                                                                   <TextBlock Text="{x:Bind User.IsAdmin, Converter={StaticResource UserRoleConverter}, Mode=OneWay}"
+                                                                               FontSize="15"
+                                                                               Foreground="#60647A" />
+                                                                    <Border HorizontalAlignment="Left"
+                                                                            Padding="9,5"
+                                                                            CornerRadius="6"
+                                                                            Background="{x:Bind PinStatusBackgroundBrush, Mode=OneWay}">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    Spacing="6">
+                                                                            <FontIcon Glyph="&#xE72E;"
+                                                                                      FontFamily="Segoe Fluent Icons"
+                                                                                      FontSize="12"
+                                                                                      Foreground="{x:Bind PinStatusForegroundBrush, Mode=OneWay}" />
+                                                                            <TextBlock Text="{x:Bind PinStatusText, Mode=OneWay}"
+                                                                                       FontSize="12"
+                                                                                       FontWeight="SemiBold"
+                                                                                       Foreground="{x:Bind PinStatusForegroundBrush, Mode=OneWay}" />
+                                                                        </StackPanel>
+                                                                    </Border>
                                                                 </StackPanel>
 
-                                                                <Border Grid.Row="2"
-                                                                        HorizontalAlignment="Left"
-                                                                        VerticalAlignment="Bottom"
-                                                                        Padding="7,3"
-                                                                        CornerRadius="9"
-                                                                        Background="{x:Bind PinStatusBackgroundBrush, Mode=OneWay}">
-                                                                    <TextBlock Text="{x:Bind PinStatusText, Mode=OneWay}"
-                                                                               FontSize="9"
-                                                                               FontWeight="SemiBold"
-                                                                               Foreground="{x:Bind PinStatusForegroundBrush, Mode=OneWay}" />
+                                                                <Border Grid.Column="2"
+                                                                        Width="30"
+                                                                        Height="30"
+                                                                        CornerRadius="15"
+                                                                        Background="#0B63F6"
+                                                                        Visibility="{x:Bind SelectionGlyphVisibility, Mode=OneWay}">
+                                                                    <FontIcon Glyph="&#xE73E;"
+                                                                              FontFamily="Segoe Fluent Icons"
+                                                                              FontSize="15"
+                                                                              Foreground="White"
+                                                                              HorizontalAlignment="Center"
+                                                                              VerticalAlignment="Center" />
                                                                 </Border>
                                                             </Grid>
                                                         </Border>
@@ -464,42 +532,6 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
 
-                                        <StackPanel Spacing="6" HorizontalAlignment="Stretch">
-                                            <TextBlock Text="Cashier PIN"
-                                                        FontWeight="SemiBold"
-                                                        Foreground="#0F172A" />
-
-                                            <Grid ColumnSpacing="8" HorizontalAlignment="Stretch">
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*" />
-                                                    <ColumnDefinition Width="Auto" />
-                                                    
-                                                </Grid.ColumnDefinitions>
-
-                                                <PasswordBox x:Name="PinPasswordBox"
-                                                              Height="38"
-                                                              MaxLength="4"
-                                                              PlaceholderText="Enter 4-digit PIN"
-                                                              CornerRadius="8"
-                                                              HorizontalAlignment="Stretch"
-                                                              VerticalAlignment="Center"
-                                                              FontSize="14"
-                                                              KeyDown="PinPasswordBox_KeyDown"
-                                                              AutomationProperties.Name="Cashier PIN"
-                                                              PasswordRevealMode="Peek"
-                                                              Style="{StaticResource DefaultPasswordBoxStyle}" />
-
-                                                <Button x:Name="CashierActionButton"
-                                                        Grid.Column="1"
-                                                        Content="Login"
-                                                        Click="CashierSignInButton_Click"
-                                                        HorizontalAlignment="Stretch"
-                                                        MinWidth="176"
-                                                        Height="38"
-                                                        CornerRadius="8"
-                                                        Style="{ThemeResource AccentButtonStyle}" />
-                                            </Grid>
-                                        </StackPanel>
                                     </StackPanel>
                                 </Border>
 
@@ -513,16 +545,17 @@
                                         </TransitionCollection>
                                     </Border.Transitions>
 
-                                    <StackPanel Spacing="12">
-                                        <StackPanel Spacing="1">
-                                            <TextBlock Text="Administrator access"
-                                                       FontSize="15"
+                                    <StackPanel Spacing="22">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock x:Uid="LoginPage_AdminPanelTitle"
+                                                       Text="Manager access"
+                                                       FontSize="18"
                                                        FontWeight="SemiBold"
                                                        Foreground="#0F172A" />
                                             <TextBlock x:Name="AdminHelperText"
-                                                       Text="Use an administrator account for secure changes and store-wide controls."
+                                                       x:Uid="LoginPage_AdminHelperText"
                                                        TextWrapping="Wrap"
-                                                       FontSize="13"
+                                                       FontSize="15"
                                                        Foreground="#64748B" />
                                         </StackPanel>
 
@@ -531,21 +564,21 @@
                                                 Background="#F8FAFC"
                                                 BorderBrush="#DDE5F3"
                                                 BorderThickness="1"
-                                                CornerRadius="16"
-                                                Padding="12">
-                                            <Grid ColumnSpacing="8">
+                                                CornerRadius="14"
+                                                Padding="16">
+                                            <Grid ColumnSpacing="14">
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
 
-                                                <Border Width="36"
-                                                        Height="36"
-                                                        CornerRadius="11"
+                                                <Border Width="48"
+                                                        Height="48"
+                                                        CornerRadius="14"
                                                         Background="#EEF2FF">
                                                     <FontIcon Glyph="&#xE946;"
                                                               FontFamily="Segoe Fluent Icons"
-                                                              FontSize="15"
+                                                              FontSize="19"
                                                               Foreground="#4F46E5"
                                                               HorizontalAlignment="Center"
                                                               VerticalAlignment="Center" />
@@ -553,54 +586,53 @@
 
                                                 <StackPanel Grid.Column="1"
                                                             Spacing="2">
-                                                    <TextBlock Text="First-time store setup"
-                                                               FontSize="13"
+                                                    <TextBlock x:Uid="LoginPage_SetupCallout_Title"
+                                                               Text="First-time store setup"
+                                                               FontSize="16"
                                                                FontWeight="SemiBold"
                                                                Foreground="#0F172A" />
                                                     <TextBlock x:Name="SetupCalloutText"
-                                                               Text="Finish the admin setup, then add cashier profiles with PINs for quick access at the counter."
+                                                               x:Uid="LoginPage_SetupCalloutText"
                                                                TextWrapping="Wrap"
-                                                               FontSize="13"
+                                                               FontSize="15"
                                                                Foreground="#64748B" />
                                                 </StackPanel>
                                             </Grid>
                                         </Border>
 
-                                        <StackPanel Spacing="5">
-                                            <TextBlock Text="Username"
+                                        <StackPanel Spacing="8">
+                                            <TextBlock x:Uid="LoginPage_UsernameLabel"
+                                                       Text="Username"
+                                                       FontSize="16"
                                                        FontWeight="SemiBold"
                                                        Foreground="#0F172A" />
                                             <TextBox x:Name="UsernameBox"
+                                                      x:Uid="LoginPage_UsernameBox"
                                                       HorizontalAlignment="Stretch"
-                                                      Height="38"
-                                                      PlaceholderText="Enter username"
                                                       Style="{StaticResource RoundedTextBoxStyle}"
                                                       AutomationProperties.Name="Username"
                                                       KeyDown="AdminCredentialBox_KeyDown" />
                                         </StackPanel>
 
-                                        <StackPanel Spacing="5">
-                                            <TextBlock Text="Password"
+                                        <StackPanel Spacing="8">
+                                            <TextBlock x:Uid="LoginPage_PasswordLabel"
+                                                       Text="Password"
+                                                       FontSize="18"
                                                        FontWeight="SemiBold"
                                                        Foreground="#0F172A" />
                                             <PasswordBox x:Name="AdminPasswordBox"
+                                                         x:Uid="LoginPage_AdminPasswordBox"
                                                          HorizontalAlignment="Stretch"
-                                                         Height="38"
-                                                         PlaceholderText="Enter your password"
+                                                         Height="50"
                                                          CornerRadius="12"
-                                                         Style="{StaticResource DefaultPasswordBoxStyle}"
+                                                         Padding="14,0"
+                                                         BorderBrush="#CBD5E1"
+                                                         BorderThickness="1"
+                                                         FontSize="16"
                                                          PasswordRevealMode="Peek"
                                                          AutomationProperties.Name="Password"
                                                          KeyDown="AdminCredentialBox_KeyDown" />
                                         </StackPanel>
-
-                                        <Button x:Name="AdminActionButton"
-                                                Content="Login as admin"
-                                                Click="AdminSignInButton_Click"
-                                                HorizontalAlignment="Stretch"
-                                                Height="38"
-                                                CornerRadius="8"
-                                                Style="{ThemeResource AccentButtonStyle}" />
 
                                         <Border x:Name="OnboardingHintPanel"
                                                 Visibility="Collapsed"
@@ -611,11 +643,13 @@
                                                 Padding="12,10"
                                                 Margin="0,8,0,0">
                                             <StackPanel Spacing="4">
-                                                <TextBlock Text="First-Time Administrator Setup"
+                                                <TextBlock x:Uid="LoginPage_OnboardingHint_Title"
+                                                           Text="First-Time Administrator Setup"
                                                            FontSize="12"
                                                            FontWeight="SemiBold"
                                                            Foreground="#991B1B" />
-                                                <TextBlock Text="Default Username: admin | Password: 1234"
+                                                <TextBlock x:Uid="LoginPage_OnboardingHint_Body"
+                                                           Text="Default Username: admin | Password: 1234"
                                                            FontSize="12"
                                                            Foreground="#7F1D1D" />
                                             </StackPanel>
@@ -623,23 +657,68 @@
                                     </StackPanel>
                                 </Border>
                             </Grid>
-                        </StackPanel>
-                    </Border>
-                </ScrollViewer>
+                            </ScrollViewer>
+
+                            <Grid x:Name="LoginActionHost"
+                                  Grid.Row="2"
+                                  HorizontalAlignment="Stretch">
+                                <StackPanel x:Name="CashierActionPanel"
+                                            Spacing="10"
+                                            HorizontalAlignment="Stretch">
+                                    <TextBlock x:Uid="LoginPage_PinLabel"
+                                               Text="Enter PIN"
+                                               FontSize="18"
+                                               FontWeight="SemiBold"
+                                               Foreground="#0F172A" />
+
+                                    <PasswordBox x:Name="PinPasswordBox"
+                                                 x:Uid="LoginPage_PinPasswordBox"
+                                                 Height="50"
+                                                 MaxLength="4"
+                                                 CornerRadius="12"
+                                                 Padding="14,0"
+                                                 BorderBrush="#CBD5E1"
+                                                 BorderThickness="1"
+                                                 HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Center"
+                                                 FontSize="16"
+                                                 KeyDown="PinPasswordBox_KeyDown"
+                                                 AutomationProperties.Name="Cashier PIN"
+                                                 PasswordRevealMode="Peek" />
+
+                                    <Button x:Name="CashierActionButton"
+                                            x:Uid="LoginPage_LoginButton"
+                                            Content="Login"
+                                            Click="CashierSignInButton_Click"
+                                            HorizontalAlignment="Stretch"
+                                            Style="{StaticResource LoginPrimaryButtonStyle}" />
+                                </StackPanel>
+
+                                <StackPanel x:Name="AdminActionPanel"
+                                            Visibility="Collapsed"
+                                            HorizontalAlignment="Stretch">
+                                    <Button x:Name="AdminActionButton"
+                                            x:Uid="LoginPage_LoginButton"
+                                            Content="Login"
+                                            Click="AdminSignInButton_Click"
+                                            HorizontalAlignment="Stretch"
+                                            Style="{StaticResource LoginPrimaryButtonStyle}" />
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                </Border>
             </Grid>
         </Grid>
 
         <TeachingTip x:Name="CashierPinTip"
+                     x:Uid="LoginPage_CashierPinTip"
                      Target="{x:Bind PinPasswordBox, Mode=OneWay}"
                      PreferredPlacement="Left"
                      TailVisibility="Visible"
                      PlacementMargin="12"
                      ShouldConstrainToRootBounds="True"
                      IsLightDismissEnabled="True"
-                     CloseButtonContent="Close"
                      Title="Cashier PIN"
                      Subtitle="The default Cashier PIN is 1234." />
     </Grid>
 </Page>
-
-

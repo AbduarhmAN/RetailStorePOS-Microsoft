@@ -1,35 +1,34 @@
+using System.Collections.ObjectModel;
+using LiveChartsCore;
+using LiveChartsCore.Kernel.Sketches;
+using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Shapes;
-using System;
-using System.Linq;
-using System.Collections.ObjectModel;
-using RetailStorePOS.Data.Models;
+using global::RetailStorePOS.Data.Modules.Contracts;
+using global::RetailStorePOS.Data.Modules.Products;
+using global::RetailStorePOS.Data.Modules.Sales;
 using RetailStorePOS.WinUiLogin.Common;
+using SkiaSharp;
+using global::RetailStorePOS.Data.Modules.Reporting;
 using Windows.Foundation;
 using Windows.UI;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
-using LiveChartsCore.SkiaSharpView.Painting;
-using LiveChartsCore.Kernel.Sketches;
-using LiveChartsCore.Defaults;
-using SkiaSharp;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
-// ─── Data models ──────────────────────────────────────────────────────────────
+// ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Data models ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
 
 public sealed class DashboardProductItem
 {
-    public string Name    { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public string Revenue { get; set; } = string.Empty;
-    public double Pct     { get; set; }
+    public double Pct { get; set; }
 }
 
 public sealed class DashboardStockItem
 {
-    public string Name        { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public string StockStatus { get; set; } = string.Empty;
     public SolidColorBrush StatusBrush { get; set; } = new(Color.FromArgb(255, 143, 150, 163));
     public string PrimaryLabelText { get; set; } = string.Empty;
@@ -40,7 +39,7 @@ public sealed class DashboardStockItem
     public SolidColorBrush SecondaryStatusBrush { get; set; } = new(Color.FromArgb(255, 143, 150, 163));
     public Visibility SimpleStatusVisibility { get; set; } = Visibility.Visible;
     public Visibility DetailedStatusVisibility { get; set; } = Visibility.Collapsed;
-    public string BadgeText   { get; set; } = string.Empty;
+    public string BadgeText { get; set; } = string.Empty;
     public Visibility SimpleBadgeTextVisibility { get; set; } = Visibility.Visible;
     public Visibility BadgeVisible { get; set; } = Visibility.Visible;
 }
@@ -53,10 +52,13 @@ public sealed class DashboardAlertItem
     public SolidColorBrush BadgeForeground { get; set; } = new(Color.FromArgb(255, 95, 103, 117));
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Page ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
 
 public sealed partial class ReportsDashboardPage : Page
 {
+    private static readonly WorkflowBoundary ReportingWorkflow = ReportingWorkflowContract.ReportingRefreshBoundary;
+    private static SaleRepository ReportingSalesModule => ReportingWorkflowContract.ResolveSalesReadModel(LoginRuntime.Sales);
+    private static ProductRepository ReportingInventoryCatalog => ReportingWorkflowContract.ResolveInventoryReadModel(LoginRuntime.Products);
     private readonly DispatcherTimer _skeletonTimer = new() { Interval = TimeSpan.FromMilliseconds(40) };
     private LinearGradientBrush? _skeletonShimmerBrush;
     private bool _isDashboardLoading;
@@ -83,13 +85,14 @@ public sealed partial class ReportsDashboardPage : Page
     public ReportsDashboardPage()
     {
         this.InitializeComponent();
+        _ = ReportingWorkflow;
         _skeletonShimmerBrush = Resources["SkeletonShimmerBrush"] as LinearGradientBrush;
         _skeletonTimer.Tick += SkeletonTimer_Tick;
         Loaded += ReportsDashboardPage_Loaded;
         Unloaded += ReportsDashboardPage_Unloaded;
     }
 
-    // ── LiveCharts Sparkline Properties ──────────────────────────────────────
+    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ LiveCharts Sparkline Properties ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
     public ISeries[] SalesSparkline { get; set; } = [
         new LineSeries<double> { Values = [0, 0, 7, 4, 12, 8, 20, 15], LineSmoothness = 0.1, Stroke = new SolidColorPaint(new SKColor(25, 118, 210)) { StrokeThickness = 2 }, Fill = new SolidColorPaint(new SKColor(25, 118, 210, 40)), GeometrySize = 0 }
     ];
@@ -111,21 +114,27 @@ public sealed partial class ReportsDashboardPage : Page
 
     private async void ReportsDashboardPage_Loaded(object sender, RoutedEventArgs e)
     {
-        if (_hasLoadedDashboard || _isDashboardLoading)
-        {
-            return;
-        }
+        await RefreshAsync(isInitialLoad: true);
+    }
 
+    public async Task RefreshAsync(bool isInitialLoad = false)
+    {
+        if (_isDashboardLoading) return;
         _isDashboardLoading = true;
-        SetDashboardLoadingState(true);
 
         try
         {
+            if (isInitialLoad && !_hasLoadedDashboard)
+            {
+                SetDashboardLoadingState(true);
+            }
+
             await PopulateDashboardAsync();
             _hasLoadedDashboard = true;
         }
         catch
         {
+            DispatcherQueue.TryEnqueue(RevealContentContainers);
         }
         finally
         {
@@ -134,20 +143,102 @@ public sealed partial class ReportsDashboardPage : Page
         }
     }
 
+    private string GetGreeting()
+    {
+        var hour = DateTime.Now.Hour;
+        return hour < 12 ? LocalizationHelper.GetString("ReportsDashboard_Greeting_Morning")
+            : hour < 17 ? LocalizationHelper.GetString("ReportsDashboard_Greeting_Afternoon")
+            : LocalizationHelper.GetString("ReportsDashboard_Greeting_Evening");
+    }
+
+    private void UpdateDeltaText(TextBlock textBlock, decimal current, decimal previous, bool isCurrency = true)
+    {
+        double delta = previous > 0 ? (double)((current - previous) / previous) * 100.0 : (current > 0 ? 100.0 : 0);
+        var valStr = CurrencyDisplayHelper.FormatNumber((decimal)Math.Abs(delta), "0.#");
+        textBlock.Text = delta >= 0 
+            ? string.Format(LocalizationHelper.GetString(isCurrency ? "ReportsDashboard_Sales_Delta_Positive" : "ReportsDashboard_Invoice_Delta_Positive"), valStr)
+            : string.Format(LocalizationHelper.GetString(isCurrency ? "ReportsDashboard_Sales_Delta_Negative" : "ReportsDashboard_Invoice_Delta_Negative"), valStr);
+        textBlock.Foreground = new SolidColorBrush(delta >= 0 ? Color.FromArgb(255, 46, 125, 50) : Color.FromArgb(255, 198, 40, 40));
+    }
+
+    private void RevealContentContainers()
+    {
+        SalesTodaySkeleton.Visibility = Visibility.Collapsed; SalesTodayContent.Visibility = Visibility.Visible;
+        NetProfitSkeleton.Visibility = Visibility.Collapsed; NetProfitContent.Visibility = Visibility.Visible;
+        InvoiceCountSkeleton.Visibility = Visibility.Collapsed; InvoiceCountContent.Visibility = Visibility.Visible;
+        AvgInvoiceSkeleton.Visibility = Visibility.Collapsed; AvgInvoiceContent.Visibility = Visibility.Visible;
+        SalesTargetSkeleton.Visibility = Visibility.Collapsed; SalesTargetContent.Visibility = Visibility.Visible;
+        TopProdSkeleton.Visibility = Visibility.Collapsed; TopProdContent.Visibility = Visibility.Visible;
+        DiscountsSkeleton.Visibility = Visibility.Collapsed; DiscountsContent.Visibility = Visibility.Visible;
+        CrAlertsSkeleton.Visibility = Visibility.Collapsed; CrAlertsContent.Visibility = Visibility.Visible;
+        LowStockSkeleton.Visibility = Visibility.Collapsed; LowStockContent.Visibility = Visibility.Visible;
+        StockHealthSkeleton.Visibility = Visibility.Collapsed; StockHealthContent.Visibility = Visibility.Visible;
+        StopSkeletonShimmer();
+    }
+
+    private void ApplyInventorySummaryToUI(InventorySummary inv)
+    {
+        var alertGreenForeground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
+        var alertRedBackground = new SolidColorBrush(Color.FromArgb(255, 252, 232, 230));
+        var alertRedForeground = new SolidColorBrush(Color.FromArgb(255, 198, 40, 40));
+        var alertAmberBackground = new SolidColorBrush(Color.FromArgb(255, 255, 244, 229));
+        var alertAmberForeground = new SolidColorBrush(Color.FromArgb(255, 239, 108, 0));
+
+        DashboardAlertItem CreateAlertItem(string n, int c, SolidColorBrush aB, SolidColorBrush aF)
+        {
+            var isHealthy = c == 0;
+            return new DashboardAlertItem { 
+                Name = n, 
+                CountText = CurrencyDisplayHelper.FormatInt(c), 
+                BadgeBackground = isHealthy ? new SolidColorBrush(Color.FromArgb(255, 232, 245, 233)) : aB, 
+                BadgeForeground = isHealthy ? alertGreenForeground : aF 
+            };
+        }
+
+        CriticalAlertsList.ItemsSource = new ObservableCollection<DashboardAlertItem>
+        {
+            CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Shelf"), LocalizationHelper.GetString("ReportsDashboard_Stock_LowStock")), inv.ShelfLow, alertAmberBackground, alertAmberForeground),
+            CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Warehouse"), LocalizationHelper.GetString("ReportsDashboard_Stock_LowStock")), inv.WarehouseLow, alertAmberBackground, alertAmberForeground),
+            CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Shelf"), LocalizationHelper.GetString("ReportsDashboard_Stock_Empty")), inv.ShelfEmpty, alertRedBackground, alertRedForeground),
+            CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Warehouse"), LocalizationHelper.GetString("ReportsDashboard_Stock_Empty")), inv.WarehouseEmpty, alertRedBackground, alertRedForeground)
+        };
+
+        if (inv.TotalProducts > 0)
+        {
+            int healthyCnt = inv.TotalProducts - (inv.ShelfLow + inv.WarehouseLow + inv.ShelfEmpty + inv.WarehouseEmpty);
+            if (healthyCnt < 0) healthyCnt = 0;
+            
+            double pctHealthy = (double)healthyCnt / inv.TotalProducts;
+            double pctLow = (double)(inv.ShelfLow + inv.WarehouseLow) / inv.TotalProducts;
+            double pctOut = (double)(inv.ShelfEmpty + inv.WarehouseEmpty) / inv.TotalProducts;
+
+            HealthyLegendText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_StockHealth_HealthyFormat"), CurrencyDisplayHelper.FormatNumber((decimal)(pctHealthy * 100), "0"));
+            LowStockLegendText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_StockHealth_LowStockFormat"), CurrencyDisplayHelper.FormatNumber((decimal)(pctLow * 100), "0"));
+            OutOfStockLegendText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_StockHealth_OutOfStockFormat"), CurrencyDisplayHelper.FormatNumber((decimal)(pctOut * 100), "0"));
+
+            var colorHealthy = Color.FromArgb(255, 25, 118, 210);
+            var colorLow = Color.FromArgb(255, 249, 168, 37);
+            var colorOut = Color.FromArgb(255, 229, 57, 53);
+
+            _donutSegments = new[] { (pctHealthy, colorHealthy), (pctLow, colorLow), (pctOut, colorOut) };
+            DonutCenterText.Text = CurrencyDisplayHelper.FormatPercent(pctHealthy * 100, "0");
+        }
+    }
+
     private void ReportsDashboardPage_Unloaded(object sender, RoutedEventArgs e)
     {
         StopSkeletonShimmer();
     }
 
-    
+
     private async Task PopulateDashboardAsync()
     {
-        // ── HEADER ─────────────────────────────────────────
+        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ HEADER ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
         var hour = DateTime.Now.Hour;
-        GreetingText.Text = hour < 12 ? "Good morning, Store Manager"
-            : hour < 17 ? "Good afternoon, Store Manager"
-            : "Good evening, Store Manager";
-        TodayDateText.Text = DateTime.Now.ToString("MMMM dd, yyyy");
+        GreetingText.Text = hour < 12 ? LocalizationHelper.GetString("ReportsDashboard_Greeting_Morning")
+            : hour < 17 ? LocalizationHelper.GetString("ReportsDashboard_Greeting_Afternoon")
+            : LocalizationHelper.GetString("ReportsDashboard_Greeting_Evening");
+        TodayDateText.Text = CurrencyDisplayHelper.FormatDate(DateTime.Now);
 
         var todayStartUtc = DateTime.Today.ToUniversalTime();
         var todayEndUtc = DateTime.Today.AddDays(1).ToUniversalTime();
@@ -160,26 +251,37 @@ public sealed partial class ReportsDashboardPage : Page
         // Reveal the main Grid instantly so skeletons appear
         DashboardScrollViewer.Visibility = Visibility.Visible;
 
-        // Fire all data fetches in parallel, wait for ALL to complete
+        // Perform the heavy DB queries completely off the main thread, exactly once.
+        var metricsData = await Task.Run(() =>
+        {
+            return new
+            {
+                Today = ReportingSalesModule.GetDashboardMetrics(todayStartUtc, todayEndUtc),
+                YestPacing = ReportingSalesModule.GetDashboardMetrics(yesterdayStartUtc, yesterdayPacingEndUtc),
+                YestFull = ReportingSalesModule.GetDashboardMetrics(yesterdayStartUtc, yesterdayEndUtc)
+            };
+        });
+
+        // Fire all remaining data fetches in parallel
         await Task.WhenAll(
-            LoadSalesCardAsync(todayStartUtc, todayEndUtc, yesterdayStartUtc, yesterdayPacingEndUtc),
-            LoadProfitCardAsync(todayStartUtc, todayEndUtc),
-            LoadInvoiceCountCardAsync(todayStartUtc, todayEndUtc, yesterdayStartUtc, yesterdayPacingEndUtc),
-            LoadAvgInvoiceCardAsync(todayStartUtc, todayEndUtc),
-            LoadSalesTargetCardAsync(todayStartUtc, todayEndUtc, yesterdayStartUtc, yesterdayEndUtc),
-            LoadDiscountsCardAsync(todayStartUtc, todayEndUtc, yesterdayStartUtc, yesterdayEndUtc),
+            LoadSalesCardAsync(metricsData.Today, metricsData.YestFull),
+            LoadProfitCardAsync(metricsData.Today),
+            LoadInvoiceCountCardAsync(metricsData.Today, metricsData.YestFull),
+            LoadAvgInvoiceCardAsync(metricsData.Today),
+            LoadSalesTargetCardAsync(metricsData.Today, metricsData.YestFull),
+            LoadDiscountsCardAsync(metricsData.Today, metricsData.YestFull),
             LoadTopProductsCardAsync(todayStartUtc, todayEndUtc),
             LoadInventoryCardsAsync(),
             LoadSparklinesAsync(pastWeekStartUtc, todayEndUtc)
         );
 
-        // All data is loaded — now reveal everything and animate
+        // All data is loaded ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â now reveal everything and animate
         DispatcherQueue.TryEnqueue(RevealAndAnimateDashboard);
     }
 
     private async void RevealAndAnimateDashboard()
     {
-        // ── Step 1: Reveal all cards at once (hide skeletons, show content) ──
+        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Step 1: Reveal all cards at once (hide skeletons, show content) ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
         SalesTodaySkeleton.Visibility = Visibility.Collapsed;
         SalesTodayContent.Visibility = Visibility.Visible;
 
@@ -212,14 +314,14 @@ public sealed partial class ReportsDashboardPage : Page
 
         StopSkeletonShimmer();
 
-        // ── Step 2: Wait one frame for WinUI to measure & layout ──
+        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Step 2: Wait one frame for WinUI to measure & layout ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
         await Task.Delay(50);
 
-        // ── Step 3: Animate Sales Target bars ──
+        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Step 3: Animate Sales Target bars ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
         SalesBarContainer.SizeChanged += SalesBarContainer_SizeChanged;
         UpdateSalesBar(_todayBarPct, _yesterdayBarPct);
 
-        // ── Step 4: Animate Top Products progress bars ──
+        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Step 4: Animate Top Products progress bars ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
         foreach (var item in TopProductsList.Items)
         {
             var container = TopProductsList.ContainerFromItem(item) as FrameworkElement;
@@ -246,7 +348,7 @@ public sealed partial class ReportsDashboardPage : Page
             }
         }
 
-        // ── Step 5: Animate Stock Health donut ──
+        // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Step 5: Animate Stock Health donut ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
         if (_donutSegments != null)
         {
             _donutAnimStart = DateTime.UtcNow;
@@ -283,38 +385,36 @@ public sealed partial class ReportsDashboardPage : Page
         }
     }
 
-    private async Task LoadSalesCardAsync(DateTime todayStartUtc, DateTime todayEndUtc, DateTime yesterdayStartUtc, DateTime yesterdayPacingEndUtc)
+    private async Task LoadSalesCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
     {
-        var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
-        var yesterdayPacingMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayPacingEndUtc));
-
         await EnqueueOnUI(() =>
         {
             var todayTotal = todayMetrics.Revenue;
-            var yesterdayPacingTotal = yesterdayPacingMetrics.Revenue;
+            var yesterdayPacingTotal = yesterdayMetrics.Revenue;
             SalesTodayText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayTotal);
 
-            double salesDelta = yesterdayPacingTotal > 0 
-                ? (double)((todayTotal - yesterdayPacingTotal) / yesterdayPacingTotal) * 100.0 
+            double salesDelta = yesterdayPacingTotal > 0
+                ? (double)((todayTotal - yesterdayPacingTotal) / yesterdayPacingTotal) * 100.0
                 : (todayTotal > 0 ? 100.0 : 0);
 
             if (salesDelta >= 0)
             {
-                SalesDeltaText.Text = $"+ {salesDelta:0.#}%  vs  yesterday";
+                var valStr = CurrencyDisplayHelper.FormatNumber((decimal)salesDelta, "0.#");
+                SalesDeltaText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Sales_Delta_Positive"), valStr);
                 SalesDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
             }
             else
             {
-                SalesDeltaText.Text = $"- {Math.Abs(salesDelta):0.#}%  vs  yesterday";
+                var valStr = CurrencyDisplayHelper.FormatNumber((decimal)Math.Abs(salesDelta), "0.#");
+                SalesDeltaText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Sales_Delta_Negative"), valStr);
                 SalesDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 198, 40, 40));
             }
             // Skeleton swap deferred to RevealAndAnimateDashboard
         });
     }
 
-    private async Task LoadProfitCardAsync(DateTime todayStartUtc, DateTime todayEndUtc)
+    private async Task LoadProfitCardAsync(DashboardMetrics todayMetrics)
     {
-        var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
         await EnqueueOnUI(() =>
         {
             var todayTotal = todayMetrics.Revenue;
@@ -324,78 +424,88 @@ public sealed partial class ReportsDashboardPage : Page
             if (todayTotal > 0)
             {
                 var marginPct = (double)(todayProfit / todayTotal) * 100.0;
-                ProfitDeltaText.Text = $"{marginPct:0.#}% margin";
+                var valStr = CurrencyDisplayHelper.FormatNumber((decimal)marginPct, "0.#");
+                ProfitDeltaText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Profit_MarginFormat"), valStr);
                 ProfitDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
             }
             else
             {
-                ProfitDeltaText.Text = "No sales yet";
+                ProfitDeltaText.Text = LocalizationHelper.GetString("ReportsDashboard_Profit_NoSales");
                 ProfitDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 143, 150, 163));
             }
             // Skeleton swap deferred to RevealAndAnimateDashboard
         });
     }
 
-    private async Task LoadInvoiceCountCardAsync(DateTime todayStartUtc, DateTime todayEndUtc, DateTime yesterdayStartUtc, DateTime yesterdayPacingEndUtc)
+    private async Task LoadInvoiceCountCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
     {
-        var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
-        var yesterdayPacingMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayPacingEndUtc));
         await EnqueueOnUI(() =>
         {
             var todayInvoiceCount = todayMetrics.InvoiceCount;
-            var yesterdayPacingInvoiceCount = yesterdayPacingMetrics.InvoiceCount;
-            InvoiceCountText.Text = todayInvoiceCount.ToString("N0");
+            var yesterdayPacingInvoiceCount = yesterdayMetrics.InvoiceCount;
+            InvoiceCountText.Text = CurrencyDisplayHelper.FormatInt(todayInvoiceCount);
 
-            double invoiceDelta = yesterdayPacingInvoiceCount > 0 
-                ? ((double)(todayInvoiceCount - yesterdayPacingInvoiceCount) / yesterdayPacingInvoiceCount) * 100.0 
+            double invoiceDelta = yesterdayPacingInvoiceCount > 0
+                ? ((double)(todayInvoiceCount - yesterdayPacingInvoiceCount) / yesterdayPacingInvoiceCount) * 100.0
                 : (todayInvoiceCount > 0 ? 100.0 : 0);
 
             if (invoiceDelta >= 0)
             {
-                InvoiceDeltaText.Text = $"+ {invoiceDelta:0.#}%  vs  yesterday";
+                var valStr = CurrencyDisplayHelper.FormatNumber((decimal)invoiceDelta, "0.#");
+                InvoiceDeltaText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Invoice_Delta_Positive"), valStr);
                 InvoiceDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
             }
             else
             {
-                InvoiceDeltaText.Text = $"- {Math.Abs(invoiceDelta):0.#}%  vs  yesterday";
+                var valStr = CurrencyDisplayHelper.FormatNumber((decimal)Math.Abs(invoiceDelta), "0.#");
+                InvoiceDeltaText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Invoice_Delta_Negative"), valStr);
                 InvoiceDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 198, 40, 40));
             }
             // Skeleton swap deferred to RevealAndAnimateDashboard
         });
     }
 
-    private async Task LoadAvgInvoiceCardAsync(DateTime todayStartUtc, DateTime todayEndUtc)
+    private async Task LoadAvgInvoiceCardAsync(DashboardMetrics todayMetrics)
     {
-        var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
         await EnqueueOnUI(() =>
         {
             var avgInvoice = todayMetrics.InvoiceCount > 0 ? todayMetrics.Revenue / todayMetrics.InvoiceCount : 0m;
             AvgInvoiceText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(avgInvoice);
-            MedianText.Text = string.Empty;
+
+            if (todayMetrics.InvoiceCount > 0)
+            {
+                MedianText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayMetrics.MedianInvoice);
+            }
+            else
+            {
+                MedianText.Text = string.Empty;
+            }
 
             // Skeleton swap deferred to RevealAndAnimateDashboard
         });
     }
 
-    private async Task LoadSalesTargetCardAsync(DateTime todayStartUtc, DateTime todayEndUtc, DateTime yesterdayStartUtc, DateTime yesterdayEndUtc)
+    private async Task LoadSalesTargetCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
     {
-        var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
-        var yesterdayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayEndUtc));
+        var prefs = await LoginRuntime.LocalPreferences.LoadPreferencesAsync();
+        var dailyTargetAmount = prefs.DailyTarget;
+
         await EnqueueOnUI(() =>
         {
             var todayTotal = todayMetrics.Revenue;
             var yesterdayFullTotal = yesterdayMetrics.Revenue;
-            const decimal dailyTargetAmount = 200000m;
+
+            var gapAmount = todayTotal - dailyTargetAmount;
+            var achievedPct = dailyTargetAmount > 0 ? (double)(todayTotal / dailyTargetAmount) * 100.0 : 0;
             
-            var gapPct = dailyTargetAmount > 0 ? (double)((todayTotal - dailyTargetAmount) / dailyTargetAmount) * 100.0 : 0;
+            var gapSign = gapAmount >= 0 ? "+" : "-";
+            var gapValue = CurrencyDisplayHelper.FormatConfiguredAmount(Math.Abs(gapAmount));
 
             CurrentSalesText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayTotal);
-            SalesGapText.Text = $"{gapPct:+0.#;-0.#}% vs target";
-            SalesGapText.Foreground = gapPct >= 0
-                ? new SolidColorBrush(Color.FromArgb(255, 46, 125, 50))
-                : new SolidColorBrush(Color.FromArgb(255, 198, 40, 40));
             TargetText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(dailyTargetAmount);
-            TargetSubText.Text = $"YESTERDAY: {CurrencyDisplayHelper.FormatConfiguredAmount(yesterdayFullTotal)}  ·  TARGET: {CurrencyDisplayHelper.FormatConfiguredAmount(dailyTargetAmount)}";
+            SalesAchievedPctText.Text = CurrencyDisplayHelper.FormatPercent(achievedPct, "0");
+            
+            TargetSubText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Target_YesterdayPerformance"), CurrencyDisplayHelper.FormatConfiguredAmount(yesterdayFullTotal));
 
             _todayBarPct = dailyTargetAmount > 0 ? Math.Min(1.0, Math.Max(0, (double)(todayTotal / dailyTargetAmount))) : 0;
             _yesterdayBarPct = dailyTargetAmount > 0 ? Math.Min(1.0, Math.Max(0, (double)(yesterdayFullTotal / dailyTargetAmount))) : 0;
@@ -465,7 +575,7 @@ public sealed partial class ReportsDashboardPage : Page
 
     private async Task LoadTopProductsCardAsync(DateTime todayStartUtc, DateTime todayEndUtc)
     {
-        var topProducts = await Task.Run(() => LoginRuntime.Sales.GetTopProducts(todayStartUtc, todayEndUtc, 5));
+        var topProducts = await Task.Run(() => ReportingSalesModule.GetTopProducts(todayStartUtc, todayEndUtc, 5));
         await EnqueueOnUI(() =>
         {
             var topProductsTotalRevenue = topProducts.Sum(item => item.Revenue);
@@ -479,7 +589,7 @@ public sealed partial class ReportsDashboardPage : Page
                             ? Math.Min(100, Math.Max(0, (double)(item.Revenue / topProductsTotalRevenue) * 100.0))
                             : 0
                     })
-                    : new[] { new DashboardProductItem { Name = "No products sold today", Revenue = CurrencyDisplayHelper.FormatConfiguredAmount(0m), Pct = 0 } }
+                    : new[] { new DashboardProductItem { Name = LocalizationHelper.GetString("ReportsDashboard_TopProducts_None"), Revenue = CurrencyDisplayHelper.FormatConfiguredAmount(0m), Pct = 0 } }
             );
 
             // Skeleton swap + animation deferred to RevealAndAnimateDashboard
@@ -498,10 +608,8 @@ public sealed partial class ReportsDashboardPage : Page
         return null;
     }
 
-    private async Task LoadDiscountsCardAsync(DateTime todayStartUtc, DateTime todayEndUtc, DateTime yesterdayStartUtc, DateTime yesterdayEndUtc)
+    private async Task LoadDiscountsCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
     {
-        var todayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(todayStartUtc, todayEndUtc));
-        var yesterdayMetrics = await Task.Run(() => LoginRuntime.Sales.GetDashboardMetrics(yesterdayStartUtc, yesterdayEndUtc));
         await EnqueueOnUI(() =>
         {
             var todayDiscountAmount = todayMetrics.DiscountAmount;
@@ -511,8 +619,8 @@ public sealed partial class ReportsDashboardPage : Page
                 : todayDiscountAmount > 0 ? 100.0 : 0.0;
 
             DiscountsTotalText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayDiscountAmount);
-            DiscountsDeltaText.Text = discountsDeltaPct == 0 ? "0%" : $"{discountsDeltaPct:+0.#;-0.#}%";
-            DiscountsCountText.Text = $"{todayMetrics.DiscountCount} Discounts Applied";
+            DiscountsDeltaText.Text = CurrencyDisplayHelper.FormatStringWithDigits(discountsDeltaPct == 0 ? "0%" : $"{discountsDeltaPct:+0.#;-0.#}%");
+            DiscountsCountText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Discounts_CountFormat"), CurrencyDisplayHelper.FormatInt(todayMetrics.DiscountCount));
 
             // Skeleton swap deferred to RevealAndAnimateDashboard
         });
@@ -520,14 +628,14 @@ public sealed partial class ReportsDashboardPage : Page
 
     private async Task LoadSparklinesAsync(DateTime pastWeekStartUtc, DateTime todayEndUtc)
     {
-        var pastWeekSparklines = await Task.Run(() => LoginRuntime.Sales.GetDailySparklines(pastWeekStartUtc, todayEndUtc));
+        var pastWeekSparklines = await Task.Run(() => ReportingSalesModule.GetDailySparklines(pastWeekStartUtc, todayEndUtc));
         await EnqueueOnUI(() =>
         {
             var numDays = 7;
-            var salesSparkData   = new double[numDays + 1];
-            var profitSparkData  = new double[numDays + 1];
+            var salesSparkData = new double[numDays + 1];
+            var profitSparkData = new double[numDays + 1];
             var invoiceSparkData = new double[numDays + 1];
-            var avgSparkData     = new double[numDays + 1];
+            var avgSparkData = new double[numDays + 1];
 
             salesSparkData[0] = profitSparkData[0] = invoiceSparkData[0] = avgSparkData[0] = 0;
 
@@ -540,8 +648,8 @@ public sealed partial class ReportsDashboardPage : Page
                     if (dayOffset >= 0 && dayOffset < numDays)
                     {
                         var idx = dayOffset + 1;
-                        salesSparkData[idx]   = (double)day.Revenue;
-                        profitSparkData[idx]  = (double)day.Profit;
+                        salesSparkData[idx] = (double)day.Revenue;
+                        profitSparkData[idx] = (double)day.Profit;
                         invoiceSparkData[idx] = day.InvoiceCount;
                     }
                 }
@@ -561,8 +669,8 @@ public sealed partial class ReportsDashboardPage : Page
 
     private async Task LoadInventoryCardsAsync()
     {
-        var products = await Task.Run(() => LoginRuntime.Products.GetAll().ToList());
-        
+        var products = await Task.Run(() => ReportingInventoryCatalog.GetAll().ToList());
+
         await EnqueueOnUI(() =>
         {
             var alertGreenBackground = new SolidColorBrush(Color.FromArgb(255, 232, 245, 233));
@@ -575,22 +683,22 @@ public sealed partial class ReportsDashboardPage : Page
             DashboardAlertItem CreateAlertItem(string n, int c, SolidColorBrush aB, SolidColorBrush aF)
             {
                 var isHealthy = c == 0;
-                return new DashboardAlertItem { Name = n, CountText = c.ToString("N0"), BadgeBackground = isHealthy ? alertGreenBackground : aB, BadgeForeground = isHealthy ? alertGreenForeground : aF };
+                return new DashboardAlertItem { Name = n, CountText = CurrencyDisplayHelper.FormatInt(c), BadgeBackground = isHealthy ? alertGreenBackground : aB, BadgeForeground = isHealthy ? alertGreenForeground : aF };
             }
 
-            var shelfLowCount = products.Count(p => p.QuantityStore > 0 && p.QuantityStore <= p.MinThresholdStore);
-            var warehouseLowCount = products.Count(p => p.QuantityWarehouse > 0 && p.QuantityWarehouse <= p.MinThresholdWarehouse);
-            var shelfEmptyCount = products.Count(p => p.QuantityStore <= 0);
-            var warehouseEmptyCount = products.Count(p => p.QuantityWarehouse <= 0);
+            var shelfLowCount = products.Count(p => p.HasShelfLowAlert);
+            var warehouseLowCount = products.Count(p => p.HasWarehouseLowAlert);
+            var shelfEmptyCount = products.Count(p => p.IsShelfOutOfStock);
+            var warehouseEmptyCount = products.Count(p => p.IsWarehouseOutOfStock);
 
             CriticalAlertsList.ItemsSource = new ObservableCollection<DashboardAlertItem>
             {
-                CreateAlertItem("Shelf Low Stock", shelfLowCount, alertAmberBackground, alertAmberForeground),
-                CreateAlertItem("Warehouse Low Stock", warehouseLowCount, alertAmberBackground, alertAmberForeground),
-                CreateAlertItem("Shelf Empty", shelfEmptyCount, alertRedBackground, alertRedForeground),
-                CreateAlertItem("Warehouse Empty", warehouseEmptyCount, alertRedBackground, alertRedForeground)
+                CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Shelf"), LocalizationHelper.GetString("ReportsDashboard_Stock_LowStock")), shelfLowCount, alertAmberBackground, alertAmberForeground),
+                CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Warehouse"), LocalizationHelper.GetString("ReportsDashboard_Stock_LowStock")), warehouseLowCount, alertAmberBackground, alertAmberForeground),
+                CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Shelf"), LocalizationHelper.GetString("ReportsDashboard_Stock_Empty")), shelfEmptyCount, alertRedBackground, alertRedForeground),
+                CreateAlertItem(string.Format(LocalizationHelper.GetString("ReportsDashboard_Alert_Format"), LocalizationHelper.GetString("ReportsDashboard_Stock_Warehouse"), LocalizationHelper.GetString("ReportsDashboard_Stock_Empty")), warehouseEmptyCount, alertRedBackground, alertRedForeground)
             };
-            
+
             // Skeleton swap deferred to RevealAndAnimateDashboard
 
             var stockAmber = new SolidColorBrush(Color.FromArgb(255, 255, 143, 0));
@@ -600,20 +708,28 @@ public sealed partial class ReportsDashboardPage : Page
             var lowStockRows = products.Select(product =>
             {
                 var displayName = string.IsNullOrWhiteSpace(product.Name) ? $"Product #{product.Id}" : product.Name.Trim();
-                var shelfOut = product.QuantityStore <= 0;
-                var warehouseOut = product.QuantityWarehouse <= 0;
-                var shelfLow = product.QuantityStore > 0 && product.QuantityStore <= product.MinThresholdStore;
-                var warehouseLow = product.QuantityWarehouse > 0 && product.QuantityWarehouse <= product.MinThresholdWarehouse;
+                var shelfOut = product.IsShelfOutOfStock;
+                var warehouseOut = product.IsWarehouseOutOfStock;
+                var shelfLow = product.HasShelfLowAlert;
+                var warehouseLow = product.HasWarehouseLowAlert;
 
-                if (shelfOut && warehouseOut) return new { Item = new DashboardStockItem { Name = displayName, PrimaryLabelText = "Shelf ", PrimaryStatusText = "Empty", PrimaryStatusBrush = stockRed, SecondaryLabelText = "Warehouse ", SecondaryStatusText = "Empty", SecondaryStatusBrush = stockRed, SimpleStatusVisibility = Visibility.Collapsed, DetailedStatusVisibility = Visibility.Visible, SimpleBadgeTextVisibility = Visibility.Collapsed, BadgeVisible = Visibility.Visible }, SeverityRank = 0, RemainingQty = 0m, SortName = displayName };
-                if (shelfOut || warehouseOut) return new { Item = new DashboardStockItem { Name = displayName, StockStatus = "Out of Stock", StatusBrush = stockRed, BadgeText = shelfOut ? "Shelf" : "Warehouse", BadgeVisible = Visibility.Visible }, SeverityRank = 1, RemainingQty = 0m, SortName = displayName };
-                if (shelfLow && warehouseLow) return new { Item = new DashboardStockItem { Name = displayName, PrimaryLabelText = "Shelf ", PrimaryStatusText = $"{product.QuantityStore:N0} left", PrimaryStatusBrush = stockAmber, SecondaryLabelText = "Warehouse ", SecondaryStatusText = $"{product.QuantityWarehouse:N0} left", SecondaryStatusBrush = stockAmber, SimpleStatusVisibility = Visibility.Collapsed, DetailedStatusVisibility = Visibility.Visible, SimpleBadgeTextVisibility = Visibility.Collapsed, BadgeVisible = Visibility.Visible }, SeverityRank = 2, RemainingQty = Math.Max(0m, (decimal)(product.QuantityStore + product.QuantityWarehouse)), SortName = displayName };
-                if (shelfLow || warehouseLow) return new { Item = new DashboardStockItem { Name = displayName, StockStatus = "Low Stock", StatusBrush = stockAmber, BadgeText = shelfLow ? "Shelf" : "Warehouse", BadgeVisible = Visibility.Visible }, SeverityRank = 3, RemainingQty = Math.Max(0m, (decimal)(shelfLow ? product.QuantityStore : product.QuantityWarehouse)), SortName = displayName };
+                if (shelfOut && warehouseOut) return new { Item = new DashboardStockItem { Name = displayName, PrimaryLabelText = LocalizationHelper.GetString("ReportsDashboard_Stock_ShelfLabel"), PrimaryStatusText = LocalizationHelper.GetString("ReportsDashboard_Stock_Empty"), PrimaryStatusBrush = stockRed, SecondaryLabelText = LocalizationHelper.GetString("ReportsDashboard_Stock_WarehouseLabel"), SecondaryStatusText = LocalizationHelper.GetString("ReportsDashboard_Stock_Empty"), SecondaryStatusBrush = stockRed, SimpleStatusVisibility = Visibility.Collapsed, DetailedStatusVisibility = Visibility.Visible, SimpleBadgeTextVisibility = Visibility.Collapsed, BadgeVisible = Visibility.Visible }, SeverityRank = 0, RemainingQty = 0m, SortName = displayName };
+                if (shelfOut || warehouseOut) return new { Item = new DashboardStockItem { Name = displayName, StockStatus = LocalizationHelper.GetString("ReportsDashboard_Stock_OutOffStock"), StatusBrush = stockRed, BadgeText = shelfOut ? LocalizationHelper.GetString("ReportsDashboard_Stock_Shelf") : LocalizationHelper.GetString("ReportsDashboard_Stock_Warehouse"), BadgeVisible = Visibility.Visible }, SeverityRank = 1, RemainingQty = 0m, SortName = displayName };
+                if (shelfLow && warehouseLow) return new { Item = new DashboardStockItem { Name = displayName, PrimaryLabelText = LocalizationHelper.GetString("ReportsDashboard_Stock_ShelfLabel"), PrimaryStatusText = string.Format(LocalizationHelper.GetString("ReportsDashboard_Stock_QtyLeftFormat"), product.QuantityStore.ToString("N0")), PrimaryStatusBrush = stockAmber, SecondaryLabelText = LocalizationHelper.GetString("ReportsDashboard_Stock_WarehouseLabel"), SecondaryStatusText = string.Format(LocalizationHelper.GetString("ReportsDashboard_Stock_QtyLeftFormat"), product.QuantityWarehouse.ToString("N0")), SecondaryStatusBrush = stockAmber, SimpleStatusVisibility = Visibility.Collapsed, DetailedStatusVisibility = Visibility.Visible, SimpleBadgeTextVisibility = Visibility.Collapsed, BadgeVisible = Visibility.Visible }, SeverityRank = 2, RemainingQty = Math.Max(0m, (decimal)(product.QuantityStore + product.QuantityWarehouse)), SortName = displayName };
+                if (shelfLow || warehouseLow) return new { Item = new DashboardStockItem { Name = displayName, StockStatus = LocalizationHelper.GetString("ReportsDashboard_Stock_LowStock"), StatusBrush = stockAmber, BadgeText = shelfLow ? LocalizationHelper.GetString("ReportsDashboard_Stock_Shelf") : LocalizationHelper.GetString("ReportsDashboard_Stock_Warehouse"), BadgeVisible = Visibility.Visible }, SeverityRank = 3, RemainingQty = Math.Max(0m, (decimal)(shelfLow ? product.QuantityStore : product.QuantityWarehouse)), SortName = displayName };
                 return null;
-            }).Where(r => r != null).OrderBy(r => r.SeverityRank).ThenBy(r => r.RemainingQty).ThenBy(r => r.SortName).Take(8).Select(r => r.Item).ToList();
+            })
+                .Where(r => r is not null)
+                .Select(r => r!)
+                .OrderBy(r => r.SeverityRank)
+                .ThenBy(r => r.RemainingQty)
+                .ThenBy(r => r.SortName)
+                .Take(8)
+                .Select(r => r.Item)
+                .ToList();
 
-            LowStockList.ItemsSource = new ObservableCollection<DashboardStockItem>(lowStockRows.Count > 0 ? lowStockRows : new[] { new DashboardStockItem { Name = "All products are stocked", StockStatus = "Healthy", StatusBrush = alertGreenForeground, BadgeVisible = Visibility.Collapsed } });
-            
+            LowStockList.ItemsSource = new ObservableCollection<DashboardStockItem>(lowStockRows.Count > 0 ? lowStockRows : new[] { new DashboardStockItem { Name = LocalizationHelper.GetString("ReportsDashboard_Stock_AllStocked"), StockStatus = LocalizationHelper.GetString("ReportsDashboard_Stock_Healthy"), StatusBrush = alertGreenForeground, BadgeVisible = Visibility.Collapsed } });
+
             // Skeleton swap deferred to RevealAndAnimateDashboard
 
             int totalRows = products.Count;
@@ -628,22 +744,22 @@ public sealed partial class ReportsDashboardPage : Page
                 double pctLow = (double)sumLow / totalRows;
                 double pctOut = (double)sumOut / totalRows;
 
-                HealthyLegendText.Text = $"{(pctHealthy * 100):0}%  Healthy";
-                LowStockLegendText.Text = $"{(pctLow * 100):0}%  Low Stock";
-                OutOfStockLegendText.Text = $"{(pctOut * 100):0}%  Out of Stock";
+                HealthyLegendText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_StockHealth_HealthyFormat"), CurrencyDisplayHelper.FormatNumber((decimal)(pctHealthy * 100), "0"));
+                LowStockLegendText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_StockHealth_LowStockFormat"), CurrencyDisplayHelper.FormatNumber((decimal)(pctLow * 100), "0"));
+                OutOfStockLegendText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_StockHealth_OutOfStockFormat"), CurrencyDisplayHelper.FormatNumber((decimal)(pctOut * 100), "0"));
 
                 var colorHealthy = Color.FromArgb(255, 25, 118, 210);
                 var colorLow = Color.FromArgb(255, 249, 168, 37);
                 var colorOut = Color.FromArgb(255, 229, 57, 53);
 
                 _donutSegments = new[] { (pctHealthy, colorHealthy), (pctLow, colorLow), (pctOut, colorOut) };
-                DonutCenterText.Text = $"{(pctHealthy * 100):0}%";
+                DonutCenterText.Text = CurrencyDisplayHelper.FormatPercent(pctHealthy * 100, "0");
             }
             // Skeleton swap deferred to RevealAndAnimateDashboard
         });
     }
 
-    // ── Donut drawing engine ──────────────────────────────────────────────────
+    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Donut drawing engine ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
     private static void DrawDonutChart(
         Canvas canvas,
         TextBlock centerLabel,
@@ -685,24 +801,24 @@ public sealed partial class ReportsDashboardPage : Page
         Color color, double thickness)
     {
         double startRad = startDeg * Math.PI / 180.0;
-        double endRad   = (startDeg + sweepDeg) * Math.PI / 180.0;
+        double endRad = (startDeg + sweepDeg) * Math.PI / 180.0;
 
         var startPt = new Point(cx + radius * Math.Cos(startRad), cy + radius * Math.Sin(startRad));
-        var endPt   = new Point(cx + radius * Math.Cos(endRad),   cy + radius * Math.Sin(endRad));
+        var endPt = new Point(cx + radius * Math.Cos(endRad), cy + radius * Math.Sin(endRad));
 
         var figure = new PathFigure
         {
             StartPoint = startPt,
-            IsClosed   = false
+            IsClosed = false
         };
 
         figure.Segments.Add(new ArcSegment
         {
-            Point          = endPt,
-            Size           = new Size(radius, radius),
-            IsLargeArc     = sweepDeg > 180,
+            Point = endPt,
+            Size = new Size(radius, radius),
+            IsLargeArc = sweepDeg > 180,
             SweepDirection = SweepDirection.Clockwise,
-            RotationAngle  = 0
+            RotationAngle = 0
         });
 
         var geometry = new PathGeometry();
@@ -710,12 +826,12 @@ public sealed partial class ReportsDashboardPage : Page
 
         return new Microsoft.UI.Xaml.Shapes.Path
         {
-            Data            = geometry,
-            Stroke          = new SolidColorBrush(color),
+            Data = geometry,
+            Stroke = new SolidColorBrush(color),
             StrokeThickness = thickness,
             StrokeStartLineCap = PenLineCap.Flat,
-            StrokeEndLineCap   = PenLineCap.Flat,
-            Fill            = null
+            StrokeEndLineCap = PenLineCap.Flat,
+            Fill = null
         };
     }
 
@@ -727,7 +843,7 @@ public sealed partial class ReportsDashboardPage : Page
             && item.Name.StartsWith("Discount", StringComparison.OrdinalIgnoreCase);
     }
 
-    // ── Shared TeachingTip for info icons ─────────────────────────────────────
+    // ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ Shared TeachingTip for info icons ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚ÂÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬
     private FrameworkElement? _lastInfoTarget;
 
     private async void InfoIcon_Click(object sender, RoutedEventArgs e)
@@ -750,7 +866,8 @@ public sealed partial class ReportsDashboardPage : Page
         }
 
         CardInfoTip.Target = btn;
-        CardInfoTip.Subtitle = btn.Tag?.ToString() ?? string.Empty;
+        var tagKey = btn.Tag?.ToString() ?? string.Empty;
+        CardInfoTip.Subtitle = LocalizationHelper.GetString(tagKey);
         CardInfoTip.IsOpen = true;
         _lastInfoTarget = btn;
     }

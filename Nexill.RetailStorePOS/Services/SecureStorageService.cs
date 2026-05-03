@@ -1,4 +1,3 @@
-using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -58,7 +57,7 @@ public static class SecureStorageService
     {
         var secrets = LoadAllSecrets();
         secrets[key] = Encrypt(value);
-        var json = JsonSerializer.Serialize(secrets, new JsonSerializerOptions { WriteIndented = true });
+        var json = JsonSerializer.Serialize(secrets, StartupJsonContext.Default.StringDictionary);
         var secretsDirectory = Path.GetDirectoryName(SecretsPath);
         if (!string.IsNullOrWhiteSpace(secretsDirectory))
         {
@@ -114,6 +113,8 @@ public static class SecureStorageService
 
     private static Dictionary<string, string> LoadAllSecrets()
     {
+        TryMigrateLegacySecretsFile();
+
         if (!File.Exists(SecretsPath))
         {
             return new Dictionary<string, string>();
@@ -122,12 +123,29 @@ public static class SecureStorageService
         try
         {
             var json = File.ReadAllText(SecretsPath);
-            return JsonSerializer.Deserialize<Dictionary<string, string>>(json)
+            return JsonSerializer.Deserialize(json, StartupJsonContext.Default.StringDictionary)
                    ?? new Dictionary<string, string>();
         }
         catch
         {
             return new Dictionary<string, string>();
         }
+    }
+
+    private static void TryMigrateLegacySecretsFile()
+    {
+        if (File.Exists(SecretsPath))
+        {
+            return;
+        }
+
+        var legacyPath = Path.Combine(AppDataPaths.CombineLegacy("secure"), "credentials.dat");
+        if (!File.Exists(legacyPath))
+        {
+            return;
+        }
+
+        Directory.CreateDirectory(SecureFolder);
+        File.Copy(legacyPath, SecretsPath, overwrite: false);
     }
 }

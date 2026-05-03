@@ -20,13 +20,38 @@ Write-Host "Publishing $($metadata.AppName) $($metadata.Version) for the Microso
 dotnet publish $projectPath `
     -c $Configuration `
     -p:Platform=x64 `
-    -p:UapAppxPackageBuildMode=StoreUpload `
+    -p:UapAppxPackageBuildMode=SideloadOnly `
     -p:AppxBundle=Always `
-    -p:AppxSymbolPackageEnabled=false
+    -p:AppxPackageSigningEnabled=false `
+    -p:GenerateAppxPackageOnBuild=true
 
 if ($LASTEXITCODE -ne 0) {
     throw "Microsoft Store (.msixupload) publisher crashed."
 }
 
-Write-Host "Microsoft Store package successfully built!" -ForegroundColor Green
-Write-Host "Your .msixupload file has been securely output into the MSBuild 'AppPackages' folder." -ForegroundColor Cyan
+# --- CUSTOM MSIXUPLOAD GENERATOR ---
+# Since mspdbcmf.exe is missing, we zip the .msix into an .msixupload manually
+$appPackagesDir = Join-Path (Split-Path $projectPath) "AppPackages"
+$latestTestDir = Get-ChildItem -Path $appPackagesDir -Directory -Filter "*_Test" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+
+if ($latestTestDir) {
+    $msixFile = Get-ChildItem -Path $latestTestDir.FullName -Filter "*.msixbundle" | Select-Object -First 1
+    if ($msixFile) {
+        $uploadName = $msixFile.Name.Replace(".msixbundle", ".msixupload")
+        $uploadPath = Join-Path $appPackagesDir $uploadName
+        $tempZipPath = Join-Path $appPackagesDir "temp_upload.zip"
+        
+        Write-Host "Bypassing missing C++ Build Tools. Generating custom .msixupload archive..." -ForegroundColor Yellow
+        if (Test-Path $tempZipPath) { Remove-Item $tempZipPath -Force }
+        if (Test-Path $uploadPath) { Remove-Item $uploadPath -Force }
+        
+        Compress-Archive -Path $msixFile.FullName -DestinationPath $tempZipPath -Force
+        Rename-Item -Path $tempZipPath -NewName $uploadName -Force
+        
+        Write-Host "Microsoft Store package successfully built!" -ForegroundColor Green
+        Write-Host "Your .msixupload file has been securely output: $uploadPath" -ForegroundColor Cyan
+        exit 0
+    }
+}
+
+throw "Failed to locate generated .msix file to package into an .msixupload container."

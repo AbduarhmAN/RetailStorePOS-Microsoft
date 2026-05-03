@@ -114,7 +114,7 @@
                     <TextBlock x:Name="GreetingText"
                                FontSize="22" FontWeight="SemiBold"
                                Foreground="#1A1D23"/>
-                    <TextBlock Text="Here's an overview of your store activity."
+                    <TextBlock x:Uid="ReportsDashboard_Subtitle"
                                FontSize="13" Foreground="#8F96A3" Margin="0,2,0,0"/>
                 </StackPanel>
 
@@ -188,9 +188,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Sales Today" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <TextBlock x:Uid="ReportsDashboard_KPI_SalesToday" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Total revenue collected today including tax. Compared against yesterday's performance.">
+                                        Tag="ReportsDashboard_Tooltip_SalesToday">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -245,9 +245,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Net Profit Today" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <TextBlock x:Uid="ReportsDashboard_KPI_NetProfit" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Revenue minus cost of goods sold (COGS). Shows actual profit before overhead expenses.">
+                                        Tag="ReportsDashboard_Tooltip_NetProfit">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -303,9 +303,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Invoice Count" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <TextBlock x:Uid="ReportsDashboard_KPI_InvoiceCount" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Total number of completed transactions today. Each receipt counts as one invoice.">
+                                        Tag="ReportsDashboard_Tooltip_InvoiceCount">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -361,9 +361,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Avg. Invoice Value" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
+                                <TextBlock x:Uid="ReportsDashboard_KPI_AvgInvoiceValue" Style="{StaticResource KpiLabel}" FontSize="16" TextWrapping="NoWrap"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Average amount per transaction. Higher values indicate effective upselling or larger basket sizes.">
+                                        Tag="ReportsDashboard_Tooltip_AvgInvoiceValue">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -371,10 +371,19 @@
 
                             <StackPanel Spacing="6" Margin="0,16,0,8">
                                 <TextBlock x:Name="AvgInvoiceText" Style="{StaticResource KpiValue}"/>
-                                <Canvas HorizontalAlignment="Left" Background="Transparent" Height="0">
-                                    <TextBlock Text="Median:" FontSize="12" FontWeight="Normal" Foreground="#8F96A3" Canvas.Top="-6"/>
-                                    <TextBlock x:Name="MedianText" FontSize="12" FontWeight="Normal" Foreground="#8F96A3" Canvas.Top="-6" Canvas.Left="48"/>
-                                </Canvas>
+                                <StackPanel Orientation="Horizontal"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Spacing="6">
+                                    <TextBlock x:Uid="ReportsDashboard_MedianLabel"
+                                               FontSize="12"
+                                               FontWeight="Normal"
+                                               Foreground="#8F96A3" />
+                                    <TextBlock x:Name="MedianText"
+                                               FontSize="12"
+                                               FontWeight="Normal"
+                                               Foreground="#8F96A3" />
+                                </StackPanel>
                             </StackPanel>
                         </StackPanel>
                     </Grid></Grid>
@@ -414,45 +423,41 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <Grid Grid.Row="0">
+                            <Grid Grid.Row="0" Margin="0,0,0,12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Sales vs Target" Style="{StaticResource CardTitle}"/>
-                                <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Compares today and yesterday against a fixed daily target of $10,000. The blue bar shows today, and the gray bar shows yesterday.">
+                                <TextBlock x:Uid="ReportsDashboard_Target_Title" Style="{StaticResource CardTitle}"/>
+                                <TextBlock x:Name="SalesAchievedPctText" Grid.Column="1" FontSize="18" FontWeight="Bold" Foreground="#1976D2" VerticalAlignment="Center" Margin="12,0"/>
+                                <Button Grid.Column="2" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
+                                        Tag="ReportsDashboard_Tooltip_SalesTarget">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
 
-                            <!-- 3-layer bar -->
-                            <Grid Grid.Row="1" Height="20" x:Name="SalesBarContainer">
-                                <Border Background="White" BorderBrush="#E2E8F0" BorderThickness="1" CornerRadius="10"/>
-                                <Border x:Name="YesterdayBar" Background="#dbdbdb" CornerRadius="10,0,0,10" HorizontalAlignment="Left" Width="0"/>
-                                
-                                <!-- Today Bar Group (Bar + Pill locked to right edge) -->
+                            <!-- Today vs Target Row -->
+                            <Grid Grid.Row="1" Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock x:Uid="ReportsDashboard_Target_TodayLabel" FontSize="10" FontWeight="Bold" Foreground="#8F96A3" Margin="0,0,0,2"/>
+                                    <TextBlock x:Name="CurrentSalesText" FontSize="20" FontWeight="Bold" Foreground="#1A1D23"/>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Right">
+                                    <TextBlock x:Uid="ReportsDashboard_Target_GoalLabel" FontSize="10" FontWeight="Bold" Foreground="#8F96A3" Margin="0,0,0,2" HorizontalAlignment="Right"/>
+                                    <TextBlock x:Name="TargetText" FontSize="18" FontWeight="SemiBold" Foreground="#8F96A3" HorizontalAlignment="Right"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <!-- Progress bar row -->
+                            <Grid Grid.Row="2" Height="14" x:Name="SalesBarContainer" Margin="0,4,0,12">
+                                <Border Background="#F1F5F9" CornerRadius="7"/>
+                                <Border x:Name="YesterdayBar" Background="#E2E8F0" CornerRadius="7" HorizontalAlignment="Left" Width="0"/>
                                 <Grid x:Name="TodayBar" HorizontalAlignment="Left" Width="0">
-                                    <!-- The actual blue bar -->
-                                    <Border Background="#1976D2" CornerRadius="10,0,0,10"/>
-                                    <!-- The pill locked to the right side -->
-                                    <Border Background="#0D47A1" CornerRadius="2" Width="4" Height="24" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <Border Background="#1976D2" CornerRadius="7"/>
                                 </Grid>
                             </Grid>
 
-                            <!-- Values Row -->
-                            <Grid Grid.Row="2">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="CurrentSalesText" FontSize="20" FontWeight="Bold" Foreground="#1A1D23"/>
-                                <Border Grid.Column="1" Margin="8,0" Style="{StaticResource BadgeRed}" VerticalAlignment="Center">
-                                    <TextBlock x:Name="SalesGapText" FontSize="11" FontWeight="SemiBold" Foreground="#C62828"/>
-                                </Border>
-                                <TextBlock Grid.Column="2" x:Name="TargetText" FontSize="16" FontWeight="SemiBold" Foreground="#8F96A3" VerticalAlignment="Center"/>
-                            </Grid>
 
                             <TextBlock Grid.Row="3" x:Name="TargetSubText" FontSize="11" Foreground="#8F96A3"/>
                         </Grid></Grid>
@@ -482,9 +487,9 @@
                                 <Border Background="#FCE8E6" CornerRadius="4" Padding="4" Margin="0,0,8,0">
                                     <SymbolIcon Symbol="Important" Foreground="#E53935"/>
                                 </Border>
-                                <TextBlock Grid.Column="1" Text="Critical Alerts" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" x:Uid="ReportsDashboard_Alerts_Title" Style="{StaticResource CardTitle}" VerticalAlignment="Center"/>
                                 <Button Grid.Column="2" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Current inventory alert counts by location. Shelf Low Stock means shelf quantity is above zero and at or below its minimum threshold. Warehouse Low Stock means warehouse quantity is above zero and at or below its minimum threshold. Shelf Empty and Warehouse Empty mean the quantity at that location is zero or below. Rows are counted by location, not by unique whole-store product status.">
+                                        Tag="ReportsDashboard_Tooltip_CriticalAlerts">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -544,9 +549,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Top Selling Products" Style="{StaticResource CardTitle}"/>
+                                <TextBlock x:Uid="ReportsDashboard_TopProducts_Title" Style="{StaticResource CardTitle}"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Top products ranked by revenue generated today. Progress bar shows each product's share of the combined revenue from the displayed products.">
+                                        Tag="ReportsDashboard_Tooltip_TopProducts">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -594,9 +599,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Low Stock / Out of Stock" Style="{StaticResource CardTitle}"/>
+                                <TextBlock x:Uid="ReportsDashboard_StockStatus_Title" Style="{StaticResource CardTitle}"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Top products with the most urgent stock issues. Each product appears once using its worst active issue across shelf and warehouse. The location badge shows Shelf, Warehouse, or Shelf | Warehouse.">
+                                        Tag="ReportsDashboard_Tooltip_StockStatus">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -667,9 +672,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Discounts Today" Style="{StaticResource KpiLabel}"/>
+                                <TextBlock x:Uid="ReportsDashboard_Discounts_Title" Style="{StaticResource KpiLabel}"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Total discount amount applied across all transactions today. Badge compares today's applied discounts against the full discount amount from yesterday.">
+                                        Tag="ReportsDashboard_Tooltip_Discounts">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -708,9 +713,9 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="Stock Health" Style="{StaticResource CardTitle}"/>
+                                <TextBlock x:Uid="ReportsDashboard_StockHealth_Title" Style="{StaticResource CardTitle}"/>
                                 <Button Grid.Column="1" Click="InfoIcon_Click" Background="Transparent" BorderThickness="0" Padding="4" VerticalAlignment="Center"
-                                        Tag="Whole-store inventory breakdown. Healthy means the product is above threshold in both shelf and warehouse. Low Stock means at least one location is at or below threshold, but the product is not completely out everywhere. Out of Stock means both shelf and warehouse are zero or below.">
+                                        Tag="ReportsDashboard_Tooltip_StockHealth">
                                     <FontIcon Glyph="&#xE946;" FontSize="14" Foreground="#8F96A3"/>
                                 </Button>
                             </Grid>
@@ -767,7 +772,7 @@
 
 
         <TeachingTip x:Name="CardInfoTip"
-                     Title="Dashboard Metric"
+                     x:Uid="ReportsDashboard_TeachingTip_Title"
                      PreferredPlacement="Right"
                      IsLightDismissEnabled="True">
             <TeachingTip.Resources>

@@ -1,0 +1,53 @@
+<ContentDialog
+    x:Class="RetailStorePOS.WinUiLogin.Views.TimeSyncDialog"
+    x:Uid="TimeSyncDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    CornerRadius="8"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ContentDialog.Title>
+        <TextBlock x:Uid="TimeSyncDialog_Title" Text="System Clock Error Detected" />
+    </ContentDialog.Title>
+
+    <StackPanel Spacing="16" Width="400">
+        <TextBlock 
+            x:Uid="TimeSyncDialog_Description"
+            Text="Your system clock appears to be set in the past. Continuing with an incorrect clock will corrupt your sales data and analytics. Please fix your Windows Date &amp; Time, then press Retry." 
+            TextWrapping="Wrap" 
+            FontSize="16"/>
+        
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Button: Continue Override (Gray, not prominent) -->
+            <Button Grid.Column="0" 
+                    x:Name="ContinueButton" 
+                    x:Uid="TimeSyncDialog_ContinueButton"
+                    Content="Continue" 
+                    Click="ContinueButton_Click"
+                    CornerRadius="4"
+                    Background="#333333"
+                    Foreground="#AAAAAA"
+                    BorderThickness="0"
+                    Padding="16,8"/>
+
+            <!-- Right Button: Retry (Prominent) -->
+            <Button Grid.Column="2" 
+                    x:Name="RetryButton" 
+                    x:Uid="TimeSyncDialog_RetryButton"
+                    Content="Retry" 
+                    Click="RetryButton_Click"
+                    CornerRadius="4"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Padding="24,8"/>
+        </Grid>
+    </StackPanel>
+</ContentDialog>

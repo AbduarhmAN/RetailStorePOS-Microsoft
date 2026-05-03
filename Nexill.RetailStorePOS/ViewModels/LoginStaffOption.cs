@@ -8,14 +8,14 @@ namespace RetailStorePOS.WinUiLogin.ViewModels;
 
 public sealed class LoginStaffOption : ObservableObject
 {
-    private static readonly SolidColorBrush SelectedCardBackgroundBrush = new(ColorHelper.FromArgb(255, 243, 242, 255));
+    private static readonly SolidColorBrush SelectedCardBackgroundBrush = new(ColorHelper.FromArgb(255, 255, 255, 255));
     private static readonly SolidColorBrush IdleCardBackgroundBrush = new(ColorHelper.FromArgb(255, 255, 255, 255));
-    private static readonly SolidColorBrush SelectedCardBorderBrush = new(ColorHelper.FromArgb(255, 91, 70, 244));
-    private static readonly SolidColorBrush IdleCardBorderBrush = new(ColorHelper.FromArgb(255, 216, 225, 239));
-    private static readonly SolidColorBrush SelectedBadgeBackgroundBrush = new(ColorHelper.FromArgb(255, 233, 231, 255));
-    private static readonly SolidColorBrush IdleBadgeBackgroundBrush = new(ColorHelper.FromArgb(255, 238, 244, 255));
-    private static readonly SolidColorBrush SelectedInitialForegroundBrush = new(ColorHelper.FromArgb(255, 67, 56, 202));
-    private static readonly SolidColorBrush IdleInitialForegroundBrush = new(ColorHelper.FromArgb(255, 53, 87, 214));
+    private static readonly SolidColorBrush SelectedCardBorderBrush = new(ColorHelper.FromArgb(255, 11, 99, 246));
+    private static readonly SolidColorBrush IdleCardBorderBrush = new(ColorHelper.FromArgb(255, 226, 232, 240));
+    private static readonly SolidColorBrush SelectedBadgeBackgroundBrush = new(ColorHelper.FromArgb(255, 190, 205, 245));
+    private static readonly SolidColorBrush IdleBadgeBackgroundBrush = new(ColorHelper.FromArgb(255, 203, 218, 255));
+    private static readonly SolidColorBrush SelectedInitialForegroundBrush = new(ColorHelper.FromArgb(255, 15, 23, 42));
+    private static readonly SolidColorBrush IdleInitialForegroundBrush = new(ColorHelper.FromArgb(255, 15, 23, 42));
     private static readonly SolidColorBrush PinReadyBackgroundBrush = new(ColorHelper.FromArgb(255, 220, 252, 231));
     private static readonly SolidColorBrush PinReadyForegroundBrush = new(ColorHelper.FromArgb(255, 22, 101, 52));
     private static readonly SolidColorBrush PinMissingBackgroundBrush = new(ColorHelper.FromArgb(255, 255, 237, 213));
@@ -70,7 +70,7 @@ public sealed class LoginStaffOption : ObservableObject
 
     public Visibility SelectionGlyphVisibility => IsSelected ? Visibility.Visible : Visibility.Collapsed;
 
-    public string PinStatusText => HasPin ? "PIN ready" : "Needs PIN setup";
+    public string PinStatusText => HasPin ? "PIN set" : "Needs PIN setup";
 
     private static string GetInitial(string displayName, string username)
     {

@@ -19,7 +19,7 @@ public sealed partial class LoginPage : Page
     private const int AdminMode = 1;
     private static readonly TimeSpan IndicatorAnimationDuration = TimeSpan.FromMilliseconds(380);
     private static readonly SolidColorBrush SelectedModeBrush = new(Colors.White);
-    private static readonly SolidColorBrush UnselectedModeBrush = new(ColorHelper.FromArgb(255, 88, 101, 123));
+    private static readonly SolidColorBrush UnselectedModeBrush = new(ColorHelper.FromArgb(255, 61, 66, 92));
     private Storyboard? _modeIndicatorStoryboard;
     private bool _isIndicatorTransitionActive;
 
@@ -117,6 +117,8 @@ public sealed partial class LoginPage : Page
         var showCashier = modeIndex == CashierMode;
         CashierLoginPanel.Visibility = showCashier ? Visibility.Visible : Visibility.Collapsed;
         AdminLoginPanel.Visibility = showCashier ? Visibility.Collapsed : Visibility.Visible;
+        CashierActionPanel.Visibility = showCashier ? Visibility.Visible : Visibility.Collapsed;
+        AdminActionPanel.Visibility = showCashier ? Visibility.Collapsed : Visibility.Visible;
 
         AdminPasswordBox.Password = string.Empty;
         PinPasswordBox.Password = string.Empty;
@@ -144,6 +146,7 @@ public sealed partial class LoginPage : Page
         if (focusInput)
         {
             FocusCurrentMode();
+
         }
 
         UpdateFirstRunCashierTipVisibility();
@@ -156,41 +159,39 @@ public sealed partial class LoginPage : Page
         var staffCount = ViewModel.Staff.Count;
         var hasStaff = staffCount > 0;
 
-        ModeTitleText.Text = showCashier
-            ? "Cashier sign-in"
-            : ViewModel.IsSetupMode ? "Administrator setup" : "Administrator sign-in";
+        ModeTitleText.Text = LocalizationHelper.GetString("LoginPage_ModeTitle_SignIn");
 
         ModeSubtitleText.Text = showCashier
-            ? "Select a cashier and unlock the register with a PIN."
+            ? LocalizationHelper.GetString("LoginPage_ModeSubtitle_Cashier")
             : ViewModel.IsSetupMode
-                ? "Use the administrator account to finish setup before opening the store."
-                : "Use an administrator account for users, inventory, reports, and store controls.";
+                ? LocalizationHelper.GetString("LoginPage_ModeSubtitle_Setup")
+                : LocalizationHelper.GetString("LoginPage_ModeSubtitle_Admin");
 
         HeroSupportText.Text = showCashier
-            ? "Cashier mode keeps the counter moving."
+            ? LocalizationHelper.GetString("LoginPage_HeroSupport_Cashier")
             : ViewModel.IsSetupMode
-                ? "Administrator access is required to finish first-time setup."
-                : "Administrator access protects pricing, users, reports, and settings.";
+                ? LocalizationHelper.GetString("LoginPage_HeroSupport_Setup")
+                : LocalizationHelper.GetString("LoginPage_HeroSupport_Admin");
 
         CashierCountBadgeText.Text = hasStaff
-            ? "Ready"
-            : "No profiles yet";
+            ? LocalizationHelper.GetString("LoginPage_Badge_Ready")
+            : LocalizationHelper.GetString("LoginPage_Badge_NoProfiles");
 
         CashierHelperText.Text = hasStaff
-            ? "Choose a cashier card, then enter the PIN."
-            : "Add an active staff user with a PIN in Users to enable quick cashier sign-in.";
+            ? LocalizationHelper.GetString("LoginPage_Helper_HasStaff")
+            : LocalizationHelper.GetString("LoginPage_Helper_NoStaff");
 
         AdminHelperText.Text = ViewModel.IsSetupMode
-            ? "Use the administrator account to finish first-time setup."
-            : "Use an administrator account for secure changes and store-wide controls.";
+            ? LocalizationHelper.GetString("LoginPage_AdminHelper_Setup")
+            : LocalizationHelper.GetString("LoginPage_AdminHelper_Admin");
 
         SetupCallout.Visibility = ViewModel.IsSetupMode ? Visibility.Visible : Visibility.Collapsed;
         SetupCalloutText.Text = hasStaff
-            ? "Finish admin setup, then the cashier profiles will be ready for the next shift."
-            : "Finish admin setup, then add cashier profiles with PINs.";
+            ? LocalizationHelper.GetString("LoginPage_SetupCallout_HasStaff")
+            : LocalizationHelper.GetString("LoginPage_SetupCallout_NoStaff");
 
-        CashierActionButton.Content = "Login";
-        AdminActionButton.Content = "Login as admin";
+        CashierActionButton.Content = LocalizationHelper.GetString("LoginPage_LoginButton_Content");
+        AdminActionButton.Content = LocalizationHelper.GetString("LoginPage_LoginButton_Content");
     }
 
     private void UpdateModeTabVisuals(int modeIndex)
@@ -210,15 +211,9 @@ public sealed partial class LoginPage : Page
             return;
         }
 
-        var activeButton = ViewModel.SelectedModeIndex == CashierMode ? CashierTabButton : AdminTabButton;
-        if (activeButton.ActualWidth <= 0)
-        {
-            return;
-        }
-
-        var buttonOrigin = activeButton.TransformToVisual(ModeTabStrip).TransformPoint(new Point(0, 0));
-        var targetX = buttonOrigin.X + 3;
-        var targetWidth = Math.Max(0, activeButton.ActualWidth - 6);
+        var tabWidth = ModeTabStrip.ActualWidth / 2;
+        var targetX = ViewModel.SelectedModeIndex == CashierMode ? 0 : tabWidth;
+        var targetWidth = Math.Max(0, tabWidth);
 
         if (!animate || !IsLoaded)
         {
@@ -449,7 +444,9 @@ public sealed partial class LoginPage : Page
             StatusInfoBar.Visibility = Visibility.Visible;
             StatusInfoBar.IsOpen = true;
             StatusInfoBar.Severity = InfoBarSeverity.Error;
-            StatusInfoBar.Title = showCashier ? "Cashier sign-in failed" : "Admin sign-in failed";
+            StatusInfoBar.Title = showCashier 
+                ? LocalizationHelper.GetString("LoginPage_Status_CashierFailed") 
+                : LocalizationHelper.GetString("LoginPage_Status_AdminFailed");
             StatusInfoBar.Message = ViewModel.ErrorMessage;
             return;
         }
@@ -459,7 +456,9 @@ public sealed partial class LoginPage : Page
             StatusInfoBar.Visibility = Visibility.Visible;
             StatusInfoBar.IsOpen = true;
             StatusInfoBar.Severity = InfoBarSeverity.Success;
-            StatusInfoBar.Title = showCashier ? "Cashier unlocked" : "Administrator signed in";
+            StatusInfoBar.Title = showCashier 
+                ? LocalizationHelper.GetString("LoginPage_Status_CashierUnlocked") 
+                : LocalizationHelper.GetString("LoginPage_Status_AdminSignedIn");
             StatusInfoBar.Message = ViewModel.SuccessMessage;
             return;
         }
@@ -483,8 +482,8 @@ public sealed partial class LoginPage : Page
         StatusInfoBar.Visibility = Visibility.Visible;
         StatusInfoBar.IsOpen = true;
         StatusInfoBar.Severity = InfoBarSeverity.Warning;
-        StatusInfoBar.Title = "Default administrator created";
-        StatusInfoBar.Message = $"Sign in with username '{hint.Username}' and password '{hint.Password}', then change it after setup.";
+        StatusInfoBar.Title = LocalizationHelper.GetString("LoginPage_Status_DefaultAdminCreated");
+        StatusInfoBar.Message = string.Format(LocalizationHelper.GetString("LoginPage_Status_DefaultAdminMessage"), hint.Username, hint.Password);
 
         AdminPasswordBox.Focus(FocusState.Programmatic);
     }
@@ -495,7 +494,7 @@ public sealed partial class LoginPage : Page
         return admin is not null
             && admin.IsAdmin
             && admin.IsActive
-            && RetailStorePOS.Data.Repositories.UserRepository.VerifyPassword("1234", admin.PasswordHash);
+            && RetailStorePOS.Data.Modules.UsersAuth.UserRepository.VerifyPassword("1234", admin.PasswordHash);
     }
 
     private void UpdateFirstRunCashierTipVisibility()

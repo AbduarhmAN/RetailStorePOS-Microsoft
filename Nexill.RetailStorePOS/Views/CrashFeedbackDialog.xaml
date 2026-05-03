@@ -1,0 +1,44 @@
+<ContentDialog
+    x:Class="RetailStorePOS.WinUiLogin.Views.CrashFeedbackDialog"
+    x:Uid="CrashFeedbackDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    DefaultButton="Primary"
+    RequestedTheme="Default"
+    CornerRadius="8">
+
+    <ContentDialog.Title>
+        <TextBlock x:Uid="CrashFeedbackDialog_Title" Text="Are you facing an issue?" />
+    </ContentDialog.Title>
+
+    <StackPanel Spacing="16" Width="400">
+        <TextBlock x:Uid="CrashFeedbackDialog_IntroText" 
+                   Text="We're sorry for the interruption. We noticed your previous session ended abruptly. To help us improve stability, which feature were you trying to use?" 
+                   TextWrapping="Wrap" />
+
+        <RadioButtons x:Name="IssueCategoryRadioGroup" SelectedIndex="0">
+            <RadioButton x:Uid="CrashFeedbackDialog_Checkout" Content="Processing a sale (Checkout)" Tag="checkout" />
+            <RadioButton x:Uid="CrashFeedbackDialog_Products" Content="Managing products or inventory" Tag="products" />
+            <RadioButton x:Uid="CrashFeedbackDialog_Reports" Content="Viewing reports or dashboard" Tag="reports" />
+            <RadioButton x:Uid="CrashFeedbackDialog_Settings" Content="Configuring store settings or taxes" Tag="settings" />
+            <RadioButton x:Uid="CrashFeedbackDialog_Startup" Content="Just opened the app" Tag="startup" />
+            <RadioButton x:Uid="CrashFeedbackDialog_Other" Content="Other" Tag="other" />
+        </RadioButtons>
+
+        <TextBox x:Name="DetailsTextBox" 
+                 x:Uid="CrashFeedbackDialog_DetailsTextBox"
+                 Header="Additional details (optional)" 
+                 PlaceholderText="Any specific action that caused this?" 
+                 AcceptsReturn="True" 
+                 TextWrapping="Wrap"
+                 Height="80" />
+
+        <CheckBox x:Name="SuppressPromptCheckBox" 
+                  x:Uid="CrashFeedbackDialog_SuppressPromptCheckBox"
+                  Content="Don't show me this dialog again" 
+                  Margin="0,8,0,0"/>
+    </StackPanel>
+</ContentDialog>

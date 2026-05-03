@@ -1,6 +1,7 @@
 using System.Globalization;
+using RetailStorePOS.Data.Modules.Contracts;
 
-namespace RetailStorePOS.Data.Repositories;
+namespace RetailStorePOS.Data.Modules.Telemetry;
 
 public sealed record TelemetryOutboxRecord
 {
@@ -18,6 +19,9 @@ public sealed record TelemetryOutboxRecord
 public sealed class TelemetryOutboxRepository
 {
     private readonly SqliteConnectionFactory _factory;
+    public string ContractKey => TelemetryPlatformContract.LifecycleEventCommand.ContractKey;
+    public OwnedDataAsset OwnedAsset => TelemetryPlatformContract.OutboxAsset;
+    public bool SupportsBackgroundDelivery => !TelemetryPlatformContract.TelemetryCaptureBoundary.OfflineCritical;
 
     public TelemetryOutboxRepository(SqliteConnectionFactory factory)
     {
@@ -27,9 +31,21 @@ public sealed class TelemetryOutboxRepository
     public long Enqueue(string endpoint, string payloadJson, bool mergeDuplicates)
     {
         using var connection = _factory.OpenConnection();
+        return Enqueue(connection, null, endpoint, payloadJson, mergeDuplicates);
+    }
+
+    public long Enqueue(Microsoft.Data.Sqlite.SqliteConnection connection, Microsoft.Data.Sqlite.SqliteTransaction? transaction, string endpoint, string payloadJson, bool mergeDuplicates)
+    {
+        EnsureOptionalTelemetryWrite();
+        endpoint = TelemetryPlatformContract.NormalizeQueuedEndpoint(endpoint);
         using var command = connection.CreateCommand();
-        command.CommandText = @"
-INSERT INTO telemetry_outbox (created_at, endpoint, payload_json, merge_duplicates, attempt_count)
+        if (transaction != null)
+        {
+            command.Transaction = transaction;
+        }
+
+        command.CommandText = $@"
+INSERT INTO {TelemetryPlatformContract.OutboxTableName} (created_at, endpoint, payload_json, merge_duplicates, attempt_count)
 VALUES (@created_at, @endpoint, @payload_json, @merge_duplicates, 0);
 SELECT last_insert_rowid();";
 
@@ -45,9 +61,9 @@ SELECT last_insert_rowid();";
     {
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
-        command.CommandText = @"
+        command.CommandText = $@"
 SELECT id, created_at, endpoint, payload_json, merge_duplicates, attempt_count, last_attempt_at, last_error, sent_at
-FROM telemetry_outbox
+FROM {TelemetryPlatformContract.OutboxTableName}
 WHERE sent_at IS NULL
 ORDER BY created_at ASC, id ASC
 LIMIT @limit;";
@@ -79,8 +95,8 @@ LIMIT @limit;";
     {
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
-        command.CommandText = @"
-UPDATE telemetry_outbox
+        command.CommandText = $@"
+UPDATE {TelemetryPlatformContract.OutboxTableName}
 SET sent_at = @sent_at,
     last_attempt_at = @sent_at,
     last_error = NULL
@@ -94,8 +110,8 @@ WHERE id = @id;";
     {
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
-        command.CommandText = @"
-UPDATE telemetry_outbox
+        command.CommandText = $@"
+UPDATE {TelemetryPlatformContract.OutboxTableName}
 SET attempt_count = attempt_count + 1,
     last_attempt_at = @last_attempt_at,
     last_error = @last_error
@@ -110,10 +126,18 @@ WHERE id = @id;";
     {
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
-        command.CommandText = @"
-DELETE FROM telemetry_outbox
+        command.CommandText = $@"
+DELETE FROM {TelemetryPlatformContract.OutboxTableName}
 WHERE sent_at IS NOT NULL AND sent_at < @cutoff;";
         command.Parameters.AddWithValue("@cutoff", cutoffUtc.ToString("O"));
         command.ExecuteNonQuery();
+    }
+
+    private static void EnsureOptionalTelemetryWrite()
+    {
+        if (TelemetryPlatformContract.TelemetryCaptureBoundary.OfflineCritical)
+        {
+            throw new InvalidOperationException("Telemetry outbox must remain optional and asynchronous.");
+        }
     }
 }

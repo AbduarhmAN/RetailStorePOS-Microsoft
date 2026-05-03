@@ -1,5 +1,5 @@
 using RetailStorePOS.Data.Models;
-using RetailStorePOS.Data.Repositories;
+using RetailStorePOS.Data.Modules.UsersAuth;
 
 namespace RetailStorePOS.App.Services;
 
@@ -10,7 +10,7 @@ public sealed class AuthService
     private User? _currentUser;
     private Session? _currentSession;
 
-public AuthService(UserRepository userRepository, AuditLogService audit)
+    public AuthService(UserRepository userRepository, AuditLogService audit)
     {
         _userRepository = userRepository;
         _audit = audit;

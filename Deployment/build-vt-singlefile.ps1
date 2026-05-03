@@ -25,10 +25,7 @@ dotnet publish $projectPath `
     -p:Platform=x64 `
     -p:WindowsPackageType=None `
     -p:EnableMsixTooling=true `
-    -p:PublishSingleFile=true `
-    -p:IncludeNativeLibrariesForSelfExtract=true `
-    -p:IncludeAllContentForSelfExtract=true `
-    -p:EnableCompressionInSingleFile=true `
+    -p:PublishTrimmed=true `
     --self-contained true `
     -o $publishOutputPath
 

@@ -62,8 +62,8 @@ VersionInfoCompany={#MyAppPublisher}
 VersionInfoDescription={#MyAppName} Setup
 WizardImageFile={#MyWizardImageFile}
 WizardSmallImageFile={#MyWizardSmallImageFile}
-Compression=zip
-SolidCompression=no
+Compression=lzma2/ultra64
+SolidCompression=yes
 UseSetupLdr=x64
 WizardStyle=modern
 
@@ -87,7 +87,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "startmenuicon"; Description: "Create a Start Menu shortcut"; GroupDescription: "{cm:AdditionalIcons}"
 
 [Files]
-Source: "{#MyAppExeSourcePath}"; DestDir: "{app}"; DestName: "{#MyAppExeName}"; Flags: ignoreversion
+Source: "{#MyAppExeSourcePath}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{autoprograms}\{#MyAppPublisher}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\{#MyAppExeName}"; Tasks: startmenuicon
@@ -95,3 +95,7 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilen
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+
+[Code]
+#include "upgrade_remove_previous_versions.inc.iss"
+#include "uninstall_remove_userdata.inc.iss"

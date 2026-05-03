@@ -3,7 +3,7 @@ using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using RetailStorePOS.Data.Models;
+using RetailStorePOS.Data.Modules.Sales;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Models;
 using RetailStorePOS.WinUiLogin.Views;
@@ -48,7 +48,7 @@ public sealed class ReportsViewModel : ObservableObject
         GenerateXReportCommand = new AsyncRelayCommand(GenerateXReport);
 
         SetTodayRange(loadReport: false);
-        StatusText = "Loading...";
+        StatusText = LocalizationHelper.GetString("ReportsReceipts_Status_Loading");
     }
 
     public ObservableCollection<Sale> Sales { get; private set; } = new();
@@ -198,8 +198,8 @@ public sealed class ReportsViewModel : ObservableObject
     public Symbol TransactionToggleSymbol => IsTransactionsExpanded ? Symbol.BackToWindow : Symbol.FullScreen;
 
     public string TransactionToggleTooltip => IsTransactionsExpanded
-        ? "Collapse report view"
-        : "Expand transaction list";
+        ? LocalizationHelper.GetString("ReportsReceipts_Tooltip_Collapse")
+        : LocalizationHelper.GetString("ReportsReceipts_Tooltip_Expand");
 
     private void ClearSearch()
     {
@@ -209,19 +209,19 @@ public sealed class ReportsViewModel : ObservableObject
     private void SetTodayRange(bool loadReport = true)
     {
         SetPresets(today: true, last7: false, last30: false);
-        SetRange(DateTime.Today, DateTime.Today, "Today", loadReport);
+        SetRange(DateTime.Today, DateTime.Today, LocalizationHelper.GetString("ReportsReceipts_Range_Today"), loadReport);
     }
 
     private void SetLast7DaysRange()
     {
         SetPresets(today: false, last7: true, last30: false);
-        SetRange(DateTime.Today.AddDays(-6), DateTime.Today, "Last 7 days");
+        SetRange(DateTime.Today.AddDays(-6), DateTime.Today, LocalizationHelper.GetString("ReportsReceipts_Range_Last7Days"));
     }
 
     private void SetLast30DaysRange()
     {
         SetPresets(today: false, last7: false, last30: true);
-        SetRange(DateTime.Today.AddDays(-29), DateTime.Today, "Last 30 days");
+        SetRange(DateTime.Today.AddDays(-29), DateTime.Today, LocalizationHelper.GetString("ReportsReceipts_Range_Last30Days"));
     }
 
     private void OpenReceiptFolder()
@@ -240,9 +240,10 @@ public sealed class ReportsViewModel : ObservableObject
         try
         {
             var receipt = BuildReceiptSummary(sale);
-            var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
+            var storeName = LoginRuntime.Settings.GetStoreName() ?? LocalizationHelper.GetString("ReportsReceipts_StoreFallback");
             var storeAddress = LoginRuntime.Settings.GetStoreAddress();
             var currencyCode = LoginRuntime.Settings.GetCurrencyCode() ?? "USD";
+            var preferredPrinterName = LoginRuntime.Settings.GetPreferredPrinterName();
 
             using var printHelper = new ReceiptPrintHelper();
             await printHelper.PrintReceiptAsync(
@@ -251,13 +252,14 @@ public sealed class ReportsViewModel : ObservableObject
                 receipt,
                 storeName,
                 storeAddress,
-                currencyCode);
+                currencyCode,
+                preferredPrinterName);
 
-            StatusText = $"Receipt #{sale.ReceiptNumber:D6} sent to printer.";
+            StatusText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Status_ReprintSuccess"), sale.ReceiptNumber);
         }
         catch (Exception ex)
         {
-            StatusText = $"Unable to reprint receipt #{sale.ReceiptNumber:D6}: {ex.Message}";
+            StatusText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Status_ReprintError"), sale.ReceiptNumber, ex.Message);
         }
     }
 
@@ -326,7 +328,7 @@ public sealed class ReportsViewModel : ObservableObject
 
         RangeLabel = from == to
             ? from.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)
-            : $"{from:MMM d} - {to:MMM d, yyyy}";
+            : string.Format(LocalizationHelper.GetString("ReportsReceipts_Date_RangeFormat"), from.ToString("MMM d"), to.ToString("MMM d, yyyy"));
     }
 
     private async Task LoadReport()
@@ -381,7 +383,7 @@ public sealed class ReportsViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            StatusText = $"ERROR: {ex.Message}";
+            StatusText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Status_Error"), ex.Message);
         }
     }
 
@@ -408,13 +410,13 @@ public sealed class ReportsViewModel : ObservableObject
         var top = sortedItems.Take(10);
         foreach (var kvp in top)
         {
-            TopMovers.Add(new ProductVelocityItem { ProductName = kvp.Key, VelocityText = $"{kvp.Value} sold" });
+            TopMovers.Add(new ProductVelocityItem { ProductName = kvp.Key, VelocityText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Velocity_SoldFormat"), kvp.Value) });
         }
 
         var slow = sortedItems.OrderBy(kvp => kvp.Value).Take(10);
         foreach (var kvp in slow)
         {
-            SlowMovers.Add(new ProductVelocityItem { ProductName = kvp.Key, VelocityText = $"{kvp.Value} sold" });
+            SlowMovers.Add(new ProductVelocityItem { ProductName = kvp.Key, VelocityText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Velocity_SoldFormat"), kvp.Value) });
         }
     }
 
@@ -425,7 +427,7 @@ public sealed class ReportsViewModel : ObservableObject
         var to = ToDate?.Date ?? DateTime.Today;
         var rangeText = from == to
             ? from.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
-            : $"{from:yyyy-MM-dd} to {to:yyyy-MM-dd}";
+            : string.Format(LocalizationHelper.GetString("ReportsReceipts_Date_RangeFormat"), from.ToString("yyyy-MM-dd"), to.ToString("yyyy-MM-dd"));
 
         if (string.IsNullOrWhiteSpace(query))
         {
@@ -433,18 +435,18 @@ public sealed class ReportsViewModel : ObservableObject
             var scopedList = _rangeSales.ToList();
             Sales = new ObservableCollection<Sale>(scopedList);
             VisibleTransactionsCount = scopedList.Count;
-            StatusText = $"{rangeText} | {VisibleTransactionsCount} of {TransactionsCount} total transactions.";
+            StatusText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Status_RangeInfo"), rangeText, VisibleTransactionsCount, TransactionsCount);
         }
         else
         {
             // Mode 2: Global Database Search Protocol (SQLite)
-            StatusText = $"Executing Global Search across Database...";
-            
+            StatusText = LocalizationHelper.GetString("ReportsReceipts_Status_Searching");
+
             var globalResults = await Task.Run(() => LoginRuntime.Sales.FindGlobalSales(query, 200).ToList());
-            
+
             Sales = new ObservableCollection<Sale>(globalResults);
             VisibleTransactionsCount = globalResults.Count;
-            StatusText = $"Global Query Active | Found {VisibleTransactionsCount} exact matches.";
+            StatusText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Status_SearchActive"), VisibleTransactionsCount);
         }
 
         OnPropertyChanged(nameof(Sales));
@@ -461,16 +463,14 @@ public sealed class ReportsViewModel : ObservableObject
         try
         {
             var sales = await Task.Run(() => LoginRuntime.Sales.GetSalesByDate(DateTime.Today));
-            var storeName = LoginRuntime.Settings.GetStoreName() ?? "Store";
+            var storeName = LoginRuntime.Settings.GetStoreName() ?? LocalizationHelper.GetString("ReportsReceipts_StoreFallback");
             var pdfPath = XReportHelper.GenerateXReport(sales, DateTime.Today, storeName);
             XReportGenerated?.Invoke(this, pdfPath);
         }
         catch (Exception ex)
         {
-            StatusText = $"Unable to generate X Report: {ex.Message}";
+            StatusText = string.Format(LocalizationHelper.GetString("ReportsReceipts_Status_XReportError"), ex.Message);
             LoginRuntime.ReportException(ex, "ReportsViewModel.GenerateXReport");
         }
     }
 }
-
-

@@ -1,20 +1,18 @@
-using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-using RetailStorePOS.Data.Models;
-using RetailStorePOS.WinUiLogin.Common;
+using RetailStorePOS.Data.Modules.Tax;
 using RetailStorePOS.WinUiLogin.ViewModels;
+using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.WinUiLogin.Views;
 
 public sealed partial class TaxConfigurationPage : Page
 {
+    private static TaxAuthorityRepository TaxAuthoritiesModule => LoginRuntime.TaxAuthorities;
+    private static TaxRuleRepository TaxRulesModule => LoginRuntime.TaxRules;
+    private static TaxGroupRepository TaxGroupsModule => LoginRuntime.TaxGroups;
+
     public SettingsViewModel ViewModel { get; private set; } = null!;
 
     public TaxConfigurationPage()
@@ -66,9 +64,9 @@ public sealed partial class TaxConfigurationPage : Page
         var result = await ShowAuthorityEditorDialog(null);
         if (result != null)
         {
-            LoginRuntime.TaxAuthorities.Create(result);
+            TaxAuthoritiesModule.Create(result);
             ViewModel.LoadTaxData();
-            ViewModel.StatusMessage = "Tax Authority added.";
+            ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_AuthorityAdded");
         }
     }
 
@@ -79,9 +77,9 @@ public sealed partial class TaxConfigurationPage : Page
             var result = await ShowAuthorityEditorDialog(existing);
             if (result != null)
             {
-                LoginRuntime.TaxAuthorities.Update(result);
+                TaxAuthoritiesModule.Update(result);
                 ViewModel.LoadTaxData();
-                ViewModel.StatusMessage = "Tax Authority updated.";
+                ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_AuthorityUpdated");
             }
         }
     }
@@ -92,9 +90,9 @@ public sealed partial class TaxConfigurationPage : Page
         {
             var confirm = new ContentDialog
             {
-                Title = "Delete Tax Agency",
-                Content = $"Are you sure you want to delete \"{existing.Name}\"?",
-                PrimaryButtonText = "Delete",
+                Title = LocalizationHelper.GetString("Tax_Dialog_DeleteAuthority_Title"),
+                Content = LocalizationHelper.Format("Tax_Dialog_DeleteAuthority_Content", existing.Name),
+                PrimaryButtonText = LocalizationHelper.GetString("Generic_Delete"),
                 CloseButtonText = "Cancel",
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = this.XamlRoot
@@ -102,12 +100,15 @@ public sealed partial class TaxConfigurationPage : Page
 
             if (await confirm.ShowAsync() == ContentDialogResult.Primary)
             {
-                try {
-                    LoginRuntime.TaxAuthorities.Delete(existing.Id);
+                try
+                {
+                    TaxAuthoritiesModule.Delete(existing.Id);
                     ViewModel.LoadTaxData();
-                    ViewModel.StatusMessage = "Tax Authority deleted.";
-                } catch {
-                    ViewModel.StatusMessage = "Cannot delete: currently in use by a rule.";
+                    ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_AuthorityDeleted");
+                }
+                catch
+                {
+                    ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_AuthorityInUse");
                 }
             }
         }
@@ -115,16 +116,16 @@ public sealed partial class TaxConfigurationPage : Page
 
     private async Task<TaxAuthority?> ShowAuthorityEditorDialog(TaxAuthority? existing)
     {
-        var nameBox = new TextBox { Header = "Authority Name", Text = existing?.Name ?? "", Margin = new Thickness(0,0,0,12) };
-        var codeBox = new TextBox { Header = "Authority Code", Text = existing?.AuthorityCode ?? "", Margin = new Thickness(0,0,0,12) };
-        var regBox = new TextBox { Header = "Registration # (Optional)", Text = existing?.RegistrationNumber ?? "" };
+        var nameBox = new TextBox { Header = LocalizationHelper.GetString("Tax_Dialog_AuthorityName_Header"), Text = existing?.Name ?? "", Margin = new Thickness(0, 0, 0, 12) };
+        var codeBox = new TextBox { Header = LocalizationHelper.GetString("Tax_Dialog_AuthorityCode_Header"), Text = existing?.AuthorityCode ?? "", Margin = new Thickness(0, 0, 0, 12) };
+        var regBox = new TextBox { Header = LocalizationHelper.GetString("Tax_Dialog_Registration_Header"), Text = existing?.RegistrationNumber ?? "" };
 
         var dialog = new ContentDialog
         {
-            Title = existing == null ? "Add Tax Agency" : "Edit Tax Agency",
+            Title = existing == null ? LocalizationHelper.GetString("Tax_Dialog_AddAuthority_Title") : LocalizationHelper.GetString("Tax_Dialog_EditAuthority_Title"),
             Content = new StackPanel { Children = { nameBox, codeBox, regBox } },
-            PrimaryButtonText = "Save",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = LocalizationHelper.GetString("Generic_Save"),
+            CloseButtonText = LocalizationHelper.GetString("Generic_Cancel"),
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = this.XamlRoot
         };
@@ -133,7 +134,7 @@ public sealed partial class TaxConfigurationPage : Page
         {
             if (string.IsNullOrWhiteSpace(nameBox.Text) || string.IsNullOrWhiteSpace(codeBox.Text))
             {
-                ViewModel.StatusMessage = "Name and Code are required.";
+                ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_NameCodeRequired");
                 return null;
             }
             return new TaxAuthority { Id = existing?.Id ?? 0, Name = nameBox.Text, AuthorityCode = codeBox.Text, RegistrationNumber = regBox.Text };
@@ -142,15 +143,15 @@ public sealed partial class TaxConfigurationPage : Page
     }
 
     // ─── Tax Rules ───────────────────────────────────────────────────
-    
+
     private async void AddTaxRuleButton_Click(object sender, RoutedEventArgs e)
     {
         var result = await ShowTaxRuleEditorDialog(null);
         if (result != null)
         {
-            LoginRuntime.TaxRules.Create(result, LoginRuntime.Auth.CurrentUser?.Id);
+            TaxRulesModule.Create(result, LoginRuntime.Auth.CurrentUser?.Id);
             ViewModel.LoadTaxData();
-            ViewModel.StatusMessage = "Tax Rule added.";
+            ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_RuleAdded");
         }
     }
 
@@ -161,9 +162,9 @@ public sealed partial class TaxConfigurationPage : Page
             var result = await ShowTaxRuleEditorDialog(existing);
             if (result != null)
             {
-                LoginRuntime.TaxRules.Update(result, LoginRuntime.Auth.CurrentUser?.Id);
+                TaxRulesModule.Update(result, LoginRuntime.Auth.CurrentUser?.Id);
                 ViewModel.LoadTaxData();
-                ViewModel.StatusMessage = "Tax Rule updated.";
+                ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_RuleUpdated");
             }
         }
     }
@@ -184,12 +185,15 @@ public sealed partial class TaxConfigurationPage : Page
 
             if (await confirm.ShowAsync() == ContentDialogResult.Primary)
             {
-                try {
-                    LoginRuntime.TaxRules.Delete(existing.Id);
+                try
+                {
+                    TaxRulesModule.Delete(existing.Id);
                     ViewModel.LoadTaxData();
-                    ViewModel.StatusMessage = "Tax Rule deleted.";
-                } catch {
-                    ViewModel.StatusMessage = "Cannot delete: currently in use by a group.";
+                    ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_RuleDeleted");
+                }
+                catch
+                {
+                    ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_RuleInUse");
                 }
             }
         }
@@ -197,9 +201,9 @@ public sealed partial class TaxConfigurationPage : Page
 
     private async Task<TaxRule?> ShowTaxRuleEditorDialog(TaxRule? existing)
     {
-        var nameBox = new TextBox { Header = "Tax Name", Text = existing?.Name ?? "", Margin = new Thickness(0,0,0,12) };
-        
-        var typeCombo = new ComboBox { Header = "Calculation Type", HorizontalAlignment=HorizontalAlignment.Stretch, Margin=new Thickness(0,0,0,12) };
+        var nameBox = new TextBox { Header = LocalizationHelper.GetString("Tax_Dialog_TaxName_Header"), Text = existing?.Name ?? "", Margin = new Thickness(0, 0, 0, 12) };
+
+        var typeCombo = new ComboBox { Header = LocalizationHelper.GetString("Tax_Dialog_CalcType_Header"), HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(0, 0, 0, 12) };
         var calcTypes = new System.Collections.Generic.Dictionary<string, string> {
             { "PERCENTAGE", "Standard Percentage (%)" },
             { "FIXED_AMOUNT", "Fixed Amount ($)" },
@@ -213,9 +217,9 @@ public sealed partial class TaxConfigurationPage : Page
         typeCombo.SelectedValuePath = "Key";
         typeCombo.SelectedValue = existing?.CalcType ?? "PERCENTAGE";
 
-        var rateBox = new TextBox { Header = "Rate Value", Text = existing?.RateValue.ToString() ?? "0", Margin = new Thickness(0,0,0,12) };
-        
-        var scopeCombo = new ComboBox { Header = "Scope", HorizontalAlignment=HorizontalAlignment.Stretch, Margin=new Thickness(0,0,0,12) };
+        var rateBox = new TextBox { Header = LocalizationHelper.GetString("Tax_Dialog_RateValue_Header"), Text = existing?.RateValue.ToString() ?? "0", Margin = new Thickness(0, 0, 0, 12) };
+
+        var scopeCombo = new ComboBox { Header = LocalizationHelper.GetString("Tax_Dialog_Scope_Header"), HorizontalAlignment = HorizontalAlignment.Stretch, Margin = new Thickness(0, 0, 0, 12) };
         var scopes = new System.Collections.Generic.Dictionary<string, string> {
             { "PRODUCT", "Per Product Item" },
             { "ORDER", "Entire Order (Subtotal)" }
@@ -225,7 +229,7 @@ public sealed partial class TaxConfigurationPage : Page
         scopeCombo.SelectedValuePath = "Key";
         scopeCombo.SelectedValue = existing?.Scope ?? "PRODUCT";
 
-        var chkInclusive = new CheckBox { Content = "Inclusive (Buried in price)", IsChecked = existing?.IsInclusive ?? false };
+        var chkInclusive = new CheckBox { Content = LocalizationHelper.GetString("Tax_Dialog_Inclusive_Content"), IsChecked = existing?.IsInclusive ?? false };
 
         var panel = new StackPanel { Children = { nameBox, typeCombo, rateBox, scopeCombo, chkInclusive } };
 
@@ -243,8 +247,9 @@ public sealed partial class TaxConfigurationPage : Page
         {
             if (string.IsNullOrWhiteSpace(nameBox.Text)) return null;
             decimal.TryParse(rateBox.Text, out decimal r);
-            return new TaxRule { 
-                Id = existing?.Id ?? 0, 
+            return new TaxRule
+            {
+                Id = existing?.Id ?? 0,
                 Name = nameBox.Text,
                 CalcType = typeCombo.SelectedValue?.ToString() ?? "PERCENTAGE",
                 RateValue = r,
@@ -274,9 +279,9 @@ public sealed partial class TaxConfigurationPage : Page
         var result = await ShowTaxGroupEditorDialog(null);
         if (result.Group != null)
         {
-            LoginRuntime.TaxGroups.Create(result.Group, result.RuleIds);
+            TaxGroupsModule.Create(result.Group, result.RuleIds);
             ViewModel.LoadTaxData();
-            ViewModel.StatusMessage = "Tax Group added.";
+            ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_GroupAdded");
         }
     }
 
@@ -287,9 +292,9 @@ public sealed partial class TaxConfigurationPage : Page
             var result = await ShowTaxGroupEditorDialog(existing);
             if (result.Group != null)
             {
-                LoginRuntime.TaxGroups.Update(result.Group, result.RuleIds);
+                TaxGroupsModule.Update(result.Group, result.RuleIds);
                 ViewModel.LoadTaxData();
-                ViewModel.StatusMessage = "Tax Group updated.";
+                ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_GroupUpdated");
             }
         }
     }
@@ -300,7 +305,7 @@ public sealed partial class TaxConfigurationPage : Page
         {
             if (existing.IsDefault)
             {
-                ViewModel.StatusMessage = "Cannot delete the default tax group.";
+                ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_CannotDeleteDefaultGroup");
                 return;
             }
 
@@ -316,9 +321,9 @@ public sealed partial class TaxConfigurationPage : Page
 
             if (await confirm.ShowAsync() == ContentDialogResult.Primary)
             {
-                LoginRuntime.TaxGroups.Delete(existing.Id);
+                TaxGroupsModule.Delete(existing.Id);
                 ViewModel.LoadTaxData();
-                ViewModel.StatusMessage = "Tax Group deleted.";
+                ViewModel.StatusMessage = LocalizationHelper.GetString("Tax_Status_GroupDeleted");
             }
         }
     }
@@ -326,12 +331,12 @@ public sealed partial class TaxConfigurationPage : Page
     private async Task<(TaxGroup? Group, List<long> RuleIds)> ShowTaxGroupEditorDialog(TaxGroup? existing)
     {
         var assignedRuleIds = new List<long>();
-        var nameBox = new TextBox { Header = "Profile Name", Text = existing?.Name ?? "", Margin = new Thickness(0,0,0,12) };
-        var defChk = new CheckBox { Content = "Set as Default for new products", IsChecked = existing?.IsDefault ?? false, Margin = new Thickness(0,0,0,12) };
-        
+        var nameBox = new TextBox { Header = "Profile Name", Text = existing?.Name ?? "", Margin = new Thickness(0, 0, 0, 12) };
+        var defChk = new CheckBox { Content = "Set as Default for new products", IsChecked = existing?.IsDefault ?? false, Margin = new Thickness(0, 0, 0, 12) };
+
         var lb = new ListBox { SelectionMode = SelectionMode.Multiple };
-        var allRules = LoginRuntime.TaxRules.GetAll();
-        foreach(var rule in allRules)
+        var allRules = TaxRulesModule.GetAll();
+        foreach (var rule in allRules)
         {
             var lbi = new ListBoxItem { Content = $"{rule.Name} ({rule.DisplaySummary})", Tag = rule.Id };
             lb.Items.Add(lbi);
@@ -341,7 +346,7 @@ public sealed partial class TaxConfigurationPage : Page
             }
         }
 
-        var panel = new StackPanel { Children = { nameBox, defChk, new TextBlock { Text = "Included Tax Rates (Multiple allowed)" }, lb } };
+        var panel = new StackPanel { Children = { nameBox, defChk, new TextBlock { Text = LocalizationHelper.GetString("Tax_Dialog_IncludedRules_Header") }, lb } };
 
         var dialog = new ContentDialog
         {
@@ -356,8 +361,8 @@ public sealed partial class TaxConfigurationPage : Page
         if (await dialog.ShowAsync() == ContentDialogResult.Primary)
         {
             if (string.IsNullOrWhiteSpace(nameBox.Text)) return (null, assignedRuleIds);
-            
-            foreach(ListBoxItem i in lb.SelectedItems)
+
+            foreach (ListBoxItem i in lb.SelectedItems)
             {
                 assignedRuleIds.Add((long)i.Tag);
             }

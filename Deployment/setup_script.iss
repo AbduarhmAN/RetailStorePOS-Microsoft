@@ -43,7 +43,7 @@
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application. Do not use the same AppId value in installers for other applications.
 ; (To generate a new GUID, click Tools | Generate GUID inside the IDE.)
-AppId={{A1B2C3D4-E5F6-7890-1234-567890ABCDEF}
+AppId={{14A5B548-6B24-447E-86DA-D96F702D4D4F}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 ;AppVerName={#MyAppName} {#MyAppVersion}
@@ -213,3 +213,6 @@ begin
     WriteInitialPreferences();
   end;
 end;
+
+#include "upgrade_remove_previous_versions.inc.iss"
+#include "uninstall_remove_userdata.inc.iss"

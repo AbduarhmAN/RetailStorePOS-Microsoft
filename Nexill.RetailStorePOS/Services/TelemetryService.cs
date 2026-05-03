@@ -1,12 +1,13 @@
 using System.Diagnostics;
-using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using RetailStorePOS.Data;
-using RetailStorePOS.Data.Repositories;
+using RetailStorePOS.Data.Modules.Contracts;
+using RetailStorePOS.Data.Modules.Settings;
+using RetailStorePOS.Data.Modules.Telemetry;
 
 namespace RetailStorePOS.App.Services;
 
@@ -14,11 +15,13 @@ public class TelemetryService
 {
     private const int SM_CXSCREEN = 0;
     private const int SM_CYSCREEN = 1;
+    private static readonly WorkflowBoundary TelemetryBoundary = TelemetryPlatformContract.TelemetryCaptureBoundary;
 
     private readonly ILocalPreferencesService _preferencesService;
     private readonly HttpClient _httpClient;
     private readonly TelemetryOutboxRepository? _outboxRepository;
     private readonly InstallationEventRepository? _installationEventRepository;
+    private readonly SettingsRepository? _settingsRepository;
     private readonly SemaphoreSlim _flushGate = new(1, 1);
     private CancellationTokenSource? _syncCancellation;
     private Task? _syncLoopTask;
@@ -38,8 +41,9 @@ public class TelemetryService
         // Load credentials from DPAPI-encrypted vault
         _supabaseUrl = SecureStorageService.GetSecret("SupabaseUrl") ?? string.Empty;
         var supabaseKey = SecureStorageService.GetSecret("SupabaseKey") ?? string.Empty;
-        _outboxRepository = connectionFactory is not null ? new TelemetryOutboxRepository(connectionFactory) : null;
-        _installationEventRepository = connectionFactory is not null ? new InstallationEventRepository(connectionFactory) : null;
+        _outboxRepository = connectionFactory is not null ? TelemetryPlatformContract.ResolveOutbox(new TelemetryOutboxRepository(connectionFactory)) : null;
+        _installationEventRepository = connectionFactory is not null ? TelemetryPlatformContract.ResolveInstallationEvents(new InstallationEventRepository(connectionFactory)) : null;
+        _settingsRepository = connectionFactory is not null ? TelemetryPlatformContract.ResolveSettingsState(new SettingsRepository(connectionFactory)) : null;
 
         _httpClient = new HttpClient();
         _httpClient.Timeout = TimeSpan.FromSeconds(10);
@@ -49,6 +53,10 @@ public class TelemetryService
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {supabaseKey}");
         }
     }
+
+    public RetailStorePOS.Data.Models.TelemetryRuntimeState GetTelemetryState() => _settingsRepository?.GetTelemetryState() ?? new();
+
+    public void SetTelemetryState(RetailStorePOS.Data.Models.TelemetryRuntimeState state) => _settingsRepository?.SetTelemetryState(state);
 
     private static string ResolveAppVersion()
     {
@@ -67,6 +75,8 @@ public class TelemetryService
 
     public void StartBackgroundSync()
     {
+        EnsureOptionalTelemetryBoundary();
+
         if (_outboxRepository is null || _syncCancellation is not null)
         {
             return;
@@ -115,7 +125,7 @@ public class TelemetryService
 
     private async Task<string?> TryGetCountryFromOwnedEndpointAsync()
     {
-        if (string.IsNullOrWhiteSpace(_supabaseUrl))
+        if (!CanAttemptRemoteTelemetry())
         {
             return null;
         }
@@ -253,25 +263,92 @@ public class TelemetryService
         }
     }
 
-    public async Task LogAppClosedAsync(string reason = "app_exit")
+    private async Task RecordInstallationEventAtomicAsync(
+        string eventId,
+        string installId,
+        string eventType,
+        DateTime occurredAtUtc,
+        object payload,
+        RetailStorePOS.Data.Models.TelemetryRuntimeState nextState,
+        string? eventRunId = null,
+        DateTime? eventLastActivityAt = null,
+        string? eventLastActivitySource = null)
+    {
+        if (_installationEventRepository is null || _outboxRepository is null || _settingsRepository is null)
+        {
+            return;
+        }
+
+        var payloadJson = JsonSerializer.Serialize(payload);
+
+        using var connection = _settingsRepository.OpenConnection();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            // Populate the event row with explicit run and activity metadata
+            _installationEventRepository.TryInsert(
+                connection,
+                transaction,
+                eventId,
+                installId,
+                eventType,
+                occurredAtUtc,
+                payloadJson,
+                runId: eventRunId,
+                lastActivityAt: eventLastActivityAt,
+                lastActivitySource: eventLastActivitySource);
+
+            var remotePayload = new
+            {
+                id = eventId,
+                install_id = installId,
+                event_type = eventType,
+                occurred_at = occurredAtUtc.ToString("O"),
+                payload_json = payloadJson,
+                created_at = DateTime.UtcNow.ToString("O"),
+                run_id = eventRunId,
+                last_activity_at = eventLastActivityAt?.ToString("O"),
+                last_activity_source = eventLastActivitySource
+            };
+
+            _outboxRepository.Enqueue(connection, transaction, TelemetryPlatformContract.InstallationEventsUpsertPath, JsonSerializer.Serialize(remotePayload), true);
+
+            // Persist the NEXT state (usually cleared for close/unclean_exit)
+            _settingsRepository.SetTelemetryState(connection, transaction, nextState);
+
+            transaction.Commit();
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Telemetry atomic write failed: {ex.Message}");
+            throw;
+        }
+    }
+
+    public async Task LogAppClosedAsync(string runId, string reason = "app_exit")
     {
         try
         {
             var payload = new
             {
                 type = "app_close",
+                run_id = runId,
                 reason,
                 app_version = AppVersion,
                 timestamp = DateTime.UtcNow.ToString("O")
             };
 
             var trackingData = await GetTrackingDataAsync(countLaunch: false);
-            await RecordInstallationEventAsync(
+
+            // Atomically clear state and record event with its run identifier
+            await RecordInstallationEventAtomicAsync(
                 Guid.NewGuid().ToString(),
                 trackingData.InstallId,
                 "app_close",
                 DateTime.UtcNow,
-                payload);
+                payload,
+                nextState: new RetailStorePOS.Data.Models.TelemetryRuntimeState(),
+                eventRunId: runId);
         }
         catch (Exception ex)
         {
@@ -279,17 +356,88 @@ public class TelemetryService
         }
     }
 
-    public async Task LogAppLaunchAsync()
+    public async Task LogUncleanExitAsync(string runId, DateTime? startedAt, DateTime? lastActivityAt, string? lastActivitySource)
+    {
+        try
+        {
+            var trackingData = await GetTrackingDataAsync(countLaunch: false);
+            var payload = new
+            {
+                type = "unclean_exit",
+                run_id = runId,
+                app_version = AppVersion,
+                timestamp = DateTime.UtcNow.ToString("O"),
+                started_at = startedAt?.ToString("O"),
+                last_activity_at = lastActivityAt?.ToString("O"),
+                last_activity_source = lastActivitySource
+            };
+
+            // Record unclean exit for the PRIOR run, passing prior activity data for estimation
+            await RecordInstallationEventAtomicAsync(
+                Guid.NewGuid().ToString(),
+                trackingData.InstallId,
+                "unclean_exit",
+                DateTime.UtcNow,
+                payload,
+                nextState: new RetailStorePOS.Data.Models.TelemetryRuntimeState(),
+                eventRunId: runId,
+                eventLastActivityAt: lastActivityAt,
+                eventLastActivitySource: lastActivitySource);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Telemetry unclean_exit logging exception: {ex.Message}");
+        }
+    }
+
+    public async Task LogAppLaunchAsync(string runId)
     {
         try
         {
             var trackingData = await GetTrackingDataAsync();
-            var payload = new
+            var occurredAtUtc = DateTime.UtcNow;
+
+            // 1. Record local event FIRST (Atomic with state update)
+            var nextState = new RetailStorePOS.Data.Models.TelemetryRuntimeState { ActiveRunId = runId, ActiveRunStartedAt = occurredAtUtc };
+            var initialPayload = new
             {
                 type = "app_launch",
                 install_id = trackingData.InstallId,
+                run_id = runId,
                 app_version = AppVersion,
-                timestamp = DateTime.UtcNow.ToString("O"),
+                timestamp = occurredAtUtc.ToString("O"),
+                app_launched_count = trackingData.LaunchCount
+            };
+
+            await RecordInstallationEventAtomicAsync(
+                Guid.NewGuid().ToString(),
+                trackingData.InstallId,
+                "app_launch",
+                occurredAtUtc,
+                initialPayload,
+                nextState,
+                eventRunId: runId);
+
+            // 2. Trigger an immediate flush to push the queued event to the server
+            _ = Task.Run(() => FlushQueuedTelemetryAsync());
+
+            // 3. Optional network-dependent enrichment and status update
+            string? country = null;
+            try { country = await GetConnectedCountryAsync(); } catch { }
+
+            string? currency = null;
+            try { currency = System.Globalization.RegionInfo.CurrentRegion.ISOCurrencySymbol; } catch { }
+
+            bool? internet = null;
+            try { internet = NetworkInterface.GetIsNetworkAvailable(); } catch { }
+
+            var enrichedPayload = new
+            {
+                type = "app_launch",
+                install_id = trackingData.InstallId,
+                run_id = runId,
+                app_version = AppVersion,
+                timestamp = occurredAtUtc.ToString("O"),
                 windows_version = GetWindowsVersion(),
                 os_architecture = RuntimeInformation.OSArchitecture.ToString(),
                 dotnet_runtime_version = RuntimeInformation.FrameworkDescription,
@@ -297,35 +445,46 @@ public class TelemetryService
                 cpu_core_bucket = GetCpuCoreBucket(),
                 screen_resolution_bucket = GetScreenResolutionBucket(),
 
-                // Requested Missing Safe Fields
                 build_number = "1200",
                 release_channel = "production",
                 first_run_at = trackingData.FirstRunAt?.ToString("O"),
-                last_seen_at = DateTime.UtcNow.ToString("O"),
-                country_setting = await GetConnectedCountryAsync(),
-                currency_setting = System.Globalization.RegionInfo.CurrentRegion.ISOCurrencySymbol,
+                last_seen_at = occurredAtUtc.ToString("O"),
+                days_since_install = trackingData.DaysSinceInstall,
+                days_since_last_seen = occurredAtUtc.ToString("O"),
+                country_setting = country,
+                currency_setting = currency,
                 startup_time_bucket_ms = "1000-2000",
                 feature_flags = new[] { "new_checkout", "tax_inclusive" },
                 last_update_prompt_at = trackingData.LastUpdatePromptAt?.ToString("O"),
                 last_update_installed_at = trackingData.LastUpdateInstalledAt?.ToString("O"),
                 crash_count = trackingData.CrashCount,
-                internet_status = NetworkInterface.GetIsNetworkAvailable(),
+                internet_status = internet,
                 app_launched_count = trackingData.LaunchCount
             };
 
-            await RecordInstallationEventAsync(
-                Guid.NewGuid().ToString(),
-                trackingData.InstallId,
-                "app_launch",
-                DateTime.UtcNow,
-                payload);
-
-            var json = JsonSerializer.Serialize(payload);
-            await SendOrQueueAsync("/rest/v1/installations", json, mergeDuplicates: true, operationName: "app_launch");
+            await SendOrQueueAsync(TelemetryPlatformContract.InstallationsUpsertPath, JsonSerializer.Serialize(enrichedPayload), mergeDuplicates: true, operationName: "app_launch");
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Telemetry Error: {ex.Message}");
+            Debug.WriteLine($"[TELEMETRY] LogAppLaunchAsync FAILED: {ex.Message}");
+        }
+    }
+
+    public async Task LogGenericEventAsync(string eventType, object payload)
+    {
+        try
+        {
+            var trackingData = await GetTrackingDataAsync(countLaunch: false);
+            await RecordInstallationEventAsync(
+                Guid.NewGuid().ToString(),
+                trackingData.InstallId,
+                eventType,
+                DateTime.UtcNow,
+                payload);
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Telemetry generic event logging exception: {ex.Message}");
         }
     }
 
@@ -373,7 +532,7 @@ public class TelemetryService
             };
 
             await SendOrQueueAsync(
-                "/rest/v1/error_logs",
+                TelemetryPlatformContract.ErrorLogsInsertPath,
                 JsonSerializer.Serialize(remotePayload),
                 mergeDuplicates: false,
                 operationName: operationName);
@@ -415,7 +574,7 @@ public class TelemetryService
         }
 
         await SendOrQueueAsync(
-            "/rest/v1/installation_events?on_conflict=id",
+            TelemetryPlatformContract.InstallationEventsUpsertPath,
             JsonSerializer.Serialize(new
             {
                 id = eventId,
@@ -456,7 +615,9 @@ public class TelemetryService
 
     public async Task FlushQueuedTelemetryAsync(CancellationToken cancellationToken = default)
     {
-        if (_outboxRepository is null || string.IsNullOrWhiteSpace(_supabaseUrl))
+        EnsureOptionalTelemetryBoundary();
+
+        if (_outboxRepository is null || !CanAttemptRemoteTelemetry())
         {
             return;
         }
@@ -468,15 +629,26 @@ public class TelemetryService
 
         try
         {
-            var pending = _outboxRepository.GetPending(25);
+            var pending = _outboxRepository.GetPending(50); // Increased batch size
             if (pending.Count == 0)
             {
                 return;
             }
 
+            var now = DateTime.UtcNow;
             foreach (var item in pending)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+
+                // Simple exponential backoff: 2^attempt minutes, capped at 4 hours
+                if (item.AttemptCount > 0 && item.LastAttemptAt.HasValue)
+                {
+                    var minutesToWait = Math.Min(240, Math.Pow(2, item.AttemptCount));
+                    if (now < item.LastAttemptAt.Value.AddMinutes(minutesToWait))
+                    {
+                        continue;
+                    }
+                }
 
                 var sent = await TrySendPayloadAsync(item.Endpoint, item.PayloadJson, item.MergeDuplicates, cancellationToken);
                 if (sent)
@@ -486,7 +658,6 @@ public class TelemetryService
                 }
 
                 _outboxRepository.MarkFailed(item.Id, "Telemetry sync failed while sending queued item.");
-                break;
             }
 
             _outboxRepository.CleanupSentOlderThan(DateTime.UtcNow.AddDays(-30));
@@ -514,16 +685,14 @@ public class TelemetryService
 
     private async Task<bool> TrySendPayloadAsync(string endpoint, string payloadJson, bool mergeDuplicates, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(_supabaseUrl))
+        if (!CanAttemptRemoteTelemetry())
         {
             return false;
         }
 
         try
         {
-            var requestUri = mergeDuplicates && !endpoint.Contains("on_conflict=", StringComparison.OrdinalIgnoreCase)
-                ? $"{_supabaseUrl}{endpoint}?on_conflict=install_id"
-                : $"{_supabaseUrl}{endpoint}";
+            var requestUri = TelemetryPlatformContract.BuildRequestUri(_supabaseUrl, endpoint, mergeDuplicates);
 
             using var request = new HttpRequestMessage(HttpMethod.Post, requestUri);
             request.Content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
@@ -534,18 +703,25 @@ public class TelemetryService
             }
 
             using var response = await _httpClient.SendAsync(request, cancellationToken);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                Debug.WriteLine($"[TELEMETRY] HTTP {(int)response.StatusCode}: {errorBody}");
+            }
+
             return response.IsSuccessStatusCode;
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Telemetry send failed: {ex.Message}");
+            Debug.WriteLine($"[TELEMETRY] Send failed exception: {ex.Message}");
             return false;
         }
     }
 
     private void NetworkChange_NetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
     {
-        if (!e.IsAvailable || _syncCancellation is null)
+        if (!e.IsAvailable || _syncCancellation is null || !CanAttemptRemoteTelemetry())
         {
             return;
         }
@@ -569,6 +745,24 @@ public class TelemetryService
         catch (Exception ex)
         {
             Debug.WriteLine($"Telemetry sync loop stopped: {ex.Message}");
+        }
+    }
+
+    private bool CanAttemptRemoteTelemetry()
+    {
+        return !string.IsNullOrWhiteSpace(_supabaseUrl);
+    }
+
+    private static void EnsureOptionalTelemetryBoundary()
+    {
+        if (TelemetryBoundary.OfflineCritical)
+        {
+            throw new InvalidOperationException("Telemetry capture must remain optional for offline workflows.");
+        }
+
+        if (!TelemetryPlatformContract.LifecycleEventCommand.OfflineAllowed)
+        {
+            throw new InvalidOperationException($"Telemetry contract '{TelemetryPlatformContract.LifecycleEventCommand.ContractKey}' must remain queueable during offline workflows.");
         }
     }
 

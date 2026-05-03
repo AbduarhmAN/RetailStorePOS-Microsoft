@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:RetailStorePOS.WinUiLogin.Views"
-    xmlns:models="using:RetailStorePOS.Data.Models"
+    xmlns:models="using:RetailStorePOS.Data.Modules.Tax"
     xmlns:common="using:RetailStorePOS.WinUiLogin.Common"
     Background="Transparent">
 
@@ -21,14 +21,14 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <StackPanel>
-                <TextBlock Text="Tax Configuration" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold"/>
-                <TextBlock Text="Manage global tax behavior, rules, regions, and overrides for compliance." 
+                <TextBlock x:Uid="TaxConfiguration_Header_Title" Style="{StaticResource SubtitleTextBlockStyle}" FontWeight="SemiBold"/>
+                <TextBlock x:Uid="TaxConfiguration_Header_Subtitle"
                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
             </StackPanel>
 
             <Button Grid.Column="1" 
                     CornerRadius="3"
-                    Content="Save" 
+                    x:Uid="TaxConfiguration_SaveButton"
                     Style="{StaticResource AccentButtonStyle}" 
                     Command="{x:Bind ViewModel.SaveStoreSettingsCommand}"/>
         </Grid>
@@ -39,15 +39,15 @@
                 <!-- Global Controls -->
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Tax Processing Engine" FontWeight="SemiBold" FontSize="16"/>
-                        <TextBlock Text="Enable or disable tax processing globally. Turning this off bypasses all tax groups." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+                        <TextBlock x:Uid="TaxConfiguration_TaxEngine_Title" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock x:Uid="TaxConfiguration_TaxEngine_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
                         
                         <StackPanel Spacing="4">
-                            <CheckBox Content="Enable tax processing engine" IsChecked="{x:Bind ViewModel.TaxEnabled, Mode=TwoWay}"/>
+                            <CheckBox x:Uid="TaxConfiguration_EnableTax_Label" IsChecked="{x:Bind ViewModel.TaxEnabled, Mode=TwoWay}"/>
                         </StackPanel>
 
                         <StackPanel Spacing="4">
-                            <TextBlock Text="Legacy Default Tax Rate (%)"/>
+                            <TextBlock x:Uid="TaxConfiguration_DefaultRate_Label"/>
                             <NumberBox Value="{x:Bind ViewModel.TaxRatePercentValue, Mode=TwoWay}" CornerRadius="3"
                                        Width="120"
                                        HorizontalAlignment="Left"
@@ -62,8 +62,8 @@
                 <!-- Rounding Settings -->
                 <Border Background="{ThemeResource LayerFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1" CornerRadius="6" Padding="20">
                     <StackPanel Spacing="16">
-                        <TextBlock Text="Global Rounding Behavior" FontWeight="SemiBold" FontSize="16"/>
-                        <TextBlock Text="Configure how fractions of pennies are handled at checkout." Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
+                        <TextBlock x:Uid="TaxConfiguration_Rounding_Title" FontWeight="SemiBold" FontSize="16"/>
+                        <TextBlock x:Uid="TaxConfiguration_Rounding_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,-12,0,0"/>
                         
                         <Grid ColumnSpacing="24">
                             <Grid.ColumnDefinitions>
@@ -71,14 +71,14 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Spacing="4" Grid.Column="0">
-                                <TextBlock Text="Tax Rounding Strategy"/>
+                                <TextBlock x:Uid="TaxConfiguration_RoundingStrategy_Label"/>
                                 <ComboBox ItemsSource="{x:Bind ViewModel.RoundingStrategies}" SelectedValue="{x:Bind ViewModel.SelectedRoundingStrategy, Mode=TwoWay}" SelectedValuePath="Key" DisplayMemberPath="Value" HorizontalAlignment="Stretch" CornerRadius="3" />
-                                <TextBlock Text="Typical default is Standard (Half Up)" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock x:Uid="TaxConfiguration_RoundingStrategy_Tip" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
                             </StackPanel>
                             <StackPanel Spacing="4" Grid.Column="1">
-                                <TextBlock Text="Cash Rounding Unit"/>
+                                <TextBlock x:Uid="TaxConfiguration_CashRounding_Label"/>
                                 <ComboBox ItemsSource="{x:Bind ViewModel.CashRoundingUnits}" SelectedValue="{x:Bind ViewModel.SelectedCashRoundingUnit, Mode=TwoWay}" SelectedValuePath="Key" DisplayMemberPath="Value" HorizontalAlignment="Stretch" CornerRadius="3" />
-                                <TextBlock Text="Used in territories without penny coins" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
+                                <TextBlock x:Uid="TaxConfiguration_CashRounding_Tip" FontSize="12" Foreground="{ThemeResource TextFillColorTertiaryBrush}"/>
                             </StackPanel>
                         </Grid>
                     </StackPanel>
@@ -93,10 +93,10 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Tax Agencies" FontWeight="SemiBold" FontSize="16"/>
-                                <TextBlock Text="Government bodies you collect tax for (State, County, City)." Foreground="{ThemeResource TextFillColorSecondaryBrush}" ToolTipService.ToolTip="Create distinct entries for each jurisdiction that requires separate reporting, like NY State Tax Board."/>
+                                <TextBlock x:Uid="TaxConfiguration_Authorities_Title" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock x:Uid="TaxConfiguration_Authorities_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <Button Grid.Column="1" Content="＋ Add Authority" Click="AddAuthorityButton_Click" CornerRadius="3"/>
+                            <Button Grid.Column="1" x:Uid="TaxConfiguration_AddAuthority_Button" Click="AddAuthorityButton_Click" CornerRadius="3"/>
                         </Grid>
 
                         <ListView ItemsSource="{x:Bind ViewModel.TaxAuthorities, Mode=OneWay}" CornerRadius="3"
@@ -119,9 +119,9 @@
                                         <TextBlock Grid.Column="1" Text="{x:Bind AuthorityCode}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <TextBlock Grid.Column="2" Text="{x:Bind RegistrationNumber}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <Button Grid.Column="3" Content="&#xE70F;" FontFamily="Segoe Fluent Icons" Tag="{x:Bind}" 
-                                                Click="EditAuthorityButton_Click" ToolTipService.ToolTip="Edit" Background="Transparent" BorderBrush="Transparent"/>
+                                                Click="EditAuthorityButton_Click" x:Uid="TaxConfiguration_EditAuthority_Button" Background="Transparent" BorderBrush="Transparent"/>
                                         <Button Grid.Column="4" Content="&#xE74D;" FontFamily="Segoe Fluent Icons" Tag="{x:Bind}" 
-                                                Click="DeleteAuthorityButton_Click" ToolTipService.ToolTip="Delete" Background="Transparent" BorderBrush="Transparent"
+                                                Click="DeleteAuthorityButton_Click" x:Uid="TaxConfiguration_DeleteAuthority_Button" Background="Transparent" BorderBrush="Transparent"
                                                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
                                     </Grid>
                                 </DataTemplate>
@@ -139,12 +139,12 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Tax Rates &amp; Rules" FontWeight="SemiBold" FontSize="16"/>
-                                <TextBlock Text="The specific percentages or flat fees you charge (e.g., 7% State Sales Tax)." Foreground="{ThemeResource TextFillColorSecondaryBrush}" ToolTipService.ToolTip="Define the exact percentages or flat fees you charge. Build separate blocks for State, City, etc."/>
+                                <TextBlock x:Uid="TaxConfiguration_Rules_Title" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock x:Uid="TaxConfiguration_Rules_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
                             <Button
                                     Grid.Column="1"
-                                    Content="＋ Add Tax Rule"
+                                    x:Uid="TaxConfiguration_AddRule_Button"
                                     Click="AddTaxRuleButton_Click"
                                     CornerRadius="3"/>
                         </Grid>
@@ -173,9 +173,9 @@
                                         <TextBlock Grid.Column="3" Text="{x:Bind InclusiveLabel}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <TextBlock Grid.Column="4" Text="{x:Bind ScopeLabel}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <Button Grid.Column="5" Content="&#xE70F;" FontFamily="Segoe Fluent Icons" Tag="{x:Bind}" 
-                                                Click="EditTaxRuleButton_Click" ToolTipService.ToolTip="Edit" Background="Transparent" BorderBrush="Transparent"/>
+                                                Click="EditTaxRuleButton_Click" x:Uid="TaxConfiguration_EditRule_Button" Background="Transparent" BorderBrush="Transparent"/>
                                         <Button Grid.Column="6" Content="&#xE74D;" FontFamily="Segoe Fluent Icons" Tag="{x:Bind}" 
-                                                Click="DeleteTaxRuleButton_Click" ToolTipService.ToolTip="Delete" Background="Transparent" BorderBrush="Transparent"
+                                                Click="DeleteTaxRuleButton_Click" x:Uid="TaxConfiguration_DeleteRule_Button" Background="Transparent" BorderBrush="Transparent"
                                                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"/>
                                     </Grid>
                                 </DataTemplate>
@@ -193,10 +193,10 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="Product Tax Profiles" FontWeight="SemiBold" FontSize="16"/>
-                                <TextBlock Text="Groups of tax rates applied to your inventory. Assign products to these profiles to apply the correct taxes." Foreground="{ThemeResource TextFillColorSecondaryBrush}" ToolTipService.ToolTip="Combine multiple Tax Rates together. Example: Profile Standard Retail might include both State (7%) and City (1.5%) taxes."/>
+                                <TextBlock x:Uid="TaxConfiguration_Groups_Title" FontWeight="SemiBold" FontSize="16"/>
+                                <TextBlock x:Uid="TaxConfiguration_Groups_Subtitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                             </StackPanel>
-                            <Button Grid.Column="1" Content="＋ Add Tax Group" Click="AddTaxGroupButton_Click" CornerRadius="3"/>
+                            <Button Grid.Column="1" x:Uid="TaxConfiguration_AddGroup_Button" Click="AddTaxGroupButton_Click" CornerRadius="3"/>
                         </Grid>
 
                         <ListView ItemsSource="{x:Bind ViewModel.TaxGroups, Mode=OneWay}" CornerRadius="3"
@@ -217,14 +217,14 @@
                                         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                                             <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold"/>
                                             <Border Background="{ThemeResource AccentFillColorDefaultBrush}" CornerRadius="4" Padding="6,2" VerticalAlignment="Center" Visibility="{x:Bind local:TaxConfigurationPage.BoolToVis(IsDefault)}">
-                                                <TextBlock Text="DEFAULT" FontSize="10" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" FontWeight="SemiBold"/>
+                                                <TextBlock x:Uid="TaxConfiguration_DefaultBadge" FontSize="10" Foreground="{ThemeResource TextOnAccentFillColorPrimaryBrush}" FontWeight="SemiBold"/>
                                             </Border>
                                         </StackPanel>
                                         <TextBlock Grid.Column="1" Text="{x:Bind DisplaySummary}" VerticalAlignment="Center" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                         <Button Grid.Column="2" Content="&#xE70F;" FontFamily="Segoe Fluent Icons" Tag="{x:Bind}" 
-                                                Click="EditTaxGroupButton_Click" ToolTipService.ToolTip="Edit" Background="Transparent" BorderBrush="Transparent"/>
+                                                Click="EditTaxGroupButton_Click" x:Uid="TaxConfiguration_EditGroup_Button" Background="Transparent" BorderBrush="Transparent"/>
                                         <Button Grid.Column="3" Content="&#xE74D;" FontFamily="Segoe Fluent Icons" Tag="{x:Bind}" 
-                                                Click="DeleteTaxGroupButton_Click" ToolTipService.ToolTip="Delete" Background="Transparent" BorderBrush="Transparent"
+                                                Click="DeleteTaxGroupButton_Click" x:Uid="TaxConfiguration_DeleteGroup_Button" Background="Transparent" BorderBrush="Transparent"
                                                 Foreground="{ThemeResource SystemFillColorCriticalBrush}"
                                                 IsEnabled="{x:Bind local:TaxConfigurationPage.InverseBool(IsDefault)}"/> <!-- Can't delete default group -->
                                     </Grid>

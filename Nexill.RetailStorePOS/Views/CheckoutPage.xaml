@@ -11,12 +11,17 @@
     xmlns:common="using:RetailStorePOS.WinUiLogin.Common"
     xmlns:input="using:Microsoft.UI.Xaml.Input"
     xmlns:animation="using:Microsoft.UI.Xaml.Media.Animation"
+    xmlns:local="using:RetailStorePOS.WinUiLogin.Views"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="#F9FAFB">
 
-    <Grid Padding="8">
+    <Page.Resources>
+        <ThemeShadow x:Key="CardShadow" />
+    </Page.Resources>
+
+    <Grid Padding="8" x:Name="PageRootGrid">
         <InfoBar x:Name="InventoryAlertInfoBar"
-                 Title="Inventory Alert"
+                 x:Uid="Checkout_Alert_Inventory"
                  Message="{x:Bind ViewModel.InventoryAlertMessage, Mode=OneWay}"
                  IsOpen="{x:Bind ViewModel.IsInventoryAlertOpen, Mode=TwoWay}"
                  Severity="Warning"
@@ -27,31 +32,32 @@
                  Canvas.ZIndex="100" />
 
         <ContentDialog x:Name="DiscountDialog"
+                       x:Uid="Checkout_Discount"
                        Title="Apply Discount"
                        PrimaryButtonText="Apply"
-                       CloseButtonText="Cancel"
+                       CloseButtonText="Discard"
                        PrimaryButtonClick="DiscountDialog_PrimaryButtonClick">
             <StackPanel Spacing="16">
-                <TextBlock Text="Enter the discount amount to apply to the entire cart." TextWrapping="Wrap" />
+                <TextBlock x:Uid="Checkout_Discount_Text" TextWrapping="Wrap" />
                 <Grid ColumnSpacing="12">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="8" VerticalAlignment="Bottom">
-                        <TextBlock Text="Discount Type" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                        <TextBlock x:Uid="Checkout_Discount_TypeLabel" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                         <ToggleSwitch OnContent="Percentage (%)" OffContent="Amount ($)" IsOn="{x:Bind ViewModel.IsDiscountPercentage, Mode=TwoWay}" />
                     </StackPanel>
                     <NumberBox x:Name="DiscountAmountBox"
                                Grid.Column="1"
-                               Header="Discount Value"
+                               x:Uid="Checkout_Discount_ValueHeader"
                                Value="{x:Bind ViewModel.DiscountAmount, Mode=TwoWay}"
                                SpinButtonPlacementMode="Hidden"
                                Minimum="0"
                                common:NumericInputNormalization.NormalizeOnLostFocus="True" />
                 </Grid>
                 <StackPanel Spacing="8">
-                    <TextBlock Text="Quick presets" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock x:Uid="Checkout_Discount_PresetsTitle" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <Grid ColumnSpacing="8" RowSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
@@ -68,30 +74,37 @@
                     </Grid>
                 </StackPanel>
                 <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                    <Run Text="Discount summary: " />
+                    <Run x:Uid="Checkout_Discount_SummaryLabel" />
                     <Run Text="{x:Bind ViewModel.DiscountAmountText, Mode=OneWay}" FontWeight="SemiBold" />
                 </TextBlock>
             </StackPanel>
         </ContentDialog>
 
-        <Grid ColumnSpacing="8">
+        <Grid ColumnSpacing="0"
+              RowSpacing="8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2.2*" />
-                <ColumnDefinition Width="1.05*" />
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="7*" />
             </Grid.ColumnDefinitions>
 
-            <Grid Grid.Column="0" RowSpacing="6">
+            <Grid Grid.Row="0"
+                  Grid.Column="0"
+                  RowSpacing="6">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
                 <Border Grid.Row="0"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        Grid.Column="0"
+                        Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="8"
-                        Padding="0">
+                        BorderThickness="0,0,1,0"
+                        CornerRadius="0"
+                        Padding="0,0,1,0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
@@ -109,23 +122,13 @@
 
                             <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
                                 <FontIcon Glyph="&#xE7BF;" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontSize="18" />
-                                <TextBlock Text="Current Sale" FontSize="18" FontWeight="SemiBold" />
                             </StackPanel>
 
-                            <Border Grid.Column="1"
-                                    Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="4"
-                                    Padding="8,4"
-                                    VerticalAlignment="Center">
-                                <TextBlock Text="{x:Bind ViewModel.CartItemsCountText, Mode=OneWay}"
-                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            </Border>
+                      
 
                             <Button Grid.Column="2"
                                     Command="{x:Bind ViewModel.AddDiscountCommand}"
-                                    Content="Discount"
+                                    x:Uid="Checkout_Cart_DiscountButton"
                                     Padding="12,6"
                                     CornerRadius="4"
                                     VerticalAlignment="Center" />
@@ -133,40 +136,27 @@
                             <Button Grid.Column="3"
                                     Click="ClearCartButton_Click"
                                     IsEnabled="{x:Bind ViewModel.CanClearCart, Mode=OneWay}"
-                                    Content="Clear"
+                                    x:Uid="Checkout_Cart_ClearButton"
                                     Padding="12,6"
                                     CornerRadius="4"
                                     VerticalAlignment="Center" />
                         </Grid>
 
-                        <Grid Grid.Row="1" Margin="8,6,8,6">
+                        <Grid Grid.Row="1" Margin="0,6,0,6">
                                 <ListView x:Name="CartItemsListView"
                                       ItemsSource="{x:Bind ViewModel.CartItems, Mode=OneWay}"
                                       Visibility="{x:Bind ViewModel.CartListVisibility, Mode=OneWay}"
                                       SelectionMode="None"
                                       Padding="0"
+                                      HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch"
                                       ScrollViewer.VerticalScrollBarVisibility="Auto"
                                       ScrollViewer.VerticalScrollMode="Enabled">
                                 <ListView.Header>
                                     <Border Background="{ThemeResource ControlFillColorSecondaryBrush}"
                                             CornerRadius="4"
-                                            Padding="10,6">
-                                        <Grid ColumnSpacing="12" VerticalAlignment="Center">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="360" />
-                                                <ColumnDefinition Width="108" />
-                                                <ColumnDefinition Width="124" />
-                                                <ColumnDefinition Width="118" />
-                                                <ColumnDefinition Width="88" />
-                                            </Grid.ColumnDefinitions>
-
-                                            <TextBlock Text="Item" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="1" Text="Qty" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="2" Text="Price" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="3" Text="Total" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                            <TextBlock Grid.Column="4" Text="Adjust" FontWeight="SemiBold" Foreground="{ThemeResource TextFillColorSecondaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                                        </Grid>
+                                            Padding="10,0"
+                                            HorizontalAlignment="Stretch">
                                     </Border>
                                 </ListView.Header>
                                 <ListView.ItemContainerTransitions>
@@ -176,114 +166,95 @@
                                     <Style TargetType="ListViewItem">
                                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                         <Setter Property="VerticalContentAlignment" Value="Center" />
-                                        <Setter Property="Padding" Value="10,6" />
+                                        <Setter Property="Padding" Value="0,1" />
                                     </Style>
                                 </ListView.ItemContainerStyle>
                                 <ListView.ItemTemplate>
                                     <DataTemplate x:DataType="models:CheckoutCartItem">
-                                        <Grid ColumnSpacing="12"
-                                              HorizontalAlignment="Stretch"
-                                              VerticalAlignment="Center"
-                                              MinHeight="40">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="360" />
-                                                <ColumnDefinition Width="108" />
-                                                <ColumnDefinition Width="124" />
-                                                <ColumnDefinition Width="118" />
-                                                <ColumnDefinition Width="88" />
-                                            </Grid.ColumnDefinitions>
+                                        <Border BorderBrush="#E5E7EB" 
+                                                BorderThickness="1"
+                                                CornerRadius="7"
+                                                
+                                                Background="White"
+                                                Shadow="{ThemeResource CardShadow}"
+                                                Translation="0,0,8">
+                                            <Grid>
+                                                <Border Width="4" 
+                                                        HorizontalAlignment="Left" 
+                                                        Background="#2563EB" 
+                                                        CornerRadius="12,0,0,12" />
+                                                <Grid HorizontalAlignment="Stretch"
+                                                      Padding="16,14"
+                                                      MinHeight="84">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="*" />
+                                                </Grid.RowDefinitions>
 
-                                            <StackPanel Spacing="1" VerticalAlignment="Center">
-                                                <TextBlock Text="{x:Bind Name}"
-                                                           FontWeight="SemiBold"
-                                                           TextTrimming="CharacterEllipsis"
+                                                <!-- Top Row: Name and Trash Icon -->
+                                                <TextBlock Grid.Row="0" Grid.Column="0"
+                                                           Text="{x:Bind Name}"
+                                                           FontWeight="Bold"
+                                                           FontSize="12"
+                                                           Foreground="#111827"
+                                                           TextWrapping="WrapWholeWords"
                                                            MaxLines="1"
-                                                           HorizontalAlignment="Left" />
-                                                <TextBlock Text="{x:Bind Barcode}"
-                                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                                           TextTrimming="CharacterEllipsis"
-                                                           MaxLines="1"
-                                                           HorizontalAlignment="Center"
-                                                           TextAlignment="Center" />
-                                            </StackPanel>
+                                                           HorizontalAlignment="Left"
+                                                           VerticalAlignment="Center" />
 
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <Button Command="{Binding ElementName=RootPage, Path=ViewModel.DecreaseQtyCommand}"
+                                                <Button Grid.Row="0" Grid.Column="1"
+                                                        Command="{Binding DataContext.RemoveItemCommand, ElementName=RootPage}"
                                                         CommandParameter="{x:Bind}"
-                                                        Content="-"
-                                                        Width="30"
-                                                        Height="30"
-                                                        CornerRadius="4" />
-                                                <TextBlock Text="{x:Bind QuantityText, Mode=OneWay}" VerticalAlignment="Center" FontWeight="SemiBold" />
-                                                <Button Command="{Binding ElementName=RootPage, Path=ViewModel.IncreaseQtyCommand}"
-                                                        CommandParameter="{x:Bind}"
-                                                        Content="+"
-                                                        Width="30"
-                                                        Height="30"
-                                                        CornerRadius="4" />
-                                            </StackPanel>
-
-                                            <Grid Grid.Column="2"
-                                                  HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center">
-                                                <Button Click="PriceButton_Click"
-                                                        Visibility="{x:Bind PriceOverrideVisibility, Mode=OneWay}"
-                                                        Background="Transparent"
-                                                        BorderBrush="Transparent"
-                                                        BorderThickness="0"
-                                                        CornerRadius="4"
-                                                        Padding="8,4"
-                                                        HorizontalAlignment="Center"
+                                                        Background="#FEF2F2"
+                                                        Foreground="#EF4444"
+                                                        Width="28"
+                                                        Height="28"
+                                                        CornerRadius="14"
+                                                        Padding="0"
+                                                        HorizontalAlignment="Right"
                                                         VerticalAlignment="Center">
-                                                    <StackPanel Spacing="0" HorizontalAlignment="Center">
-                                                        <TextBlock Text="{x:Bind PriceText, Mode=OneWay}"
-                                                                   HorizontalAlignment="Center"
-                                                                   TextAlignment="Center"
-                                                                   FontWeight="SemiBold" />
-                                                        <TextBlock Text="{x:Bind OriginalPriceText, Mode=OneWay}"
-                                                                   Visibility="{x:Bind OriginalPriceVisibility, Mode=OneWay}"
-                                                                   HorizontalAlignment="Center"
-                                                                   TextAlignment="Center"
-                                                                   FontSize="11"
-                                                                   TextDecorations="Strikethrough"
-                                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
-                                                    </StackPanel>
+                                                    <Button.Resources>
+                                                        <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#FEE2E2" />
+                                                        <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#FECACA" />
+                                                    </Button.Resources>
+                                                    <FontIcon Glyph="&#xE711;" FontSize="14" />
                                                 </Button>
 
-                                                <StackPanel Visibility="{x:Bind PriceReadOnlyVisibility, Mode=OneWay}"
-                                                            HorizontalAlignment="Center"
-                                                            VerticalAlignment="Center"
-                                                            Spacing="0">
-                                                    <TextBlock Text="{x:Bind PriceText, Mode=OneWay}"
-                                                               HorizontalAlignment="Center"
-                                                               TextAlignment="Center"
-                                                               FontWeight="SemiBold" />
-                                                    <TextBlock Text="{x:Bind OriginalPriceText, Mode=OneWay}"
-                                                               Visibility="{x:Bind OriginalPriceVisibility, Mode=OneWay}"
-                                                               HorizontalAlignment="Center"
-                                                               TextAlignment="Center"
-                                                               FontSize="11"
-                                                               TextDecorations="Strikethrough"
-                                                               Foreground="{ThemeResource TextFillColorTertiaryBrush}" />
+                                                <!-- Bottom Row: Qty/Unit and Total Price -->
+                                                <StackPanel Grid.Row="1" Grid.Column="0"
+                                                            Orientation="Horizontal" Spacing="6" 
+                                                            VerticalAlignment="Bottom"
+                                                            Margin="0,8,0,0">
+                                                    <Border Background="#F3F4F6"
+                                                            BorderBrush="#E5E7EB"
+                                                            BorderThickness="1"
+                                                            CornerRadius="4"
+                                                            Padding="6,2">
+                                                        <TextBlock Text="{x:Bind QuantityText, Mode=OneWay}"
+                                                                   FontSize="12"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="#4B5563" />
+                                                    </Border>
+                                                    <TextBlock Text="{x:Bind QuantityPriceUnitText, Mode=OneWay}"
+                                                               FontSize="13"
+                                                               Foreground="#6B7280"
+                                                               VerticalAlignment="Center" />
                                                 </StackPanel>
+
+                                                <TextBlock Grid.Row="1" Grid.Column="1"
+                                                           Text="{x:Bind LineTotalAmountText, Mode=OneWay}"
+                                                           FontWeight="Bold"
+                                                           FontSize="16"
+                                                           Foreground="#111827"
+                                                           HorizontalAlignment="Right"
+                                                           VerticalAlignment="Bottom" />
                                             </Grid>
-
-                                            <TextBlock Grid.Column="3"
-                                                       Text="{x:Bind LineTotalText, Mode=OneWay}"
-                                                       HorizontalAlignment="Center"
-                                                       TextAlignment="Center"
-                                                       VerticalAlignment="Center"
-                                                       FontWeight="SemiBold" />
-
-                                            <Button Grid.Column="4"
-                                                    Command="{Binding ElementName=RootPage, Path=ViewModel.RemoveItemCommand}"
-                                                    CommandParameter="{x:Bind}"
-                                                    Content="Remove"
-                                                    HorizontalAlignment="Center"
-                                                    VerticalAlignment="Center"
-                                                    Padding="8,5"
-                                                    CornerRadius="4" />
-                                        </Grid>
+                                            </Grid>
+                                        </Border>
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
@@ -299,13 +270,13 @@
                                 <StackPanel HorizontalAlignment="Center" Spacing="10">
                                     <Border Width="56"
                                             Height="56"
-                                            Background="{ThemeResource AcrylicBackgroundFillColorBaseBrush}"
-                                            CornerRadius="4"
+                                            Background="#F1F5F9"
+                                            CornerRadius="28"
                                             HorizontalAlignment="Center">
-                                        <FontIcon Glyph="&#xE7BF;" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        <FontIcon Glyph="&#xE7BF;" Foreground="#94A3B8" FontSize="24" HorizontalAlignment="Center" VerticalAlignment="Center" />
                                     </Border>
-                                    <TextBlock Text="No items yet" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                                    <TextBlock Text="Find a product on the right and add it to start the sale."
+                                    <TextBlock x:Uid="Checkout_Cart_EmptyTitle" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                    <TextBlock x:Uid="Checkout_Cart_EmptySubtitle"
                                                TextWrapping="WrapWholeWords"
                                                HorizontalAlignment="Center"
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -313,181 +284,43 @@
                                 </Border>
                         </Grid>
 
-                        <Grid Grid.Row="2" Margin="8,0,8,8" ColumnSpacing="8">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-
-                            <Border Grid.Column="0"
-                                    Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="0.5"
-                                    CornerRadius="4"
-                                    Padding="10,8">
+                        <!-- Integrated Footer Area -->
+                        <Grid Grid.Row="2" Margin="0">
+                            <Border Background="#1E293B" CornerRadius="0" Padding="20,16">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Subtotal" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.SubtotalText, Mode=OneWay}" FontWeight="SemiBold" />
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Column="1"
-                                    Background="{ThemeResource ControlFillColorSecondaryBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="0.5"
-                                    CornerRadius="4"
-                                    Padding="10,8">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Tax" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.TaxText, Mode=OneWay}" FontWeight="SemiBold" />
-                                </Grid>
-                            </Border>
-
-                            <Border Grid.Column="2"
-                                    Background="{ThemeResource AppBarItemPointerOverBackgroundThemeBrush}"
-                                    BorderBrush="{ThemeResource AccentControlElevationBorderBrush}"
-                                    BorderThickness="0"
-                                    CornerRadius="4"
-                                    Padding="10,8">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="Total" FontWeight="SemiBold" />
-                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.TotalText, Mode=OneWay}" FontWeight="Bold" />
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock x:Uid="Checkout_Footer_GrandTotal" FontSize="11" CharacterSpacing="100" Foreground="#94A3B8" FontWeight="Bold" />
+                                        <TextBlock Text="{x:Bind ViewModel.CartItemsCountText, Mode=OneWay}" FontSize="12" Foreground="#64748B" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                        <TextBlock Text="{x:Bind ViewModel.TotalAmountText, Mode=OneWay}" FontWeight="Bold" FontSize="28" Foreground="White" HorizontalAlignment="Right" />
+                                        <TextBlock FontSize="11" Foreground="#94A3B8" HorizontalAlignment="Right" Margin="0,-2,0,0">
+                                            <Run x:Uid="Checkout_Footer_SubtotalLabel" />
+                                            <Run Text="{x:Bind ViewModel.SubtotalAmountText, Mode=OneWay}" />
+                                            <Run Text=" + " />
+                                            <Run x:Uid="Checkout_Footer_TaxLabel" />
+                                            <Run Text="{x:Bind ViewModel.TaxAmountText, Mode=OneWay}" />
+                                            <Run x:Uid="Checkout_Footer_TaxSuffix" />
+                                        </TextBlock>
+                                    </StackPanel>
                                 </Grid>
                             </Border>
                         </Grid>
                     </Grid>
                 </Border>
-
-                <Border Grid.Row="1"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="8">
-                    <Grid ColumnSpacing="6">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="116" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBox Grid.Column="0"
-                                 x:Name="TenderedCashBox"
-                                 Text="{x:Bind ViewModel.TenderedInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                 common:NumericInputNormalization.NormalizeOnLostFocus="True"
-                                 Header="Cash"
-                                 CornerRadius="4"
-                                 Background="LightGray"
-                                 PlaceholderText="Cash Tendered"
-                                 ToolTipService.ToolTip="Shortcut: Ctrl+D"
-                                 BorderThickness="1"
-                                 Padding="0"
-                                 GotFocus="TenderedCashBox_GotFocus"
-                                 TextChanged="TenderedCashBox_TextChanged"
-                                 KeyDown="TenderedCashBox_KeyDown">
-                            <TextBox.KeyboardAccelerators>
-                                <input:KeyboardAccelerator Key="D"
-                                                           Modifiers="Control"
-                                                           Invoked="TenderedCashBox_CtrlD_Invoked" />
-                            </TextBox.KeyboardAccelerators>
-                        </TextBox>
-
-                        <Button Grid.Column="1"
-                                Command="{x:Bind ViewModel.TenderExactCommand}"
-                                Content="Exact"
-                                Padding="10,6"
-                                CornerRadius="4"
-                                VerticalAlignment="Bottom" />
-
-                        <Button Grid.Column="2"
-                                Command="{x:Bind ViewModel.TenderPlus1Command}"
-                                Content="{x:Bind ViewModel.QuickCash1Text, Mode=OneWay}"
-                                Padding="10,6"
-                                CornerRadius="4"
-                                VerticalAlignment="Bottom" />
-
-                        <Button Grid.Column="3"
-                                Command="{x:Bind ViewModel.TenderPlus2Command}"
-                                Content="{x:Bind ViewModel.QuickCash2Text, Mode=OneWay}"
-                                Padding="10,6"
-                                CornerRadius="4"
-                                VerticalAlignment="Bottom" />
-
-                        <Button Grid.Column="4"
-                                Command="{x:Bind ViewModel.TenderPlus3Command}"
-                                Content="{x:Bind ViewModel.QuickCash3Text, Mode=OneWay}"
-                                Padding="10,6"
-                                CornerRadius="4"
-                                VerticalAlignment="Bottom" />
-
-                        <Border Grid.Column="5"
-                                Visibility="{x:Bind ViewModel.StatusVisibility, Mode=OneWay}"
-                                Background="{x:Bind ViewModel.StatusBackgroundBrush, Mode=OneWay}"
-                                BorderBrush="{x:Bind ViewModel.StatusBorderBrush, Mode=OneWay}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="10,8"
-                                Margin="2,0,0,0"
-                                VerticalAlignment="Bottom">
-                            <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
-                                       Foreground="{x:Bind ViewModel.StatusTextBrush, Mode=OneWay}"
-                                       TextWrapping="WrapWholeWords"
-                                       MaxLines="2" />
-                        </Border>
-
-                        <Border Grid.Column="6"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Bottom"
-                                Background="{ThemeResource AppBarItemPointerOverBackgroundThemeBrush}"
-                                BorderBrush="{ThemeResource AppBarItemPointerOverBackgroundThemeBrush}"
-                                BorderThickness="1"
-                                CornerRadius="4"
-                                Padding="10,8">
-                            <Grid ColumnSpacing="12">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="Change:" FontWeight="SemiBold" />
-                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ChangeDueText, Mode=OneWay}" FontWeight="Bold" />
-                            </Grid>
-                        </Border>
-
-                        <Button Grid.Column="7"
-                                Command="{x:Bind ViewModel.CompleteSaleCommand}"
-                                Content="Complete Sale"
-                                Style="{ThemeResource AccentButtonStyle}"
-                                Padding="12,8"
-                                CornerRadius="4"
-                                VerticalAlignment="Bottom" />
-                    </Grid>
-                </Border>
             </Grid>
 
-            <Border Grid.Column="1"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            <Border Grid.Row="0"
+                    Grid.Column="1"
+                    Background="Transparent"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                    BorderThickness="1"
-                    CornerRadius="8"
-                    Padding="10">
+                    BorderThickness="0"
+                    CornerRadius="0"
+                    Padding="10,0,0,0">
                 <Grid RowSpacing="8">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
@@ -497,12 +330,7 @@
                         <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
-                    <StackPanel Spacing="2">
-                        <TextBlock Text="Find Product" FontSize="18" FontWeight="SemiBold" />
-                        <TextBlock Text="Search by product name or barcode, then add the selected item to the sale."
-                                   TextWrapping="WrapWholeWords"
-                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    </StackPanel>
+ 
 
                     <Border Grid.Row="1"
                             Background="{ThemeResource ControlFillColorDefaultBrush}"
@@ -522,13 +350,24 @@
 
                             <TextBox Grid.Column="1"
                                      x:Name="SearchTextBox"
-                                     PlaceholderText="Search products"
+                                     x:Uid="Checkout_Search_Placeholder"
                                      Text="{x:Bind ViewModel.SearchTerm, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      Background="Transparent"
                                      BorderThickness="0"
                                      Padding="0,10,0,10"
                                      TextChanged="SearchTextBox_TextChanged"
-                                     PreviewKeyDown="SearchTextBox_PreviewKeyDown" />
+                                     PreviewKeyDown="SearchTextBox_PreviewKeyDown">
+                                <TextBox.Resources>
+                                    <SolidColorBrush x:Key="TextControlBorderBrush" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBorderBrushFocused" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackground" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="Transparent" />
+                                    <SolidColorBrush x:Key="TextControlElevationBorderBrush" Color="Transparent" />
+                                    <Thickness x:Key="TextControlBorderThemeThicknessFocused">0</Thickness>
+                                </TextBox.Resources>
+                            </TextBox>
                         </Grid>
                     </Border>
 
@@ -554,9 +393,22 @@
                               x:Name="SearchResultsListView"
                               ItemsSource="{x:Bind ViewModel.SearchResults, Mode=OneWay}"
                               IsItemClickEnabled="True"
+                              Loaded="SearchResultsListView_Loaded"
+                              SizeChanged="SearchResultsListView_SizeChanged"
                               PreviewKeyDown="SearchResultsListView_PreviewKeyDown"
                               ItemClick="SearchResultsListView_ItemClick"
-                              SelectionMode="None">
+                              SelectionMode="None"
+                              HorizontalAlignment="Stretch"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                              ScrollViewer.HorizontalScrollMode="Disabled"
+                              ScrollViewer.VerticalScrollBarVisibility="Auto"
+                              ScrollViewer.VerticalScrollMode="Enabled">
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <ItemsWrapGrid Orientation="Horizontal"
+                                               ItemHeight="92" />
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
                         <ListView.ItemContainerStyle>
                             <Style TargetType="ListViewItem">
                                 <Setter Property="Background" Value="Transparent" />
@@ -565,7 +417,7 @@
                                 <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                                 <Setter Property="VerticalContentAlignment" Value="Stretch" />
                                 <Setter Property="Padding" Value="0" />
-                                <Setter Property="Margin" Value="0,0,0,4" />
+                                <Setter Property="Margin" Value="0,0,4,6" />
                                 <Setter Property="UseSystemFocusVisuals" Value="False" />
                             </Style>
                         </ListView.ItemContainerStyle>
@@ -575,36 +427,237 @@
                                         BorderBrush="{x:Bind CardBorderBrush, Mode=OneWay}"
                                         BorderThickness="{x:Bind CardBorderThickness, Mode=OneWay}"
                                         CornerRadius="4"
-                                        Padding="10,8"
+                                        Padding="0"
                                         PointerEntered="SearchResultCard_PointerEntered"
                                         PointerExited="SearchResultCard_PointerExited">
-                                    <Grid ColumnSpacing="10">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*" />
-                                            <ColumnDefinition Width="Auto" />
-                                        </Grid.ColumnDefinitions>
+                                    <Grid>
+                                        <!-- Image-backed layout -->
+                                        <Grid Visibility="{x:Bind HasThumbnail, Mode=OneWay}">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
 
-                                        <StackPanel Spacing="4">
-                                            <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" />
-                                            <TextBlock Text="{x:Bind Price}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        </StackPanel>
+                                            <Border Grid.Row="0" Background="{ThemeResource ControlFillColorSecondaryBrush}" CornerRadius="4,4,0,0">
+                                                <Image Source="{x:Bind ThumbnailImageSource, Mode=OneWay}" Stretch="UniformToFill" />
+                                            </Border>
 
-                                        <FontIcon Grid.Column="1"
-                                                  Glyph="&#xE72A;"
-                                                  Foreground="{x:Bind ChevronBrush, Mode=OneWay}"
-                                                  VerticalAlignment="Center" />
+                                            <Grid Grid.Row="1" Padding="8,0,8,6" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="0,0,4,4">
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto" />
+                                                    <RowDefinition Height="Auto" />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Grid.Row="0" Text="{x:Bind Name}" FontWeight="SemiBold" FontSize="12" MaxLines="2" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Grid>
+
+                                        <!-- No-image layout -->
+                                        <Grid Visibility="{x:Bind HasNoThumbnail, Mode=OneWay}" Padding="10,8">
+                                            <StackPanel Spacing="4" VerticalAlignment="Center">
+                                                <TextBlock Text="{x:Bind Name}" FontWeight="SemiBold" TextWrapping="Wrap" MaxLines="2" />
+                                                <TextBlock Text="{x:Bind FormattedPrice}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                            </StackPanel>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </ListView.ItemTemplate>
                     </ListView>
+                </Grid>
+            </Border>
 
-                    <Button Grid.Row="4"
-                            Click="AddSelectedButton_Click"
-                            IsEnabled="{x:Bind ViewModel.CanAddSelectedProduct, Mode=OneWay}"
-                            Content="Add to Sale"
+            <Border Grid.Row="1"
+                    Grid.ColumnSpan="2"
+                    Background="#F8F9FA"
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="8"
+                    MinHeight="50">
+                <Grid ColumnSpacing="6"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      MinHeight="50">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.8*" MinWidth="140" />
+                        <ColumnDefinition Width="1.2*" MinWidth="120" />
+                        <ColumnDefinition Width="1*" MinWidth="90" />
+                        <ColumnDefinition Width="1*" MinWidth="90" />
+                        <ColumnDefinition Width="1*" MinWidth="90" />
+                        <ColumnDefinition Width="1.6*" MinWidth="140" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0"
+                             x:Name="TenderedCashBox"
+                             Text="{x:Bind ViewModel.TenderedInputText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                             common:NumericInputNormalization.NormalizeOnLostFocus="True"
+                             CornerRadius="4"
+                             Background="LightGray"
+                             x:Uid="Checkout_Pay_TenderPlaceholder"
+                             ToolTipService.ToolTip="Shortcut: Ctrl+D"
+                             BorderThickness="1"
+                             Padding="0"
+                             VerticalAlignment="Stretch"
+                             VerticalContentAlignment="Center"
+                             HorizontalContentAlignment="Center"
+                             TextAlignment="Center"
+                             FontSize="24"
+                             FontWeight="Bold"
+                             GotFocus="TenderedCashBox_GotFocus"
+                             TextChanged="TenderedCashBox_TextChanged"
+                             KeyDown="TenderedCashBox_KeyDown">
+                        <TextBox.KeyboardAccelerators>
+                            <input:KeyboardAccelerator Key="D"
+                                                       Modifiers="Control"
+                                                       Invoked="TenderedCashBox_CtrlD_Invoked" />
+                        </TextBox.KeyboardAccelerators>
+                    </TextBox>
+
+                    <Button Grid.Column="1"
+                            Command="{x:Bind ViewModel.TenderExactCommand}"
+                            Background="#DBEAFE"
+                            Foreground="#1E3A8A"
+                            Padding="12,6"
+                            CornerRadius="6"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#BFDBFE" />
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#93C5FD" />
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#1E3A8A" />
+                        </Button.Resources>
+                        <Grid ColumnSpacing="6" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="0" />
+                            </Grid.ColumnDefinitions>
+                            <FontIcon Glyph="&#xE8FB;" FontSize="16" FontWeight="Bold" Foreground="#1E3A8A" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1"
+                                       x:Uid="Checkout_Pay_ExactButtonText"
+                                       FontWeight="Bold"
+                                       FontSize="16"
+                                       VerticalAlignment="Center"
+                                       HorizontalAlignment="Center"
+                                       TextAlignment="Center"
+                                       TextWrapping="WrapWholeWords"
+                                       Foreground="#1E3A8A" />
+                        </Grid>
+                    </Button>
+
+                    <Button Grid.Column="2"
+                            Command="{x:Bind ViewModel.TenderPlus1Command}"
+                            Background="#E0E7FF"
+                            Foreground="#3730A3"
+                            Padding="10,0"
+                            CornerRadius="6"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#C7D2FE" />
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#A5B4FC" />
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#3730A3" />
+                        </Button.Resources>
+                        <TextBlock Text="{x:Bind ViewModel.QuickCash1Text, Mode=OneWay}"
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   TextWrapping="WrapWholeWords"
+                                   Foreground="#3730A3" />
+                    </Button>
+
+                    <Button Grid.Column="3"
+                            Command="{x:Bind ViewModel.TenderPlus2Command}"
+                            Background="#F5F3FF"
+                            Foreground="#5B21B6"
+                            Padding="10,0"
+                            CornerRadius="6"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#EDE9FE" />
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#DDD6FE" />
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#5B21B6" />
+                        </Button.Resources>
+                        <TextBlock Text="{x:Bind ViewModel.QuickCash2Text, Mode=OneWay}"
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   TextWrapping="WrapWholeWords"
+                                   Foreground="#5B21B6" />
+                    </Button>
+
+                    <Button Grid.Column="4"
+                            Command="{x:Bind ViewModel.TenderPlus3Command}"
+                            Background="#ECFDF5"
+                            Foreground="#065F46"
+                            Padding="10,0"
+                            CornerRadius="6"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <Button.Resources>
+                            <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#D1FAE5" />
+                            <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#A7F3D0" />
+                            <SolidColorBrush x:Key="ButtonForegroundPointerOver" Color="#065F46" />
+                        </Button.Resources>
+                        <TextBlock Text="{x:Bind ViewModel.QuickCash3Text, Mode=OneWay}"
+                                   FontWeight="Bold"
+                                   FontSize="16"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   TextAlignment="Center"
+                                   TextWrapping="WrapWholeWords"
+                                   Foreground="#065F46" />
+                    </Button>
+
+                    <Border Grid.Column="5"
+                            Visibility="{x:Bind ViewModel.StatusVisibility, Mode=OneWay}"
+                            Background="{x:Bind ViewModel.StatusBackgroundBrush, Mode=OneWay}"
+                            BorderBrush="{x:Bind ViewModel.StatusBorderBrush, Mode=OneWay}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10,8"
+                            Margin="2,0,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch">
+                        <TextBlock Text="{x:Bind ViewModel.StatusMessage, Mode=OneWay}"
+                                   Foreground="{x:Bind ViewModel.StatusTextBrush, Mode=OneWay}"
+                                   TextWrapping="WrapWholeWords"
+                                   VerticalAlignment="Center"
+                                   MaxLines="2" />
+                    </Border>
+
+                    <Border Grid.Column="6"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Stretch"
+                            Background="{ThemeResource AppBarItemPointerOverBackgroundThemeBrush}"
+                            BorderBrush="{ThemeResource AppBarItemPointerOverBackgroundThemeBrush}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            Padding="10,8">
+                        <Grid ColumnSpacing="12" VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Uid="Checkout_Pay_ChangeLabel" FontWeight="SemiBold" />
+                            <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ChangeDueText, Mode=OneWay}" FontWeight="Bold" />
+                        </Grid>
+                    </Border>
+
+                    <Button Grid.Column="7"
+                            Command="{x:Bind ViewModel.CompleteSaleCommand}"
+                            x:Uid="Checkout_Pay_CompleteButton"
+                            Style="{ThemeResource AccentButtonStyle}"
                             Padding="12,8"
-                            CornerRadius="4" />
+                            CornerRadius="4"
+                            VerticalAlignment="Stretch" 
+                            MinWidth="240"/>
                 </Grid>
             </Border>
         </Grid>
@@ -672,15 +725,15 @@
                                            TextWrapping="WrapWholeWords"
                                            TextAlignment="Center"
                                            Visibility="{x:Bind ViewModel.StoreAddressVisibility, Mode=OneWay}" />
-                                <TextBlock Text="Sale Complete"
-                                           FontSize="22"
-                                           FontWeight="Black"
-                                           HorizontalAlignment="Center"
-                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
+                                <TextBlock x:Uid="Checkout_Receipt_CompleteTitle"
+                                            FontSize="22"
+                                            FontWeight="Black"
+                                            HorizontalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                                 <TextBlock FontSize="13"
                                            HorizontalAlignment="Center"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}">
-                                    <Run Text="Receipt # " />
+                                    <Run x:Uid="Checkout_Receipt_NumberLabel" />
                                     <Run Text="{x:Bind ViewModel.LastReceiptNumberLabel, Mode=OneWay}"
                                          FontWeight="SemiBold" />
                                 </TextBlock>
@@ -691,7 +744,7 @@
                                     CornerRadius="4"
                                     Padding="0,14">
                                 <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="CHANGE DUE"
+                                    <TextBlock x:Uid="Checkout_Receipt_ChangeDueLabel"
                                                FontSize="11"
                                                FontWeight="Bold"
                                                HorizontalAlignment="Center"
@@ -744,7 +797,7 @@
                                         Background="{ThemeResource CardStrokeColorDefaultBrush}"
                                         Margin="0,0,0,10" />
                                 <Grid Margin="0,10,0,0">
-                                    <TextBlock Text="Total Charged"
+                                    <TextBlock x:Uid="Checkout_Receipt_TotalCharged"
                                                FontWeight="SemiBold"
                                                FontSize="14"
                                                Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
@@ -758,7 +811,7 @@
                         </Grid>
 
                         <StackPanel Grid.Row="4">
-                            <TextBlock Text="Use the Windows print dialog to choose a printer."
+                            <TextBlock x:Uid="Checkout_Receipt_PrinterTip"
                                        HorizontalAlignment="Center"
                                        Margin="0,0,0,10"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
@@ -767,18 +820,18 @@
                                         HorizontalAlignment="Center"
                                         Margin="0,0,0,10">
                             <Button Click="PrintReceiptButton_Click"
-                                    Content="Print Receipt"
+                                    x:Uid="Checkout_Receipt_PrintButton"
                                     Padding="14,8"
                                     CornerRadius="4"
                                     Margin="0,0,8,0" />
                                 <Button Command="{x:Bind ViewModel.OpenReceiptsFolderCommand}"
-                                        Content="Receipts Folder"
+                                        x:Uid="Checkout_Receipt_FolderButton"
                                         Padding="14,8"
                                         CornerRadius="4" />
                             </StackPanel>
 
                             <Button Command="{x:Bind ViewModel.DismissReceiptCommand}"
-                                    Content="New Sale"
+                                    x:Uid="Checkout_Receipt_NewSaleButton"
                                     MinWidth="150"
                                     Style="{ThemeResource AccentButtonStyle}"
                                     Padding="12,10"
@@ -791,6 +844,25 @@
     </Grid>
     
     <!-- Hidden container removed -->
+
+    <!-- Register Not Open Overlay — blocks ONLY the checkout content, not the app navigation -->
+    <Grid x:Name="RegisterOverlay" Visibility="Collapsed" Canvas.ZIndex="200"
+          Background="#F9FAFB">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16" MaxWidth="400">
+            <FontIcon Glyph="&#xE825;" FontSize="48" Foreground="#8F96A3" HorizontalAlignment="Center"/>
+            <TextBlock x:Uid="Checkout_Register_ClosedTitle" FontSize="22" FontWeight="Bold" Foreground="#1A1D23"
+                       HorizontalAlignment="Center"/>
+            <TextBlock x:Uid="Checkout_Register_ClosedText"
+                       TextWrapping="Wrap" Foreground="#8F96A3" FontSize="14" TextAlignment="Center"
+                       HorizontalAlignment="Center"/>
+
+            <Button x:Name="OpenRegisterOverlayButton" x:Uid="Checkout_Register_OpenButton"
+                    Click="OpenRegisterOverlayButton_Click"
+                    Style="{StaticResource AccentButtonStyle}"
+                    HorizontalAlignment="Center" Padding="24,12" FontSize="16" CornerRadius="6"/>
+
+        </StackPanel>
+    </Grid>
+
     </Grid>
 </Page>
-

@@ -5,6 +5,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.Windows.AppNotifications;
 using RetailStorePOS.Data;
 using RetailStorePOS.WinUiLogin.Common;
+using Windows.Globalization;
+using RetailStorePOS.Data.Modules.Settings;
 using Windows.ApplicationModel;
 
 namespace RetailStorePOS.WinUiLogin;
@@ -24,6 +26,8 @@ public partial class App : Application
         {
             ConfigureAppUserModelId();
         }
+
+        InitializeLanguage();
 
         StartupTrace.Write("App.ctor:before InitializeComponent");
         InitializeComponent();
@@ -67,16 +71,33 @@ public partial class App : Application
         StartupTrace.Write("App.OnLaunched:start");
         try
         {
+            EnsureLocalLaunchDependencies();
+
+            if (_window is MainWindow existingWindow)
+            {
+                StartupTrace.Write("App.OnLaunched:reuse existing window");
+                existingWindow.Activate();
+                StartupTrace.Write("App.OnLaunched:end(existing)");
+                return;
+            }
+
             _window = new MainWindow();
             _window.Closed += (_, _) =>
             {
+                _window = null;
                 _ = Task.Run(async () =>
                 {
                     try
                     {
                         if (!LoginRuntime.IsFreshStartResetRequested && LoginRuntime.Telemetry is not null)
                         {
-                            await LoginRuntime.Telemetry.LogAppClosedAsync("window_closed");
+                            var state = LoginRuntime.Telemetry.GetTelemetryState();
+
+                            // Only log clean close if we have an active run to correlate with
+                            if (!string.IsNullOrEmpty(state.ActiveRunId))
+                            {
+                                await LoginRuntime.Telemetry.LogAppClosedAsync(state.ActiveRunId, "window_closed");
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -102,27 +123,6 @@ public partial class App : Application
             };
             _window.Activate();
 
-            if (LoginRuntime.Telemetry is not null)
-            {
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        StartupTrace.Write("Telemetry.ImportBootstrapLifecycleEvents:start");
-                        await LoginRuntime.Telemetry.ImportBootstrapLifecycleEventsAsync();
-                        StartupTrace.Write("Telemetry.ImportBootstrapLifecycleEvents:end");
-
-                        StartupTrace.Write("Telemetry.LogAppLaunch:start");
-                        await LoginRuntime.Telemetry.LogAppLaunchAsync();
-                        StartupTrace.Write("Telemetry.LogAppLaunch:end");
-                    }
-                    catch (Exception ex)
-                    {
-                        WriteCrashLog("Telemetry.StartupSync", ex);
-                        LoginRuntime.ReportException(ex, "WinUiLogin.Telemetry.StartupSync");
-                    }
-                });
-            }
 
             StartupTrace.Write("App.OnLaunched:end");
         }
@@ -173,6 +173,7 @@ public partial class App : Application
         try
         {
             var logPath = AppDataPaths.Combine("Logs", "winui-login-crash.log");
+            EnsureLocalLaunchDependencies(logPath);
             var builder = new StringBuilder();
             builder.AppendLine($"[{DateTime.Now:O}] Phase: {phase}");
             builder.AppendLine(ex.ToString());
@@ -188,6 +189,20 @@ public partial class App : Application
         }
         catch
         {
+        }
+    }
+
+    private static void EnsureLocalLaunchDependencies()
+    {
+        EnsureLocalLaunchDependencies(AppDataPaths.Combine("Logs", "winui-login-crash.log"));
+    }
+
+    private static void EnsureLocalLaunchDependencies(string path)
+    {
+        var fullPath = Path.GetFullPath(path);
+        if (fullPath.StartsWith(@"\\", StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException("App launch artifacts must remain on local storage.");
         }
     }
 
@@ -228,6 +243,27 @@ public partial class App : Application
 
     [DllImport("shell32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     private static extern int SetCurrentProcessExplicitAppUserModelID(string appID);
+    private void InitializeLanguage()
+    {
+        try
+        {
+            var dbPath = DatabasePaths.GetDatabasePath("RetailStorePOS");
+            var factory = new SqliteConnectionFactory(dbPath);
+            var settings = new SettingsRepository(factory);
+            var lang = LocalizationHelper.NormalizeLanguageTag(settings.GetAppLanguage());
+
+            if (!string.IsNullOrEmpty(lang))
+            {
+                ApplicationLanguages.PrimaryLanguageOverride = lang;
+                StartupTrace.Write($"App.InitializeLanguage:Override set to {lang}");
+            }
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"App.InitializeLanguage:Failed to load language: {ex.Message}");
+            StartupTrace.Write($"App.InitializeLanguage:Falling back to {LocalizationHelper.DefaultLanguage}");
+        }
+    }
 }
 
 

@@ -3,6 +3,7 @@ namespace RetailStorePOS.Data;
 public static class AppDataPaths
 {
     private const string AppFolderName = "RetailStorePOS";
+    private const string LegacyAppFolderName = "RetailStorePos";
     private static readonly Lazy<string> RootFolder = new(ResolveRootFolder, true);
 
     public static string GetRootFolder()
@@ -14,6 +15,19 @@ public static class AppDataPaths
     {
         ArgumentNullException.ThrowIfNull(segments);
         var parts = new List<string>(segments.Length + 1) { GetRootFolder() };
+        parts.AddRange(segments.Where(segment => !string.IsNullOrWhiteSpace(segment)));
+        return Path.Combine(parts.ToArray());
+    }
+
+    public static string GetLegacyRootFolder()
+    {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), LegacyAppFolderName);
+    }
+
+    public static string CombineLegacy(params string[] segments)
+    {
+        ArgumentNullException.ThrowIfNull(segments);
+        var parts = new List<string>(segments.Length + 1) { GetLegacyRootFolder() };
         parts.AddRange(segments.Where(segment => !string.IsNullOrWhiteSpace(segment)));
         return Path.Combine(parts.ToArray());
     }

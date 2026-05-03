@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+using System.Reflection;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
@@ -6,10 +6,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using System.Reflection;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Views;
 using Windows.Graphics;
+using Windows.Globalization;
 using WinRT.Interop;
 
 namespace RetailStorePOS.WinUiLogin;
@@ -41,6 +41,8 @@ public sealed partial class MainWindow : Window
     private bool _isSettingsSubNavigationTipArmed;
     private int _firstRunTutorialStepIndex = -1;
     private TutorialStep[]? _firstRunTutorialSteps;
+    private bool _isRuntimeBootstrapInProgress;
+    private bool _isRuntimeBootstrapComplete;
 
     public MainWindow()
     {
@@ -51,6 +53,7 @@ public sealed partial class MainWindow : Window
 
         RootFrame.Navigated += RootFrame_Navigated;
         RootGrid.Loaded += MainWindow_Loaded;
+        Closed += MainWindow_Closed;
 
         StartupTrace.Write("MainWindow.ctor:end");
     }
@@ -60,25 +63,52 @@ public sealed partial class MainWindow : Window
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        if (_isRuntimeBootstrapComplete || _isRuntimeBootstrapInProgress)
+        {
+            return;
+        }
+
+        _isRuntimeBootstrapInProgress = true;
+        RootGrid.Loaded -= MainWindow_Loaded;
+
         try
         {
             // Start the visual progress bar animation
             var pbTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(15) };
-            pbTimer.Tick += (s, args) => {
+            pbTimer.Tick += (s, args) =>
+            {
                 if (SplashProgressBar.Value < 95) SplashProgressBar.Value += 1.5;
             };
             pbTimer.Start();
 
             // Run the heavy database and runtime initialization off the UI thread
             await Task.Run(() => LoginRuntime.Initialize());
-            
+
+            if (LoginRuntime.Telemetry is not null)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        StartupTrace.Write("Telemetry.ImportBootstrapLifecycleEvents:start");
+                        await LoginRuntime.Telemetry.ImportBootstrapLifecycleEventsAsync();
+                        StartupTrace.Write("Telemetry.ImportBootstrapLifecycleEvents:end");
+                    }
+                    catch (Exception ex)
+                    {
+                        StartupTrace.Write($"Telemetry Startup Error: {ex.Message}");
+                        LoginRuntime.ReportException(ex, "WinUiLogin.Telemetry.StartupSync");
+                    }
+                });
+            }
+
             // Snap progress bar to 100% and pause to let user see it
             pbTimer.Stop();
             SplashProgressBar.Value = 100;
             await Task.Delay(300);
 
             // Hide the window completely so resizing doesn't flash on screen
-            _appWindow.Hide();
+            _appWindow?.Hide();
 
             // Prepare the main app UI invisibly
             RootGrid.RequestedTheme = ElementTheme.Light;
@@ -99,7 +129,28 @@ public sealed partial class MainWindow : Window
             await Task.Delay(150);
 
             // Pop the window back up on screen
-            _appWindow.Show();
+            _appWindow?.Show();
+
+            // Run Time Validation Loop
+            var timeValidation = new RetailStorePOS.App.Services.TimeValidationService(LoginRuntime.ConnectionFactory);
+            bool timeCheckPassed = await timeValidation.IsSystemTimeValidAsync();
+
+            while (!timeCheckPassed)
+            {
+                var dialog = new RetailStorePOS.WinUiLogin.Views.TimeSyncDialog { XamlRoot = RootGrid.XamlRoot };
+                await dialog.ShowAsync();
+
+                if (dialog.Result == RetailStorePOS.WinUiLogin.Views.TimeSyncDialogResult.Continue)
+                {
+                    if (LoginRuntime.Telemetry is not null)
+                    {
+                        await LoginRuntime.Telemetry.LogGenericEventAsync("time_warning_ignored", new { local_time = DateTime.UtcNow.ToString("O") });
+                    }
+                    break;
+                }
+
+                timeCheckPassed = await timeValidation.IsSystemTimeValidAsync();
+            }
 
             // Fade IN the main login screen
             var fadeInAnim = new Microsoft.UI.Xaml.Media.Animation.DoubleAnimation
@@ -114,15 +165,54 @@ public sealed partial class MainWindow : Window
             Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeInAnim, RootFrame);
             Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeInAnim, "Opacity");
             inStoryboard.Begin();
-            
+
+            // Check if we had a rapid reopen after unclean exit
+            if (LoginRuntime.WasRapidReopenAfterUncleanExit)
+            {
+                var prefs = await LoginRuntime.LocalPreferences.LoadPreferencesAsync();
+                if (!prefs.SuppressCrashFeedbackPrompt)
+                {
+                    var crashDialog = new CrashFeedbackDialog { XamlRoot = RootGrid.XamlRoot };
+                    var result = await crashDialog.ShowAsync();
+                    
+                    if (result == ContentDialogResult.Primary)
+                    {
+                        if (LoginRuntime.Telemetry is not null)
+                        {
+                            await LoginRuntime.Telemetry.LogGenericEventAsync("crash_feedback", new
+                            {
+                                category = crashDialog.SelectedCategory,
+                                details = crashDialog.FeedbackDetails
+                            });
+                        }
+                    }
+
+                    if (crashDialog.SuppressFuturePrompts)
+                    {
+                        await LoginRuntime.LocalPreferences.UpdateSuppressCrashFeedbackAsync(true);
+                    }
+                }
+            }
+
             // Clean up splash overlay
             SplashOverlay.Visibility = Visibility.Collapsed;
+            _isRuntimeBootstrapComplete = true;
         }
         catch (Exception ex)
         {
-            SplashStatusTitle.Text = "Startup Error";
+            SplashStatusTitle.Text = LocalizationHelper.GetString("MainWindow_Status_StartupError");
             SplashStatusDetail.Text = ex.Message;
         }
+        finally
+        {
+            _isRuntimeBootstrapInProgress = false;
+        }
+    }
+
+    private void MainWindow_Closed(object sender, WindowEventArgs args)
+    {
+        Current = null;
+        Closed -= MainWindow_Closed;
     }
 
     private void TransitionToAppWindow()
@@ -190,7 +280,7 @@ public sealed partial class MainWindow : Window
         AppTitleBar.Visibility = Visibility.Collapsed;
 
         // Size the window to exactly the splash card dimensions
-                _appWindow.Resize(SplashSize);
+        _appWindow.Resize(SplashSize);
 
         // Remove the default Windows 11 1px border during splash screen
         int styleConfig = GetWindowLong(hwnd, GWL_STYLE);
@@ -199,8 +289,13 @@ public sealed partial class MainWindow : Window
         DwmSetWindowAttribute(hwnd, DWMWA_BORDER_COLOR, ref colorNone, sizeof(int));
         int doNotRound = DWMWCP_DONOTROUND;
         DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, ref doNotRound, sizeof(int));
-        
+
         CenterWindow(windowId, SplashSize);
+
+        if (LocalizationHelper.IsRtl)
+        {
+            RootGrid.FlowDirection = FlowDirection.RightToLeft;
+        }
 
         // Bind Splash screen text to MSBuild properties compiled into Assembly metadata
         var assembly = System.Reflection.Assembly.GetEntryAssembly();
@@ -328,33 +423,46 @@ public sealed partial class MainWindow : Window
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            UpdateShellChrome();
-            UpdateNavigationAccess();
-
-            if (LoginRuntime.Auth.CurrentUser is null && RootFrame.CurrentSourcePageType != typeof(LoginPage))
+            StartupTrace.Write("MainWindow.Auth_LoginStateChanged:start");
+            try
             {
-                RootFrame.Tag = null;
-                RootFrame.Navigate(typeof(LoginPage));
-                return;
-            }
+                UpdateShellChrome();
+                UpdateNavigationAccess();
 
-            if (LoginRuntime.Auth.CurrentUser?.Username == "admin" && !LoginRuntime.Settings.IsOnboardingPhaseCleared())
+                if (LoginRuntime.Auth.CurrentUser is null && RootFrame.CurrentSourcePageType != typeof(LoginPage))
+                {
+                    StartupTrace.Write("MainWindow.Auth_LoginStateChanged:navigate-login");
+                    RootFrame.Tag = null;
+                    RootFrame.Navigate(typeof(LoginPage));
+                    return;
+                }
+
+                if (LoginRuntime.Auth.CurrentUser?.Username == "admin" && !LoginRuntime.Settings.IsOnboardingPhaseCleared())
+                {
+                    StartupTrace.Write("MainWindow.Auth_LoginStateChanged:navigate-users");
+                    NavigateToTag("users");
+                    return;
+                }
+
+                if (LoginRuntime.Auth.CurrentUser is not null && RootFrame.CurrentSourcePageType == typeof(LoginPage))
+                {
+                    StartupTrace.Write("MainWindow.Auth_LoginStateChanged:navigate-first-available");
+                    NavigateToFirstAvailablePage();
+                    return;
+                }
+
+                GetCurrentSettingsPage()?.RefreshNavigationAccess();
+                StartupTrace.Write("MainWindow.Auth_LoginStateChanged:end");
+            }
+            catch (Exception ex)
             {
-                NavigateToTag("users");
-                return;
+                StartupTrace.Write($"MainWindow.Auth_LoginStateChanged failed: {ex}");
+                LoginRuntime.ReportException(ex, "MainWindow.Auth_LoginStateChanged");
             }
-
-            if (LoginRuntime.Auth.CurrentUser is not null && RootFrame.CurrentSourcePageType == typeof(LoginPage))
-            {
-                NavigateToFirstAvailablePage();
-                return;
-            }
-
-            GetCurrentSettingsPage()?.RefreshNavigationAccess();
         });
     }
 
-    private void MaybeStartFirstRunTutorial()
+    private async void MaybeStartFirstRunTutorial()
     {
         if (_isFirstRunTutorialCompletedThisSession ||
             LoginRuntime.Auth.CurrentUser is null ||
@@ -365,36 +473,24 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        _isFirstRunTutorialQueued = false;
-        _isFirstRunTutorialRunning = false;
-        _isFirstRunTutorialPaused = false;
-        _isSettingsSubNavigationTipArmed = false;
-        _firstRunTutorialStepIndex = -1;
-        _firstRunTutorialSteps = null;
-        _isFirstRunTutorialCompletedThisSession = true;
-        FirstRunTutorialTip.IsOpen = false;
-
-        DispatcherQueue.TryEnqueue(settingsPage.ShowSubNavigationTeachingTip);
-    }
-
-    private async Task RunFirstRunTutorialAsync(TutorialStep[] steps)
-    {
+        if (_isFirstRunTutorialQueued) return;
+        _isFirstRunTutorialQueued = true;
         try
         {
             await Task.Delay(250);
 
-            var settingsPage = GetCurrentSettingsPage();
+            var currentSettingsPage = GetCurrentSettingsPage();
 
             if (LoginRuntime.Auth.CurrentUser is null ||
                 _isFirstRunTutorialCompletedThisSession ||
                 RootFrame.CurrentSourcePageType != typeof(SettingsPage) ||
                 LoginRuntime.Settings.IsFirstRunTutorialCleared() ||
-                settingsPage is null)
+                currentSettingsPage is null)
             {
                 return;
             }
 
-            _firstRunTutorialSteps = steps;
+            _firstRunTutorialSteps = BuildFirstRunTutorialSteps();
             _firstRunTutorialStepIndex = 0;
             _isFirstRunTutorialPaused = false;
             _isFirstRunTutorialRunning = true;
@@ -433,28 +529,9 @@ public sealed partial class MainWindow : Window
         FirstRunTutorialTip.Title = step.Title;
         FirstRunTutorialTip.Subtitle = step.Subtitle;
         FirstRunTutorialTip.ActionButtonContent = null;
-        FirstRunTutorialTip.CloseButtonContent = "Skip";
+        FirstRunTutorialTip.CloseButtonContent = LocalizationHelper.GetString("MainWindow_Tutorial_CloseButton/Content");
         FirstRunTutorialTip.PreferredPlacement = step.PreferredPlacement;
         FirstRunTutorialTip.IsOpen = true;
-    }
-
-    private void AdvanceFirstRunTutorial()
-    {
-        if (_firstRunTutorialSteps is null || _firstRunTutorialSteps.Length == 0)
-        {
-            CompleteFirstRunTutorial();
-            return;
-        }
-
-        var nextIndex = _firstRunTutorialStepIndex + 1;
-        if (nextIndex >= _firstRunTutorialSteps.Length)
-        {
-            CompleteFirstRunTutorial();
-            return;
-        }
-
-        _firstRunTutorialStepIndex = nextIndex;
-        ShowFirstRunTutorialStep(_firstRunTutorialStepIndex);
     }
 
     private void CompleteFirstRunTutorial()
@@ -468,21 +545,21 @@ public sealed partial class MainWindow : Window
         _firstRunTutorialSteps = null;
     }
 
-    private void FirstRunTutorialTip_CloseButtonClick(TeachingTip sender, object args)
-    {
-        CompleteFirstRunTutorial();
-    }
-
     private TutorialStep[] BuildFirstRunTutorialSteps()
     {
         return
         [
             new TutorialStep(
                 PaneToggleButton,
-                "Main navigation",
-                "Use this button to open and close the main app shell navigation.",
+                LocalizationHelper.GetString("MainWindow_Tutorial_Step0_Title"),
+                LocalizationHelper.GetString("MainWindow_Tutorial_Step0_Subtitle"),
                 TeachingTipPlacementMode.Bottom)
         ];
+    }
+
+    private void FirstRunTutorialTip_CloseButtonClick(TeachingTip sender, object args)
+    {
+        CompleteFirstRunTutorial();
     }
 
     private void PauseFirstRunTutorial()
@@ -577,6 +654,8 @@ public sealed partial class MainWindow : Window
 
     private void NavigateToTag(string tag)
     {
+        StartupTrace.Write($"MainWindow.NavigateToTag:start:{tag}");
+
         if (tag == "signout")
         {
             LoginRuntime.Auth.Logout();
@@ -589,29 +668,36 @@ public sealed partial class MainWindow : Window
         {
             settingsPage.NavigateToTag(tag);
             UpdateShellChrome();
+            StartupTrace.Write($"MainWindow.NavigateToTag:existing-settings:{tag}");
             return;
         }
 
         try
         {
             RootFrame.Navigate(typeof(SettingsPage), tag);
+            StartupTrace.Write($"MainWindow.NavigateToTag:root-navigate:{tag}");
         }
         catch (Exception ex)
         {
-            StartupTrace.Write($"MainWindow.NavigateToTag({tag}) failed: {ex.Message}");
+            StartupTrace.Write($"MainWindow.NavigateToTag({tag}) failed: {ex}");
             LoginRuntime.ReportException(ex, $"MainWindow.NavigateToTag.{tag}");
         }
     }
 
     private void UpdateShellChrome()
     {
+        ApplyShellLocalization();
         ShellContextText.Text = GetShellContextText();
 
         if (LoginRuntime.Auth.CurrentUser is not { } user)
         {
             PaneToggleButton.Visibility = Visibility.Collapsed;
             UserBadge.Visibility = Visibility.Collapsed;
+            CashInOutMenuItem.IsEnabled = false;
+            CloseRegisterMenuItem.IsEnabled = false;
             UserNameText.Text = string.Empty;
+            RegisterStatusText.Text = string.Empty;
+            RegisterStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 148, 163, 184));
             UserPicture.Initials = string.Empty;
             return;
         }
@@ -622,30 +708,257 @@ public sealed partial class MainWindow : Window
         var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
             ? user.Username
             : user.DisplayName;
-
         UserNameText.Text = displayName;
         UserPicture.Initials = BuildInitials(displayName);
+        UpdateCloseRegisterMenuState();
+    }
+
+    private void UserMenuFlyout_Opening(object sender, object e)
+    {
+        UpdateCloseRegisterMenuState();
+    }
+
+    private void UpdateCloseRegisterMenuState()
+    {
+        try
+        {
+            var activeSession = LoginRuntime.Auth.CurrentUser is null
+                ? null
+                : LoginRuntime.RegisterSessions.GetActiveSession();
+
+            var hasActiveSession = activeSession is not null;
+
+            CashInOutMenuItem.IsEnabled = hasActiveSession;
+            CloseRegisterMenuItem.IsEnabled = hasActiveSession;
+            RegisterStatusText.Text = hasActiveSession 
+                ? LocalizationHelper.GetString("MainWindow_Status_RegisterActive") 
+                : LocalizationHelper.GetString("MainWindow_Status_NoActiveRegister");
+            RegisterStatusDot.Fill = new SolidColorBrush(
+                hasActiveSession
+                    ? ColorHelper.FromArgb(255, 22, 163, 74)
+                    : ColorHelper.FromArgb(255, 148, 163, 184));
+        }
+        catch (Exception ex)
+        {
+            CashInOutMenuItem.IsEnabled = false;
+            CloseRegisterMenuItem.IsEnabled = false;
+            RegisterStatusText.Text = LocalizationHelper.GetString("MainWindow_Status_RegisterUnavailable");
+            RegisterStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 239, 68, 68));
+            LoginRuntime.ReportException(ex, "MainWindow.UpdateCloseRegisterMenuState");
+        }
+    }
+
+    private void ApplyShellLocalization()
+    {
+        Title = LocalizationHelper.GetString("MainWindow_Title");
+        RootGrid.FlowDirection = LocalizationHelper.IsRtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+    }
+
+    private async void CashInOut_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var summary = LoginRuntime.RegisterSessions.GetActiveCloseSummary();
+            if (summary == null)
+            {
+                UpdateCloseRegisterMenuState();
+                return;
+            }
+
+            await ShowCashInOutDialogAsync(summary.SessionId);
+            UpdateCloseRegisterMenuState();
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "MainWindow.CashInOut_Click");
+        }
+    }
+
+    private async void CloseRegister_Click(object sender, RoutedEventArgs e)
+    {
+        static (bool HadMinWidth, object? MinWidth, bool HadMaxWidth, object? MaxWidth) PushContentDialogWidth(double width)
+        {
+            var resources = Application.Current.Resources;
+            var hadMinWidth = resources.TryGetValue("ContentDialogMinWidth", out var minWidth);
+            var hadMaxWidth = resources.TryGetValue("ContentDialogMaxWidth", out var maxWidth);
+
+            resources["ContentDialogMinWidth"] = width;
+            resources["ContentDialogMaxWidth"] = width;
+
+            return (hadMinWidth, minWidth, hadMaxWidth, maxWidth);
+        }
+
+        static void PopContentDialogWidth((bool HadMinWidth, object? MinWidth, bool HadMaxWidth, object? MaxWidth) snapshot)
+        {
+            var resources = Application.Current.Resources;
+
+            if (snapshot.HadMinWidth)
+            {
+                resources["ContentDialogMinWidth"] = snapshot.MinWidth!;
+            }
+            else
+            {
+                resources.Remove("ContentDialogMinWidth");
+            }
+
+            if (snapshot.HadMaxWidth)
+            {
+                resources["ContentDialogMaxWidth"] = snapshot.MaxWidth!;
+            }
+            else
+            {
+                resources.Remove("ContentDialogMaxWidth");
+            }
+        }
+
+        try
+        {
+            var summary = LoginRuntime.RegisterSessions.GetActiveCloseSummary();
+            if (summary == null)
+            {
+                UpdateCloseRegisterMenuState();
+                return;
+            }
+
+            var dialog = new CloseRegisterDialog(summary)
+            {
+                XamlRoot = this.RootGrid.XamlRoot
+            };
+
+            while (true)
+            {
+                var dialogWidthSnapshot = PushContentDialogWidth(Math.Max(520d, this.RootGrid.XamlRoot.Size.Width * 0.5));
+                try
+                {
+                    await dialog.ShowAsync();
+                }
+                finally
+                {
+                    PopContentDialogWidth(dialogWidthSnapshot);
+                }
+
+                var result = dialog.ActionResult;
+                if (result == ContentDialogResult.Secondary)
+                {
+                    var changed = await ShowCashInOutDialogAsync(summary.SessionId);
+                    if (changed)
+                    {
+                        summary = LoginRuntime.RegisterSessions.GetActiveCloseSummary();
+                        if (summary == null)
+                        {
+                            UpdateCloseRegisterMenuState();
+                            return;
+                        }
+
+                        dialog = new CloseRegisterDialog(summary, dialog.CountedCashText, dialog.Note)
+                        {
+                            XamlRoot = this.RootGrid.XamlRoot
+                        };
+                    }
+
+                    continue;
+                }
+
+                if (result != ContentDialogResult.Primary)
+                {
+                    break;
+                }
+
+                try
+                {
+                    LoginRuntime.RegisterSessions.CloseRegister(
+                        summary.SessionId,
+                        dialog.CountedCashCents,
+                        dialog.Note);
+
+                    LoginRuntime.Audit.Log("REGISTER_CLOSED",
+                        $"SessionId: {summary.SessionId}, Counted: {dialog.CountedCashCents}, Note: {dialog.Note}",
+                        LoginRuntime.Auth.CurrentUser?.Id);
+
+                    LoginRuntime.Auth.Logout();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    dialog.ShowError(ex.Message);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "MainWindow.CloseRegister_Click");
+        }
+    }
+
+    private async Task<bool> ShowCashInOutDialogAsync(long sessionId)
+    {
+        var cashDialog = new CashInOutDialog
+        {
+            XamlRoot = this.RootGrid.XamlRoot
+        };
+
+        while (true)
+        {
+            var cashResult = await cashDialog.ShowAsync();
+            if (cashResult != ContentDialogResult.Primary)
+            {
+                return false;
+            }
+
+            try
+            {
+                LoginRuntime.RegisterSessions.AddCashAdjustment(
+                    sessionId,
+                    LoginRuntime.Auth.CurrentUser?.Id,
+                    cashDialog.IsCashIn,
+                    cashDialog.AmountCents,
+                    cashDialog.Reason);
+
+                LoginRuntime.Audit.Log(
+                    cashDialog.IsCashIn ? "REGISTER_CASH_IN" : "REGISTER_CASH_OUT",
+                    $"SessionId: {sessionId}, Amount: {cashDialog.AmountCents}, Reason: {cashDialog.Reason}",
+                    LoginRuntime.Auth.CurrentUser?.Id);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                cashDialog.ShowError(ex.Message);
+            }
+        }
+    }
+
+    private void Logout_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            LoginRuntime.Auth.Logout();
+        }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "MainWindow.Logout_Click");
+        }
     }
 
     private string GetShellContextText()
     {
         if (RootFrame.CurrentSourcePageType == typeof(LoginPage))
         {
-            return "Secure sign in";
+            return LocalizationHelper.GetString("MainWindow_Context_SecureSignIn");
         }
 
         return (RootFrame.Tag as string) switch
         {
-            "checkout" => "Checkout workspace",
-            "products" => "Products workspace",
-            "reports" => "Reports workspace",
-            "store" => "Store settings",
-            "tax" => "Tax configuration",
-            "users" => "Users workspace",
-            "prefs" => "My preferences",
-            "settings" => "Store settings",
-            "about" => "About this app",
-            _ => "Daily store control"
+            "checkout" => LocalizationHelper.GetString("MainWindow_Context_Checkout"),
+            "products" => LocalizationHelper.GetString("MainWindow_Context_Products"),
+            "reports" => LocalizationHelper.GetString("MainWindow_Context_Reports"),
+            "store" => LocalizationHelper.GetString("MainWindow_Context_StoreSettings"),
+            "tax" => LocalizationHelper.GetString("MainWindow_Context_Tax"),
+            "users" => LocalizationHelper.GetString("MainWindow_Context_Users"),
+            "prefs" => LocalizationHelper.GetString("MainWindow_Context_Preferences"),
+            "settings" => LocalizationHelper.GetString("MainWindow_Context_StoreSettings"),
+            "about" => LocalizationHelper.GetString("MainWindow_Context_About"),
+            _ => LocalizationHelper.GetString("MainWindow_Context_Default")
         };
     }
 
@@ -654,23 +967,24 @@ public sealed partial class MainWindow : Window
         GetCurrentSettingsPage()?.RefreshNavigationAccess();
     }
 
-    private void NavigateToFirstAvailablePage()
+    internal void NavigateToFirstAvailablePage(string? excludeTag = null)
     {
         if (LoginRuntime.Auth.CurrentUser is null)
         {
             return;
         }
 
-        var targetTag = GetFirstAvailableTag();
+        var targetTag = GetFirstAvailableTag(excludeTag);
+        StartupTrace.Write($"MainWindow.NavigateToFirstAvailablePage:{targetTag ?? "<null>"}:exclude={excludeTag ?? "<null>"}");
         if (!string.IsNullOrWhiteSpace(targetTag))
         {
             NavigateToTag(targetTag);
         }
     }
 
-    private string GetFirstAvailableTag()
+    private string GetFirstAvailableTag(string? excludeTag = null)
     {
-        if (LoginRuntime.Auth.CanCheckout)
+        if (LoginRuntime.Auth.CanCheckout && excludeTag != "checkout")
         {
             return "checkout";
         }
@@ -702,6 +1016,51 @@ public sealed partial class MainWindow : Window
     {
         RootFrame.Tag = tag;
         UpdateShellChrome();
+    }
+
+    internal void ApplyAppLanguage(string languageTag)
+    {
+        try
+        {
+            var normalizedTag = LocalizationHelper.NormalizeLanguageTag(languageTag);
+            ApplicationLanguages.PrimaryLanguageOverride = normalizedTag;
+            LocalizationHelper.ResetResourceLoader();
+
+            RootGrid.FlowDirection = normalizedTag.StartsWith("ar", StringComparison.OrdinalIgnoreCase)
+                ? FlowDirection.RightToLeft
+                : FlowDirection.LeftToRight;
+
+            ReloadCurrentRouteForLanguage();
+            UpdateShellChrome();
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"MainWindow.ApplyAppLanguage({languageTag}) failed: {ex.Message}");
+            LoginRuntime.ReportException(ex, "MainWindow.ApplyAppLanguage");
+        }
+    }
+
+    private void ReloadCurrentRouteForLanguage()
+    {
+        // Force page re-creation: WinUI Frame won't recreate if same type is current
+        RootFrame.Content = null;
+        RootFrame.BackStack.Clear();
+
+        if (RootFrame.CurrentSourcePageType == typeof(LoginPage) || LoginRuntime.Auth.CurrentUser is null)
+        {
+            RootFrame.Tag = null;
+            RootFrame.Navigate(typeof(LoginPage));
+            return;
+        }
+
+        var currentTag = RootFrame.Tag as string;
+        if (string.IsNullOrWhiteSpace(currentTag))
+        {
+            currentTag = GetFirstAvailableTag();
+        }
+
+        RootFrame.Tag = currentTag;
+        RootFrame.Navigate(typeof(SettingsPage), currentTag);
     }
 
     private static string BuildInitials(string displayName)
@@ -742,5 +1101,3 @@ public sealed partial class MainWindow : Window
         public TeachingTipPlacementMode PreferredPlacement { get; }
     }
 }
-
-
