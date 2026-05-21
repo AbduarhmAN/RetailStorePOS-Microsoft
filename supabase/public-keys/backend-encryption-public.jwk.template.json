@@ -1,0 +1,11 @@
+{
+  "_comment": "Template — DO NOT use in production. The 'n' and 'd' values below are placeholders. See SETUP.md in this folder for the operator key-generation procedure.",
+  "kty": "RSA",
+  "alg": "RSA-OAEP-256",
+  "use": "enc",
+  "kid": "backend-encryption-key-1",
+  "n": "REPLACE_WITH_BASE64URL_OF_PUBLIC_MODULUS",
+  "e": "AQAB",
+  "key_ops": ["wrapKey", "encrypt"],
+  "ext": true
+}

@@ -1,0 +1,50 @@
+<ContentDialog
+    x:Class="RetailStorePOS.WinUiLogin.Views.TimeSyncDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    CornerRadius="8"
+    FlowDirection="{x:Bind Loc.FlowDirection, Mode=OneWay}"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ContentDialog.Title>
+        <TextBlock Text="{x:Bind TimeSyncDialog_Title, Mode=OneWay}" />
+    </ContentDialog.Title>
+
+    <StackPanel Spacing="16" Width="400">
+        <TextBlock 
+            Text="{x:Bind TimeSyncDialog_Description, Mode=OneWay}" 
+            TextWrapping="Wrap" 
+            FontSize="16"/>
+        
+        <Grid Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Left Button: Continue Override (Gray, not prominent) -->
+            <Button Grid.Column="0" 
+                    x:Name="ContinueButton" 
+                    Content="{x:Bind TimeSyncDialog_ContinueButton, Mode=OneWay}" 
+                    Click="ContinueButton_Click"
+                    CornerRadius="4"
+                    Background="#333333"
+                    Foreground="#AAAAAA"
+                    BorderThickness="0"
+                    Padding="16,8"/>
+
+            <!-- Right Button: Retry (Prominent) -->
+            <Button Grid.Column="2" 
+                    x:Name="RetryButton" 
+                    Content="{x:Bind TimeSyncDialog_RetryButton, Mode=OneWay}" 
+                    Click="RetryButton_Click"
+                    CornerRadius="4"
+                    Style="{StaticResource AccentButtonStyle}"
+                    Padding="24,8"/>
+        </Grid>
+    </StackPanel>
+</ContentDialog>

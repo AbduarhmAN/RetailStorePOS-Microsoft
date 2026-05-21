@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="RetailStorePOS.WinUiLogin.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="{x:Bind ViewModel.MainWindow_Title, Mode=OneWay}">
+
+        <Grid x:Name="RootGrid"
+              Background="#2D1B69"
+              RequestedTheme="Dark"
+              FlowDirection="{x:Bind ViewModel.Loc.FlowDirection, Mode=OneWay}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Background="#F9FBFD"
+                BorderBrush="#E2E8F0"
+                BorderThickness="0,0,0,1">
+            <Grid x:Name="AppTitleBar"
+                  Padding="10,0,128,0"
+                  FlowDirection="LeftToRight">
+                <Border x:Name="TitleBarDragRegion"
+                        Background="#F9FBFD" />
+
+                <Grid ColumnSpacing="12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="12"
+                                VerticalAlignment="Center">
+                        <Button x:Name="PaneToggleButton"
+                                Click="PaneToggleButton_Click"
+                                Width="32"
+                                Height="32"
+                                CornerRadius="8"
+                                Background="#2D1B69"
+                                BorderBrush="Transparent"
+                                Visibility="Collapsed">
+                            <FontIcon Glyph="&#xE700;"
+                                      FontSize="16"
+                                      Foreground="#4B5563" />
+                        </Button>
+
+                        <Border Width="32"
+                                Height="32"
+                                Padding="0"
+                                CornerRadius="3"
+                                Background="#F6FAFD"
+                                BorderBrush="#D7E1EA"
+                                BorderThickness="0.3">
+                            <Image Source="ms-appx:///Assets/Logo.png"
+                                   Stretch="Uniform" />
+                        </Border>
+
+                        <StackPanel Spacing="0"
+                                    VerticalAlignment="Center">
+                            <TextBlock x:Name="BrandTitleText"
+                                       Text="{x:Bind ViewModel.BrandTitle, Mode=OneWay}"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="#243142" />
+                            <TextBlock x:Name="ShellContextText"
+                                       Text="{x:Bind ViewModel.ShellContext, Mode=OneWay}"
+                                       FontSize="11"
+                                       Foreground="#708095" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <DropDownButton x:Name="UserBadge"
+                                    Grid.Column="1"
+                                    Visibility="Collapsed"
+                                    Padding="12,6"
+                                    CornerRadius="6"
+                                    Margin="1,1,50,1"
+                                    VerticalAlignment="Center" >
+                        <Grid ColumnSpacing="10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <Grid Width="32"
+                                  Height="32">
+                                <PersonPicture x:Name="UserPicture"
+                                               Width="32"
+                                               Height="32" />
+
+                                <Ellipse x:Name="RegisterStatusDot"
+                                         Width="10"
+                                         Height="10"
+                                         HorizontalAlignment="Right"
+                                         VerticalAlignment="Bottom"
+                                         Fill="#94A3B8"
+                                         Stroke="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                         StrokeThickness="2" />
+                            </Grid>
+
+                            <StackPanel Grid.Column="1"
+                                        Spacing="0"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="UserNameText"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="RegisterStatusText"
+                                           Text="{x:Bind ViewModel.RegisterStatus, Mode=OneWay}"
+                                           FontSize="11"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           TextTrimming="CharacterEllipsis" />
+
+                            </StackPanel>
+                        </Grid>
+                        <DropDownButton.Flyout>
+                            <MenuFlyout x:Name="UserMenuFlyout"
+                                        Placement="BottomEdgeAlignedRight"
+                                        Opening="UserMenuFlyout_Opening">
+                                <MenuFlyout.MenuFlyoutPresenterStyle>
+                                    <Style TargetType="MenuFlyoutPresenter">
+                                        <Setter Property="CornerRadius" Value="6" />
+                                    </Style>
+                                </MenuFlyout.MenuFlyoutPresenterStyle>
+                                <MenuFlyoutItem x:Name="CashInOutMenuItem"
+                                                Text="{x:Bind ViewModel.MainWindow_CashInOut_Text, Mode=OneWay}"
+                                                Click="CashInOut_Click" />
+                                <MenuFlyoutItem x:Name="CloseRegisterMenuItem"
+                                                Text="{x:Bind ViewModel.MainWindow_CloseRegister_Text, Mode=OneWay}"
+                                                Click="CloseRegister_Click">
+                                </MenuFlyoutItem>
+                                <MenuFlyoutSeparator />
+                                <MenuFlyoutItem x:Name="LogoutMenuItem"
+                                                Text="{x:Bind ViewModel.MainWindow_Logout_Text, Mode=OneWay}"
+                                                Click="Logout_Click">
+                                    <MenuFlyoutItem.Icon>
+                                        <FontIcon Glyph="&#xF3B1;" />
+                                    </MenuFlyoutItem.Icon>
+                                </MenuFlyoutItem>
+                            </MenuFlyout>
+                        </DropDownButton.Flyout>
+                    </DropDownButton>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Frame x:Name="RootFrame"
+               Grid.Row="1">
+            <Frame.ContentTransitions>
+                <TransitionCollection />
+            </Frame.ContentTransitions>
+        </Frame>
+
+        <TeachingTip x:Name="FirstRunTutorialTip"
+                     Grid.RowSpan="2"
+                     Title="{x:Bind ViewModel.MainWindow_Tutorial_Title, Mode=OneWay}"
+                     Subtitle="{x:Bind ViewModel.MainWindow_Tutorial_Subtitle, Mode=OneWay}"
+                     CloseButtonContent="{x:Bind ViewModel.MainWindow_Tutorial_CloseButtonContent, Mode=OneWay}"
+                     IsLightDismissEnabled="False"
+                     PreferredPlacement="Right"
+                     IsOpen="False"
+                     CloseButtonClick="FirstRunTutorialTip_CloseButtonClick"
+                     Canvas.ZIndex="300" />
+
+        <!-- SPLASH SCREEN OVERLAY -->
+        <Grid x:Name="SplashOverlay" Grid.RowSpan="2" CornerRadius="4">
+            <Grid.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#2D1B69" Offset="0.0" />
+                    <GradientStop Color="#4338CA" Offset="0.45" />
+                    <GradientStop Color="#7C3AED" Offset="0.75" />
+                    <GradientStop Color="#6D28D9" Offset="1.0" />
+                </LinearGradientBrush>
+            </Grid.Background>
+
+            <!-- Background decorative glows -->
+            <Ellipse Width="600" Height="600"
+                     HorizontalAlignment="Right" VerticalAlignment="Top"
+                     Margin="0,-200,-150,0"
+                     Fill="#18FFFFFF" />
+            <Ellipse Width="400" Height="400"
+                     HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                     Margin="-120,0,0,-120"
+                     Fill="#10000080" />
+
+            <!-- Centered branding -->
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="18">
+                <Border Width="72" Height="72"
+                        CornerRadius="10"
+                        Background="#20FFFFFF"
+                        Padding="12"
+                        HorizontalAlignment="Center">
+                    <Image Source="ms-appx:///Assets/Logo.png" Stretch="Uniform" />
+                </Border>
+                <TextBlock Text="{x:Bind ViewModel.SplashTitle, Mode=OneWay}"
+                           FontSize="30"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           HorizontalAlignment="Center" />
+                <TextBlock Text="{x:Bind ViewModel.SplashSubtitle, Mode=OneWay}"
+                           FontSize="13"
+                           Foreground="#C4B5FD"
+                           HorizontalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Bottom bar -->
+            <Grid VerticalAlignment="Bottom" Margin="32,0,32,28">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="10" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <!-- Status + version row -->
+                <Grid Grid.Row="0">
+                    <StackPanel HorizontalAlignment="Left" Spacing="2">
+                        <TextBlock x:Name="SplashStatusTitle"
+                                   Text="{x:Bind ViewModel.SplashStatusTitle, Mode=OneWay}"
+                                   FontSize="11"
+                                   FontWeight="SemiBold"
+                                   Foreground="#E9D5FF" />
+                        <TextBlock x:Name="SplashStatusDetail"
+                                   Text="{x:Bind ViewModel.SplashStatusDetail, Mode=OneWay}"
+                                   FontSize="10"
+                                   Foreground="#A78BFA" />
+                    </StackPanel>
+                    <StackPanel HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Spacing="2">
+                        <TextBlock x:Name="SplashVersionText"
+                                   Text="vX.X.X"
+                                   FontSize="18"
+                                   FontWeight="Light"
+                                   Foreground="#E5E7EB"
+                                   HorizontalAlignment="Right" />
+                        <TextBlock x:Name="SplashCopyrightText"
+                                   Text="© XXXX"
+                                   FontSize="10"
+                                   Foreground="#A78BFA"
+                                   HorizontalAlignment="Right" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Thin progress bar -->
+                <ProgressBar Grid.Row="2"
+                             x:Name="SplashProgressBar" IsIndeterminate="False" Minimum="0" Maximum="100" Value="0"
+                             Height="6"
+                             HorizontalAlignment="Stretch"
+                             CornerRadius="6"
+                             Foreground="#E9D5FF"
+                             Background="#4338CA" />
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
+
+

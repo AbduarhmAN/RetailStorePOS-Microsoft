@@ -1,0 +1,1059 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><xsd:schema id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema><resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader><resheader name="version">
+    <value>2.0</value>
+  </resheader><resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader><resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader><data name="AppTitle.Text" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+<data name="LoginPage_HeroBrandTitleText.Text" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="LoginPage_HeroBrandSubtitleText.Text" xml:space="preserve">
+    <value>Point of Sale</value>
+  </data>
+  <data name="LoginPage_HeroHeadlineText.Text" xml:space="preserve">
+    <value>Fast and secure sign-in</value>
+  </data>
+  <data name="LoginPage_HeroBodyText.Text" xml:space="preserve">
+    <value>Use your store profile to unlock the register and continue serving customers.</value>
+  </data>
+  <data name="LoginPage_HeroSupportText.Text" xml:space="preserve">
+    <value>Cashier mode keeps the line moving.</value>
+  </data>
+  <data name="LoginPage_WelcomeText.Text" xml:space="preserve">
+    <value>Welcome back</value>
+  </data>
+  <data name="LoginPage_ModeTitleText.Text" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="LoginPage_CashierTabText" xml:space="preserve">
+    <value>Cashier</value>
+  </data>
+  <data name="LoginPage_AdminTabText" xml:space="preserve">
+    <value>Manager</value>
+  </data>
+  <data name="LoginPage_ModeTitle_SignIn" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="LoginPage_ModeSubtitle_Cashier" xml:space="preserve">
+    <value>Select a cashier and unlock the register with a PIN.</value>
+  </data>
+  <data name="LoginPage_ModeSubtitle_Setup" xml:space="preserve">
+    <value>Use the administrator account to finish setup before opening the store.</value>
+  </data>
+  <data name="LoginPage_ModeSubtitle_Admin" xml:space="preserve">
+    <value>Use an administrator account for users, inventory, reports, and store controls.</value>
+  </data>
+  <data name="LoginPage_HeroSupport_Cashier" xml:space="preserve">
+    <value>Cashier mode keeps the counter moving.</value>
+  </data>
+  <data name="LoginPage_HeroSupport_Setup" xml:space="preserve">
+    <value>Administrator access is required to finish first-time setup.</value>
+  </data>
+  <data name="LoginPage_HeroSupport_Admin" xml:space="preserve">
+    <value>Administrator access protects pricing, users, reports, and settings.</value>
+  </data>
+  <data name="LoginPage_Badge_Ready" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="LoginPage_Badge_NoProfiles" xml:space="preserve">
+    <value>No profiles yet</value>
+  </data>
+  <data name="LoginPage_Helper_HasStaff" xml:space="preserve">
+    <value>Choose a cashier card, then enter the PIN.</value>
+  </data>
+  <data name="LoginPage_Helper_NoStaff" xml:space="preserve">
+    <value>Add an active staff user with a PIN in Users to enable quick cashier sign-in.</value>
+  </data>
+  <data name="LoginPage_AdminHelper_Setup" xml:space="preserve">
+    <value>Use the administrator account to finish first-time setup.</value>
+  </data>
+  <data name="LoginPage_AdminHelper_Admin" xml:space="preserve">
+    <value>Use an administrator account for secure changes and store-wide controls.</value>
+  </data>
+  <data name="LoginPage_SetupCallout_HasStaff" xml:space="preserve">
+    <value>Finish admin setup, then the cashier profiles will be ready for the next shift.</value>
+  </data>
+  <data name="LoginPage_SetupCallout_NoStaff" xml:space="preserve">
+    <value>Finish admin setup, then add cashier profiles with PINs.</value>
+  </data>
+  <data name="LoginPage_Status_CashierFailed" xml:space="preserve">
+    <value>Cashier sign-in failed</value>
+  </data>
+  <data name="LoginPage_Status_AdminFailed" xml:space="preserve">
+    <value>Admin sign-in failed</value>
+  </data>
+  <data name="LoginPage_Status_CashierUnlocked" xml:space="preserve">
+    <value>Cashier unlocked</value>
+  </data>
+  <data name="LoginPage_Status_AdminSignedIn" xml:space="preserve">
+    <value>Administrator signed in</value>
+  </data>
+  <data name="LoginPage_Status_DefaultAdminCreated" xml:space="preserve">
+    <value>Default administrator created</value>
+  </data>
+  <data name="LoginPage_Status_DefaultAdminMessage" xml:space="preserve">
+    <value>Sign in with username '{0}' and password '{1}', then change it after setup.</value>
+  </data>
+  <data name="LoginPage_CashierPanelTitle.Text" xml:space="preserve">
+    <value>Cashier access</value>
+  </data>
+  <data name="LoginPage_AdminPanelTitle.Text" xml:space="preserve">
+    <value>Manager access</value>
+  </data>
+  <data name="LoginPage_CashierHelperText.Text" xml:space="preserve">
+    <value>Choose a cashier card, then enter the PIN.</value>
+  </data>
+  <data name="LoginPage_CashierCountBadgeText.Text" xml:space="preserve">
+    <value>Ready</value>
+  </data>
+  <data name="LoginPage_CashierEmptyState_Title.Text" xml:space="preserve">
+    <value>No cashier profiles available</value>
+  </data>
+  <data name="LoginPage_CashierEmptyState_Body.Text" xml:space="preserve">
+    <value>Add an active staff user with a PIN in Users to enable quick cashier sign-in cards.</value>
+  </data>
+  <data name="LoginPage_AdminHelperText.Text" xml:space="preserve">
+    <value>Use an administrator account for secure changes and store-wide controls.</value>
+  </data>
+  <data name="LoginPage_SetupCallout_Title.Text" xml:space="preserve">
+    <value>First-time store setup</value>
+  </data>
+  <data name="LoginPage_SetupCalloutText.Text" xml:space="preserve">
+    <value>Finish the admin setup, then add cashier profiles with PINs for quick access at the counter.</value>
+  </data>
+  <data name="LoginPage_UsernameLabel.Text" xml:space="preserve">
+    <value>Username</value>
+  </data>
+  <data name="LoginPage_UsernameBox.PlaceholderText" xml:space="preserve">
+    <value>Enter username</value>
+  </data>
+  <data name="LoginPage_PasswordLabel.Text" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="LoginPage_AdminPasswordBox.PlaceholderText" xml:space="preserve">
+    <value>Enter your password</value>
+  </data>
+  <data name="LoginPage_OnboardingHint_Title.Text" xml:space="preserve">
+    <value>First-Time Administrator Setup</value>
+  </data>
+  <data name="LoginPage_OnboardingHint_Body.Text" xml:space="preserve">
+    <value>Default Username: admin | Password: 1234</value>
+  </data>
+  <data name="LoginPage_PinLabel.Text" xml:space="preserve">
+    <value>Enter PIN</value>
+  </data>
+  <data name="LoginPage_PinPasswordBox.PlaceholderText" xml:space="preserve">
+    <value>Enter 4-digit PIN</value>
+  </data>
+  <data name="LoginPage_LoginButton.Content" xml:space="preserve">
+    <value>Login</value>
+  </data>
+  <data name="LoginPage_CashierPinTip.Title" xml:space="preserve">
+    <value>Cashier PIN</value>
+  </data>
+  <data name="LoginPage_CashierPinTip.Subtitle" xml:space="preserve">
+    <value>The default Cashier PIN is 1234.</value>
+  </data>
+  <data name="LoginPage_CloseButton.Content" xml:space="preserve">
+    <value>Close</value>
+  </data>
+
+  
+  <data name="MainWindow_Title" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="MainWindow_ShellContextText.Text" xml:space="preserve">
+    <value>Daily store control</value>
+  </data>
+  <data name="MainWindow_RegisterStatusText.Text" xml:space="preserve">
+    <value>No active register</value>
+  </data>
+  <data name="MainWindow_CashInOutMenuItem.Text" xml:space="preserve">
+    <value>Cash In / Out</value>
+  </data>
+  <data name="MainWindow_CloseRegisterMenuItem.Text" xml:space="preserve">
+    <value>Close Register</value>
+  </data>
+  <data name="MainWindow_LogoutMenuItem.Text" xml:space="preserve">
+    <value>Logout</value>
+  </data>
+  <data name="MainWindow_Tutorial.Title" xml:space="preserve">
+    <value>Guide Rapide</value>
+  </data>
+  <data name="MainWindow_Tutorial.Subtitle" xml:space="preserve">
+    <value>Utilisez ce bouton pour ouvrir et fermer le volet de navigation principal.</value>
+  </data>
+  <data name="MainWindow_Tutorial.CloseButtonContent" xml:space="preserve">
+    <value>Compris</value>
+  </data>
+  <data name="MainWindow_Tutorial_CloseButton.Content" xml:space="preserve">
+    <value>Compris</value>
+  </data>
+  <data name="MainWindow_Tutorial_Step0_Title" xml:space="preserve">
+    <value>Volet de Navigation</value>
+  </data>
+  <data name="MainWindow_Tutorial_Step0_Subtitle" xml:space="preserve">
+    <value>Développez le menu pour accéder à toutes les fonctionnalités et paramètres du magasin.</value>
+  </data>
+
+  <data name="MainWindow_Splash_Title" xml:space="preserve">
+    <value>Nexill</value>
+  </data>
+  <data name="MainWindow_Splash_Subtitle" xml:space="preserve">
+    <value>Store management &amp; point of sale</value>
+  </data>
+  <data name="MainWindow_SplashStatusTitle.Text" xml:space="preserve">
+    <value>Starting services...</value>
+  </data>
+  <data name="MainWindow_SplashStatusDetail.Text" xml:space="preserve">
+    <value>Loading local database, services, and runtime.</value>
+  </data>
+  <data name="MainWindow_Status_RegisterActive" xml:space="preserve">
+    <value>Register active</value>
+  </data>
+  <data name="MainWindow_Status_NoActiveRegister" xml:space="preserve">
+    <value>No active register</value>
+  </data>
+  <data name="MainWindow_Status_RegisterUnavailable" xml:space="preserve">
+    <value>Register unavailable</value>
+  </data>
+  <data name="MainWindow_Status_StartupError" xml:space="preserve">
+    <value>Startup Error</value>
+  </data>
+  <data name="MainWindow_Context_SecureSignIn" xml:space="preserve">
+    <value>Secure sign in</value>
+  </data>
+  <data name="MainWindow_Context_Checkout" xml:space="preserve">
+    <value>Checkout workspace</value>
+  </data>
+  <data name="MainWindow_Context_Products" xml:space="preserve">
+    <value>Products workspace</value>
+  </data>
+  <data name="MainWindow_Context_Reports" xml:space="preserve">
+    <value>Reports workspace</value>
+  </data>
+  <data name="MainWindow_Context_StoreSettings" xml:space="preserve">
+    <value>Store settings</value>
+  </data>
+  <data name="MainWindow_Context_Tax" xml:space="preserve">
+    <value>Tax configuration</value>
+  </data>
+  <data name="MainWindow_Context_Users" xml:space="preserve">
+    <value>Users workspace</value>
+  </data>
+  <data name="MainWindow_Context_Preferences" xml:space="preserve">
+    <value>My preferences</value>
+  </data>
+  <data name="MainWindow_Context_About" xml:space="preserve">
+    <value>About this app</value>
+  </data>
+  <data name="MainWindow_Context_Default" xml:space="preserve">
+    <value>Daily store control</value>
+  </data>
+
+  
+  <data name="SettingsPage_Nav_Checkout.Content" xml:space="preserve">
+    <value>Checkout</value>
+  </data>
+  <data name="SettingsPage_Nav_Checkout.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Checkout</value>
+  </data>
+  <data name="SettingsPage_Nav_Products.Content" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="SettingsPage_Nav_Products.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Products</value>
+  </data>
+  <data name="SettingsPage_Nav_Reports.Content" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="SettingsPage_Nav_Reports.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reports</value>
+  </data>
+  <data name="SettingsPage_Nav_Settings.Content" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsPage_Nav_Settings.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsPage_Nav_Store.Content" xml:space="preserve">
+    <value>Store Management</value>
+  </data>
+  <data name="SettingsPage_Nav_Store.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Store Management</value>
+  </data>
+  <data name="SettingsPage_Nav_Tax.Content" xml:space="preserve">
+    <value>Tax Configuration</value>
+  </data>
+  <data name="SettingsPage_Nav_Tax.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Tax Configuration</value>
+  </data>
+  <data name="SettingsPage_Nav_Users.Content" xml:space="preserve">
+    <value>Users &amp; Roles</value>
+  </data>
+  <data name="SettingsPage_Nav_Users.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Users &amp; Roles</value>
+  </data>
+  <data name="SettingsPage_Nav_Prefs.Content" xml:space="preserve">
+    <value>My Preferences</value>
+  </data>
+  <data name="SettingsPage_Nav_Prefs.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>My Preferences</value>
+  </data>
+  <data name="SettingsPage_Nav_About.Content" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="SettingsPage_Nav_About.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="SettingsPage_Nav_SignOut.Content" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="SettingsPage_Nav_SignOut.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+
+  
+  <data name="StoreManagement_Header_Title.Text" xml:space="preserve">
+    <value>Store Management</value>
+  </data>
+  <data name="StoreManagement_Header_Subtitle.Text" xml:space="preserve">
+    <value>Manage store details, receipt output, and tax settings used across the workspace.</value>
+  </data>
+  <data name="StoreManagement_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="StoreManagement_StoreIdentity_Title.Text" xml:space="preserve">
+    <value>Store Identity</value>
+  </data>
+  <data name="StoreManagement_StoreIdentity_Subtitle.Text" xml:space="preserve">
+    <value>These details appear on receipts and other customer-facing documents.</value>
+  </data>
+  <data name="StoreManagement_StoreName_Label.Text" xml:space="preserve">
+    <value>Store Name</value>
+  </data>
+  <data name="StoreManagement_StoreAddress_Label.Text" xml:space="preserve">
+    <value>Store Address</value>
+  </data>
+  <data name="StoreManagement_CheckoutDefaults_Title.Text" xml:space="preserve">
+    <value>Checkout Defaults</value>
+  </data>
+  <data name="StoreManagement_Region_Label.Text" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="StoreManagement_Currency_Label.Text" xml:space="preserve">
+    <value>Currency</value>
+  </data>
+  <data name="StoreManagement_PrintingSettings_Title.Text" xml:space="preserve">
+    <value>Printing</value>
+  </data>
+  <data name="StoreManagement_PrintingSettings_Subtitle.Text" xml:space="preserve">
+    <value>Select which installed printer should be used for receipts and reports.</value>
+  </data>
+  <data name="StoreManagement_Printer_Label.Text" xml:space="preserve">
+    <value>Printer</value>
+  </data>
+  <data name="StoreManagement_Printer_DefaultOption" xml:space="preserve">
+    <value>System default printer</value>
+  </data>
+  <data name="StoreManagement_LanguageRegion_Title.Text" xml:space="preserve">
+    <value>Language &amp; Region</value>
+  </data>
+  <data name="StoreManagement_RestartRequired_Title" xml:space="preserve">
+    <value>Restart required</value>
+  </data>
+  <data name="StoreManagement_RestartRequired_Message" xml:space="preserve">
+    <value>Changes to the application language will take effect the next time you open Nexill.</value>
+  </data>
+  <data name="StoreManagement_AppLanguage_Label.Text" xml:space="preserve">
+    <value>App Language</value>
+  </data>
+  <data name="StoreManagement_StoreLanguage_Label.Text" xml:space="preserve">
+    <value>Store Language (Receipts)</value>
+  </data>
+  <data name="StoreManagement_DashboardSettings_Title.Text" xml:space="preserve">
+    <value>Dashboard Settings</value>
+  </data>
+  <data name="StoreManagement_DashboardSettings_Subtitle.Text" xml:space="preserve">
+    <value>Configure metrics and goals displayed on your dashboard.</value>
+  </data>
+  <data name="StoreManagement_DailyTarget_Label.Text" xml:space="preserve">
+    <value>Daily Sales Target</value>
+  </data>
+
+  
+  <data name="TaxConfiguration_Header_Title.Text" xml:space="preserve">
+    <value>Tax Configuration</value>
+  </data>
+  <data name="TaxConfiguration_Header_Subtitle.Text" xml:space="preserve">
+    <value>Manage global tax behavior, rules, regions, and overrides for compliance.</value>
+  </data>
+  <data name="TaxConfiguration_SaveButton.Content" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="TaxConfiguration_TaxEngine_Title.Text" xml:space="preserve">
+    <value>Tax Processing Engine</value>
+  </data>
+  <data name="TaxConfiguration_TaxEngine_Subtitle.Text" xml:space="preserve">
+    <value>Enable or disable tax processing globally. Turning this off bypasses all tax groups.</value>
+  </data>
+  <data name="TaxConfiguration_EnableTax_Label.Content" xml:space="preserve">
+    <value>Enable tax processing engine</value>
+  </data>
+  <data name="TaxConfiguration_DefaultRate_Label.Text" xml:space="preserve">
+    <value>Legacy Default Tax Rate (%)</value>
+  </data>
+  <data name="TaxConfiguration_Rounding_Title.Text" xml:space="preserve">
+    <value>Global Rounding Behavior</value>
+  </data>
+  <data name="TaxConfiguration_Rounding_Subtitle.Text" xml:space="preserve">
+    <value>Configure how fractions of pennies are handled at checkout.</value>
+  </data>
+  <data name="TaxConfiguration_RoundingStrategy_Label.Text" xml:space="preserve">
+    <value>Tax Rounding Strategy</value>
+  </data>
+  <data name="TaxConfiguration_RoundingStrategy_Tip.Text" xml:space="preserve">
+    <value>Typical default is Standard (Half Up)</value>
+  </data>
+  <data name="TaxConfiguration_CashRounding_Label.Text" xml:space="preserve">
+    <value>Cash Rounding Unit</value>
+  </data>
+  <data name="TaxConfiguration_CashRounding_Tip.Text" xml:space="preserve">
+    <value>Used in territories without penny coins</value>
+  </data>
+  <data name="TaxConfiguration_Authorities_Title.Text" xml:space="preserve">
+    <value>Tax Agencies</value>
+  </data>
+  <data name="TaxConfiguration_Authorities_Subtitle.Text" xml:space="preserve">
+    <value>Government bodies you collect tax for (State, County, City).</value>
+  </data>
+  <data name="TaxConfiguration_AddAuthority_Button.Content" xml:space="preserve">
+    <value>＋ Add Authority</value>
+  </data>
+  <data name="TaxConfiguration_Rules_Title.Text" xml:space="preserve">
+    <value>Tax Rates &amp; Rules</value>
+  </data>
+  <data name="TaxConfiguration_Rules_Subtitle.Text" xml:space="preserve">
+    <value>The specific percentages or flat fees you charge (e.g., 7% State Sales Tax).</value>
+  </data>
+  <data name="TaxConfiguration_AddRule_Button.Content" xml:space="preserve">
+    <value>＋ Add Tax Rule</value>
+  </data>
+  <data name="TaxConfiguration_Groups_Title.Text" xml:space="preserve">
+    <value>Product Tax Profiles</value>
+  </data>
+  <data name="TaxConfiguration_Groups_Subtitle.Text" xml:space="preserve">
+    <value>Groups of tax rates applied to your inventory. Assign products to these profiles to apply the correct taxes.</value>
+  </data>
+  <data name="TaxConfiguration_AddGroup_Button.Content" xml:space="preserve">
+    <value>＋ Add Tax Group</value>
+  </data>
+  <data name="TaxConfiguration_DefaultBadge.Text" xml:space="preserve">
+    <value>DEFAULT</value>
+  </data>
+
+  
+  <data name="MyPreferences_Header_Title.Text" xml:space="preserve">
+    <value>My Preferences</value>
+  </data>
+  <data name="MyPreferences_Header_Subtitle.Text" xml:space="preserve">
+    <value>These settings apply only to your login and are designed for faster checkout.</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Title.Text" xml:space="preserve">
+    <value>Quick-Cash Buttons</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Subtitle.Text" xml:space="preserve">
+    <value>Set the cash shortcuts shown on the checkout screen. Auto-saves directly.</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Value1.Header" xml:space="preserve">
+    <value>Value 1</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Value2.Header" xml:space="preserve">
+    <value>Value 2</value>
+  </data>
+  <data name="MyPreferences_QuickCash_Value3.Header" xml:space="preserve">
+    <value>Value 3</value>
+  </data>
+
+  
+  <data name="Checkout_Alert_InventoryTitle" xml:space="preserve">
+    <value>Alerte d'inventaire</value>
+  </data>
+  <data name="Checkout_Alert_LowStockWarning" xml:space="preserve">
+    <value>Avertissement de stock faible</value>
+  </data>
+  <data name="Checkout_Inventory_OutOfStock_Shelf" xml:space="preserve">
+    <value>RUPTURE DE STOCK (Rayon)</value>
+  </data>
+  <data name="Checkout_Inventory_LowStock_Shelf" xml:space="preserve">
+    <value>STOCK FAIBLE (Rayon)</value>
+  </data>
+  <data name="Checkout_Inventory_OutOfStock_Warehouse" xml:space="preserve">
+    <value>RUPTURE DE STOCK (Entrepôt)</value>
+  </data>
+  <data name="Checkout_Inventory_LowStock_Warehouse" xml:space="preserve">
+    <value>STOCK FAIBLE (Entrepôt)</value>
+  </data>
+  <data name="Checkout_Inventory_QuantityLeft_Format" xml:space="preserve">
+    <value>{0} ({1} restant)</value>
+  </data>
+  <data name="Checkout_Discount_Title" xml:space="preserve">
+    <value>Apply Discount</value>
+  </data>
+  <data name="Checkout_Discount_PrimaryButton.Content" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="Checkout_Discount_CloseButton.Content" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Checkout_Discount_Text.Text" xml:space="preserve">
+    <value>Enter the discount amount to apply to the entire cart.</value>
+  </data>
+  <data name="Checkout_Discount_TypeLabel.Text" xml:space="preserve">
+    <value>Discount Type</value>
+  </data>
+  <data name="Checkout_Discount_Percentage" xml:space="preserve">
+    <value>Percentage (%)</value>
+  </data>
+  <data name="Checkout_Discount_Amount" xml:space="preserve">
+    <value>Amount ($)</value>
+  </data>
+  <data name="Checkout_Discount_ValueHeader.Header" xml:space="preserve">
+    <value>Discount Value</value>
+  </data>
+  <data name="Checkout_Discount_PresetsTitle.Text" xml:space="preserve">
+    <value>Quick presets</value>
+  </data>
+  <data name="Checkout_Discount_SummaryLabel.Text" xml:space="preserve">
+    <value>Discount summary: </value>
+  </data>
+  <data name="Checkout_Cart_DiscountButton.Content" xml:space="preserve">
+    <value>Discount</value>
+  </data>
+  <data name="Checkout_Cart_ClearButton.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Checkout_Cart_EmptyTitle.Text" xml:space="preserve">
+    <value>No items yet</value>
+  </data>
+  <data name="Checkout_Cart_EmptySubtitle.Text" xml:space="preserve">
+    <value>Find a product on the right and add it to start the sale.</value>
+  </data>
+  <data name="Checkout_Footer_GrandTotal.Text" xml:space="preserve">
+    <value>Grand Total</value>
+  </data>
+  <data name="Checkout_Footer_SubtotalLabel.Text" xml:space="preserve">
+    <value>Sous-total </value>
+  </data>
+  <data name="Checkout_Footer_TaxLabel.Text" xml:space="preserve">
+    <value>Taxe </value>
+  </data>
+  <data name="Checkout_Footer_TaxSuffix" xml:space="preserve">
+    <value></value>
+  </data>
+  <data name="Checkout_Search_Placeholder.PlaceholderText" xml:space="preserve">
+    <value>Search products</value>
+  </data>
+  <data name="Checkout_Pay_TenderPlaceholder.PlaceholderText" xml:space="preserve">
+    <value>Cash Tendered</value>
+  </data>
+  <data name="Checkout_Pay_TenderTooltip.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Shortcut: Ctrl+D</value>
+  </data>
+  <data name="Checkout_Pay_ExactButtonText.Text" xml:space="preserve">
+    <value>Exact</value>
+  </data>
+  <data name="Checkout_Pay_ChangeLabel.Text" xml:space="preserve">
+    <value>Change:</value>
+  </data>
+  <data name="Checkout_Pay_CompleteButton.Content" xml:space="preserve">
+    <value>Complete Sale</value>
+  </data>
+  <data name="Checkout_Receipt_CompleteTitle.Text" xml:space="preserve">
+    <value>Sale Complete</value>
+  </data>
+  <data name="Checkout_Receipt_NumberLabel" xml:space="preserve">
+    <value>Receipt # </value>
+  </data>
+  <data name="Checkout_Receipt_ChangeDueLabel.Text" xml:space="preserve">
+    <value>CHANGE DUE</value>
+  </data>
+  <data name="Checkout_Receipt_TotalCharged.Text" xml:space="preserve">
+    <value>Total Charged</value>
+  </data>
+  <data name="Checkout_Receipt_PrinterTip.Text" xml:space="preserve">
+    <value>Use the Windows print dialog to choose a printer.</value>
+  </data>
+  <data name="Checkout_Receipt_PrintButton.Content" xml:space="preserve">
+    <value>Print Receipt</value>
+  </data>
+  <data name="Checkout_Receipt_FolderButton.Content" xml:space="preserve">
+    <value>Receipts Folder</value>
+  </data>
+  <data name="Checkout_Receipt_NewSaleButton.Content" xml:space="preserve">
+    <value>New Sale</value>
+  </data>
+  <data name="Checkout_Register_ClosedTitle.Text" xml:space="preserve">
+    <value>Register is not open</value>
+  </data>
+  <data name="Checkout_Register_ClosedText.Text" xml:space="preserve">
+    <value>You need to open the cash register before you can start selling. Enter your opening cash amount to begin your shift.</value>
+  </data>
+  <data name="Checkout_Register_OpenButton.Content" xml:space="preserve">
+    <value>Open Register</value>
+  </data>
+
+  
+  <data name="Checkout_ClearCart_Title" xml:space="preserve">
+    <value>Clear current sale?</value>
+  </data>
+  <data name="Checkout_ClearCart_Content" xml:space="preserve">
+    <value>This will remove all items from the current sale.</value>
+  </data>
+  <data name="Checkout_ClearCart_PrimaryButton" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="Checkout_ClearCart_CloseButton" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Checkout_PriceOverride_Title" xml:space="preserve">
+    <value>Override price</value>
+  </data>
+  <data name="Checkout_PriceOverride_Help" xml:space="preserve">
+    <value>Set the new selling price for this cart line.</value>
+  </data>
+  <data name="Checkout_PriceOverride_CurrentLabel" xml:space="preserve">
+    <value>Current price</value>
+  </data>
+  <data name="Checkout_PriceOverride_NewLabel" xml:space="preserve">
+    <value>New price</value>
+  </data>
+  <data name="Checkout_PriceOverride_OriginalFormat" xml:space="preserve">
+    <value>Original: {0}</value>
+  </data>
+  <data name="Checkout_PriceOverride_DifferentAmount" xml:space="preserve">
+    <value>Enter a different amount to change the price.</value>
+  </data>
+  <data name="Checkout_PriceOverride_IncreaseFormat" xml:space="preserve">
+    <value>Increase by {0}.</value>
+  </data>
+  <data name="Checkout_PriceOverride_DiscountFormat" xml:space="preserve">
+    <value>Discount by {0}.</value>
+  </data>
+  <data name="Checkout_PriceOverride_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="Checkout_PriceOverride_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+
+  
+  <data name="Reports_Nav_Dashboard.Content" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Reports_Nav_Receipts.Content" xml:space="preserve">
+    <value>Receipts</value>
+  </data>
+
+  
+  <data name="ReportsDashboard_Subtitle.Text" xml:space="preserve">
+    <value>Here's an overview of your store activity.</value>
+  </data>
+  <data name="ReportsDashboard_KPI_SalesToday.Text" xml:space="preserve">
+    <value>Sales Today</value>
+  </data>
+  <data name="ReportsDashboard_KPI_NetProfit.Text" xml:space="preserve">
+    <value>Net Profit Today</value>
+  </data>
+  <data name="ReportsDashboard_KPI_InvoiceCount.Text" xml:space="preserve">
+    <value>Invoice Count</value>
+  </data>
+  <data name="ReportsDashboard_KPI_AvgInvoiceValue.Text" xml:space="preserve">
+    <value>Avg. Invoice Value</value>
+  </data>
+  <data name="ReportsDashboard_MedianLabel.Text" xml:space="preserve">
+    <value>Median:</value>
+  </data>
+  <data name="ReportsDashboard_Target_Title.Text" xml:space="preserve">
+    <value>Sales vs Target</value>
+  </data>
+  <data name="ReportsDashboard_Target_TodayLabel.Text" xml:space="preserve">
+    <value>TODAY</value>
+  </data>
+  <data name="ReportsDashboard_Target_GoalLabel.Text" xml:space="preserve">
+    <value>TARGET GOAL</value>
+  </data>
+  <data name="ReportsDashboard_Alerts_Title.Text" xml:space="preserve">
+    <value>Critical Alerts</value>
+  </data>
+  <data name="ReportsDashboard_TopProducts_Title.Text" xml:space="preserve">
+    <value>Top Selling Products</value>
+  </data>
+  <data name="ReportsDashboard_StockStatus_Title.Text" xml:space="preserve">
+    <value>Low Stock / Out of Stock</value>
+  </data>
+  <data name="ReportsDashboard_Discounts_Title.Text" xml:space="preserve">
+    <value>Discounts Today</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_Title.Text" xml:space="preserve">
+    <value>Stock Health</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_HealthyFormat" xml:space="preserve">
+    <value>{0}%  Healthy</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_LowStockFormat" xml:space="preserve">
+    <value>{0}%  Low Stock</value>
+  </data>
+  <data name="ReportsDashboard_StockHealth_OutOfStockFormat" xml:space="preserve">
+    <value>{0}%  Out of Stock</value>
+  </data>
+  <data name="ReportsDashboard_TeachingTip_Title.Title" xml:space="preserve">
+    <value>Dashboard Metric</value>
+  </data>
+
+  
+  <data name="ReportsDashboard_Greeting_Morning" xml:space="preserve">
+    <value>Good morning, Store Manager</value>
+  </data>
+  <data name="ReportsDashboard_Greeting_Afternoon" xml:space="preserve">
+    <value>Good afternoon, Store Manager</value>
+  </data>
+  <data name="ReportsDashboard_Greeting_Evening" xml:space="preserve">
+    <value>Good evening, Store Manager</value>
+  </data>
+  <data name="ReportsDashboard_Sales_Delta_Positive" xml:space="preserve">
+    <value>+ {0}%  vs  yesterday</value>
+  </data>
+  <data name="ReportsDashboard_Sales_Delta_Negative" xml:space="preserve">
+    <value>- {0}%  vs  yesterday</value>
+  </data>
+  <data name="ReportsDashboard_Profit_MarginFormat" xml:space="preserve">
+    <value>{0}% margin</value>
+  </data>
+  <data name="ReportsDashboard_Profit_NoSales" xml:space="preserve">
+    <value>No sales yet</value>
+  </data>
+  <data name="ReportsDashboard_Invoice_Delta_Positive" xml:space="preserve">
+    <value>+ {0}%  vs  yesterday</value>
+  </data>
+  <data name="ReportsDashboard_Invoice_Delta_Negative" xml:space="preserve">
+    <value>- {0}%  vs  yesterday</value>
+  </data>
+  <data name="ReportsDashboard_Target_YesterdayPerformance" xml:space="preserve">
+    <value>YESTERDAY PERFORMANCE: {0}</value>
+  </data>
+  <data name="ReportsDashboard_TopProducts_None" xml:space="preserve">
+    <value>No products sold today</value>
+  </data>
+  <data name="ReportsDashboard_Discounts_CountFormat" xml:space="preserve">
+    <value>{0} Discounts Applied</value>
+  </data>
+  <data name="ReportsDashboard_Stock_ShelfLabel" xml:space="preserve">
+    <value>Shelf </value>
+  </data>
+  <data name="ReportsDashboard_Stock_WarehouseLabel" xml:space="preserve">
+    <value>Warehouse </value>
+  </data>
+  <data name="ReportsDashboard_Stock_Empty" xml:space="preserve">
+    <value>Empty</value>
+  </data>
+  <data name="ReportsDashboard_Stock_QtyLeftFormat" xml:space="preserve">
+    <value>{0} left</value>
+  </data>
+  <data name="ReportsDashboard_Stock_OutOffStock" xml:space="preserve">
+    <value>Out of Stock</value>
+  </data>
+  <data name="ReportsDashboard_Stock_LowStock" xml:space="preserve">
+    <value>Low Stock</value>
+  </data>
+  <data name="ReportsDashboard_Stock_Shelf" xml:space="preserve">
+    <value>Shelf</value>
+  </data>
+  <data name="ReportsDashboard_Stock_Warehouse" xml:space="preserve">
+    <value>Warehouse</value>
+  </data>
+  <data name="ReportsDashboard_Stock_AllStocked" xml:space="preserve">
+    <value>All products are stocked</value>
+  </data>
+  <data name="ReportsDashboard_Stock_Healthy" xml:space="preserve">
+    <value>Healthy</value>
+  </data>
+  <data name="ReportsDashboard_Alert_Format" xml:space="preserve">
+    <value>{0} {1}</value>
+  </data>
+
+  
+  <data name="ReportsDashboard_Tooltip_SalesToday" xml:space="preserve">
+    <value>Total revenue collected today including tax. Compared against yesterday's performance.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_NetProfit" xml:space="preserve">
+    <value>Revenue minus cost of goods sold (COGS). Shows actual profit before overhead expenses.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_InvoiceCount" xml:space="preserve">
+    <value>Total number of completed transactions today. Each receipt counts as one invoice.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_AvgInvoiceValue" xml:space="preserve">
+    <value>Average amount per transaction. Higher values indicate effective upselling or larger basket sizes.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_SalesTarget" xml:space="preserve">
+    <value>Tracks today's revenue against your daily target goal.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_CriticalAlerts" xml:space="preserve">
+    <value>Current inventory alert counts by location. Shelf Low Stock means shelf quantity is above zero and at or below its minimum threshold. Warehouse Low Stock means warehouse quantity is above zero and at or below its minimum threshold. Shelf Empty and Warehouse Empty mean the quantity at that location is zero or below. Rows are counted by location, not by unique whole-store product status.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_TopProducts" xml:space="preserve">
+    <value>Top products ranked by revenue generated today. Progress bar shows each product's share of the combined revenue from the displayed products.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_StockStatus" xml:space="preserve">
+    <value>Top products with the most urgent stock issues. Each product appears once using its worst active issue across shelf and warehouse. The location badge shows Shelf, Warehouse, or Shelf | Warehouse.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_Discounts" xml:space="preserve">
+    <value>Total discount amount applied across all transactions today. Badge compares today's applied discounts against the full discount amount from yesterday.</value>
+  </data>
+  <data name="ReportsDashboard_Tooltip_StockHealth" xml:space="preserve">
+    <value>Whole-store inventory breakdown. Healthy means the product is above threshold in both shelf and warehouse. Low Stock means at least one location is at or below threshold, but the product is not completely out everywhere. Out of Stock means both shelf and warehouse are zero or below.</value>
+  </data>
+
+  
+  <data name="ReportsReceipts_Filters_Title.Text" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="ReportsReceipts_Filters_Subtitle.Text" xml:space="preserve">
+    <value>Refine the reporting window to find specific transactions.</value>
+  </data>
+  <data name="ReportsReceipts_ShownLabel.Text" xml:space="preserve">
+    <value>shown</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_Label.Text" xml:space="preserve">
+    <value>Quick Range</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_Today.Content" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_7Days.Content" xml:space="preserve">
+    <value>7 Days</value>
+  </data>
+  <data name="ReportsReceipts_QuickRange_30Days.Content" xml:space="preserve">
+    <value>30 Days</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Button.Text" xml:space="preserve">
+    <value>Generate X Report</value>
+  </data>
+  <data name="ReportsReceipts_Date_From.Text" xml:space="preserve">
+    <value>From</value>
+  </data>
+  <data name="ReportsReceipts_Date_To.Text" xml:space="preserve">
+    <value>To</value>
+  </data>
+  <data name="ReportsReceipts_Search_Label.Text" xml:space="preserve">
+    <value>Search</value>
+  </data>
+  <data name="ReportsReceipts_Search_Box.PlaceholderText" xml:space="preserve">
+    <value>Search transactions...</value>
+  </data>
+  <data name="ReportsReceipts_Search_ClearTooltip.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Clear Search</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Receipt.Text" xml:space="preserve">
+    <value>Receipt #</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Date.Text" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Time.Text" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Type.Text" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Subtotal.Text" xml:space="preserve">
+    <value>Subtotal</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Tax.Text" xml:space="preserve">
+    <value>Tax</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Total.Text" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="ReportsReceipts_List_Header_Action.Text" xml:space="preserve">
+    <value>Action</value>
+  </data>
+  <data name="ReportsReceipts_List_ReprintButton.Text" xml:space="preserve">
+    <value>Reprint</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.Title" xml:space="preserve">
+    <value>X Report Ready</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.PrimaryButtonText" xml:space="preserve">
+    <value>Print Report</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.SecondaryButtonText" xml:space="preserve">
+    <value>Open PDF</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog_Success.Text" xml:space="preserve">
+    <value>X Report generated successfully.</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog_SavedTo.Text" xml:space="preserve">
+    <value>Saved to</value>
+  </data>
+  <data name="ReportsReceipts_XReport_Dialog_Hint.Text" xml:space="preserve">
+    <value>Choose Print to send directly to the default printer, or Open PDF to preview.</value>
+  </data>
+
+  <data name="ReportsReceipts_XReport_StatusFormat" xml:space="preserve">
+    <value>PDF saved to: {0}</value>
+  </data>
+  <data name="ReportsReceipts_StoreFallback" xml:space="preserve">
+    <value>Store</value>
+  </data>
+
+  
+  <data name="ReportsReceipts_Range_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="ReportsReceipts_Range_Last7Days" xml:space="preserve">
+    <value>Last 7 days</value>
+  </data>
+  <data name="ReportsReceipts_Range_Last30Days" xml:space="preserve">
+    <value>Last 30 days</value>
+  </data>
+  <data name="ReportsReceipts_Tooltip_Collapse" xml:space="preserve">
+    <value>Collapse report view</value>
+  </data>
+  <data name="ReportsReceipts_Tooltip_Expand" xml:space="preserve">
+    <value>Expand transaction list</value>
+  </data>
+  <data name="ReportsReceipts_Status_Loading" xml:space="preserve">
+    <value>Loading...</value>
+  </data>
+  <data name="ReportsReceipts_Status_ReprintSuccess" xml:space="preserve">
+    <value>Receipt #{0:D6} sent to printer.</value>
+  </data>
+  <data name="ReportsReceipts_Status_ReprintError" xml:space="preserve">
+    <value>Unable to reprint receipt #{0:D6}: {1}</value>
+  </data>
+  <data name="ReportsReceipts_Status_Error" xml:space="preserve">
+    <value>ERROR: {0}</value>
+  </data>
+  <data name="ReportsReceipts_Status_XReportError" xml:space="preserve">
+    <value>Unable to generate X Report: {0}</value>
+  </data>
+  <data name="ReportsReceipts_Status_Searching" xml:space="preserve">
+    <value>Executing Global Search across Database...</value>
+  </data>
+  <data name="ReportsReceipts_Status_RangeInfo" xml:space="preserve">
+    <value>{0} | {1} of {2} total transactions.</value>
+  </data>
+  <data name="ReportsReceipts_Status_SearchActive" xml:space="preserve">
+    <value>Global Query Active | Found {0} exact matches.</value>
+  </data>
+  <data name="ReportsReceipts_Date_RangeFormat" xml:space="preserve">
+    <value>{0} to {1}</value>
+  </data>
+  <data name="ReportsReceipts_Velocity_SoldFormat" xml:space="preserve">
+    <value>{0} sold</value>
+  </data>
+  <data name="Settings_Dialog_SaveStore_Title" xml:space="preserve">
+    <value>Save store changes</value>
+  </data>
+  <data name="Settings_Dialog_SaveStore_Content" xml:space="preserve">
+    <value>Save the current store management changes? If you cancel, the page will restore the last saved values.</value>
+  </data>
+  <data name="Settings_Dialog_RestartRequired_Title" xml:space="preserve">
+    <value>Restart required</value>
+  </data>
+  <data name="Settings_Dialog_RestartRequired_Content" xml:space="preserve">
+    <value>You changed the application language. Save now and restart Nexill to apply it, save and restart later, or discard these language changes.</value>
+  </data>
+  <data name="Settings_Dialog_Reset_Title" xml:space="preserve">
+    <value>Reset app data</value>
+  </data>
+  <data name="Settings_Dialog_Reset_Content" xml:space="preserve">
+    <value>This will delete the local catalog, users, receipts, preferences, secure credentials, and telemetry cache. The app will reopen like a fresh install.</value>
+  </data>
+  <data name="Settings_Action_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Settings_Action_RestartNow" xml:space="preserve">
+    <value>Restart now</value>
+  </data>
+  <data name="Settings_Action_SaveRestartLater" xml:space="preserve">
+    <value>Save and restart later</value>
+  </data>
+  <data name="Settings_Action_Discard" xml:space="preserve">
+    <value>Discard</value>
+  </data>
+  <data name="Settings_Action_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Settings_Action_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="Generic_Close" xml:space="preserve">
+    <value>Fermer</value>
+  </data>
+  <data name="Generic_Next" xml:space="preserve">
+    <value>Suivant</value>
+  </data>
+  <data name="Generic_Previous" xml:space="preserve">
+    <value>Précédent</value>
+  </data>
+  <data name="Generic_Done" xml:space="preserve">
+    <value>Terminé</value>
+  </data>
+</root>
+

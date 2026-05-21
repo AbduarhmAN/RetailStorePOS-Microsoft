@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-20T17:44:00Z",
+  "title": "Design System: Retail Store POS",
+  "extensions": {
+    "colorMeta": {
+      "operational-blue": {
+        "role": "primary",
+        "displayName": "Operational Blue",
+        "canonical": "oklch(49% 0.16 255)",
+        "tonalRamp": ["#0D47A1", "#1565C0", "#1976D2", "#1E88E5", "#42A5F5", "#90CAF9", "#BBDEFB", "#E3F2FD"]
+      },
+      "accent-blue": {
+        "role": "primary",
+        "displayName": "Accent Blue",
+        "canonical": "oklch(62% 0.17 255)",
+        "tonalRamp": ["#1E40AF", "#1D4ED8", "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#BFDBFE", "#EFF6FF"]
+      },
+      "nexill-purple": {
+        "role": "brand",
+        "displayName": "Nexill Purple",
+        "canonical": "oklch(25% 0.14 290)",
+        "tonalRamp": ["#1A0F40", "#2D1B69", "#4338CA", "#6D28D9", "#7C3AED", "#A78BFA", "#C4B5FD", "#E9D5FF"]
+      },
+      "paper-white": {
+        "role": "neutral",
+        "displayName": "Paper White",
+        "canonical": "oklch(98% 0.003 250)",
+        "tonalRamp": ["#1A1D23", "#374151", "#5F6775", "#8F96A3", "#D1D5DB", "#E8EAF0", "#F1F4F9", "#F9FAFB"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(20% 0.01 260)",
+        "tonalRamp": ["#0F1115", "#1A1D23", "#2D3139", "#3F444D", "#5F6775", "#8F96A3", "#C4C9D2", "#E8EAF0"]
+      },
+      "graphite": {
+        "role": "neutral",
+        "displayName": "Graphite",
+        "canonical": "oklch(50% 0.02 255)",
+        "tonalRamp": ["#1A1D23", "#2D3139", "#3F444D", "#5F6775", "#7A8291", "#8F96A3", "#B4BAC4", "#D1D5DB"]
+      },
+      "ruled-line": {
+        "role": "neutral",
+        "displayName": "Ruled Line",
+        "canonical": "oklch(93% 0.01 255)",
+        "tonalRamp": ["#5F6775", "#8F96A3", "#B4BAC4", "#CBD5E1", "#D8DEE8", "#E2E8F0", "#E8EAF0", "#F1F4F9"]
+      },
+      "success-text": {
+        "role": "semantic",
+        "displayName": "Ledger Green",
+        "canonical": "oklch(40% 0.10 165)",
+        "tonalRamp": ["#022C22", "#065F46", "#047857", "#10B981", "#6EE7B7", "#A7F3D0", "#D1FAE5", "#ECFDF5"]
+      },
+      "danger-text": {
+        "role": "semantic",
+        "displayName": "Alert Red",
+        "canonical": "oklch(53% 0.22 25)",
+        "tonalRamp": ["#7F1D1D", "#991B1B", "#B91C1C", "#DC2626", "#EF4444", "#FCA5A5", "#FECACA", "#FEF2F2"]
+      },
+      "warning-text": {
+        "role": "semantic",
+        "displayName": "Caution Amber",
+        "canonical": "oklch(45% 0.12 70)",
+        "tonalRamp": ["#78350F", "#92400E", "#B45309", "#D97706", "#F59E0B", "#FDE68A", "#FEF3C7", "#FFFBEB"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Login hero titles only. Rare in operational UI." },
+      "headline": { "displayName": "Headline", "purpose": "KPI values on dashboards. The largest numeral in the system." },
+      "title": { "displayName": "Title", "purpose": "Page titles at the top of settings and management pages." },
+      "body": { "displayName": "Body", "purpose": "Form inputs, table cells, dialog content. The default reading size." },
+      "label": { "displayName": "Label", "purpose": "Field labels, table headers, KPI labels. Always with CharacterSpacing=40." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "state-transition", "value": "80ms ease-out", "purpose": "Button hover/press transitions. Fast enough to feel instant." },
+      { "name": "ambient-lift", "value": "Translation(0,0,4)", "purpose": "Checkout cart cards only. Subtle Z-axis lift for tappable items." }
+    ],
+    "breakpoints": [
+      { "name": "narrow", "value": "0px" },
+      { "name": "medium", "value": "760px" },
+      { "name": "wide", "value": "1160px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Save, Confirm, Add actions. The single blue interactive element.",
+      "html": "<button class=\"ds-btn-primary\">Save Changes</button>",
+      "css": ".ds-btn-primary { background: #1976D2; color: #FFFFFF; border: none; border-radius: 3px; padding: 6px 14px; font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600; min-height: 34px; cursor: pointer; transition: background 0.08s ease-out; } .ds-btn-primary:hover { background: #1565C0; } .ds-btn-primary:active { background: #0D47A1; } .ds-btn-primary:focus-visible { outline: 2px solid #3B82F6; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Cancel, Refresh, Import, Export. Secondary actions with border.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost { background: #FFFFFF; color: #1A1D23; border: 1px solid #E8EAF0; border-radius: 6px; padding: 7px 14px; font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 13px; font-weight: 400; min-height: 34px; cursor: pointer; transition: border-color 0.08s ease-out; } .ds-btn-ghost:hover { border-color: #CBD5E1; } .ds-btn-ghost:active { background: #F9FAFB; } .ds-btn-ghost:focus-visible { outline: 2px solid #3B82F6; outline-offset: 2px; }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Delete, Deactivate. Destructive actions with red border and text.",
+      "html": "<button class=\"ds-btn-danger\">Delete</button>",
+      "css": ".ds-btn-danger { background: #FFFFFF; color: #DC2626; border: 1px solid #FCA5A5; border-radius: 6px; padding: 7px 14px; font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 13px; font-weight: 600; min-height: 34px; cursor: pointer; transition: background 0.08s ease-out; } .ds-btn-danger:hover { background: #FEF2F2; } .ds-btn-danger:active { background: #FEE2E2; } .ds-btn-danger:focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }"
+    },
+    {
+      "name": "Flat Button",
+      "kind": "button",
+      "refersTo": "button-flat",
+      "description": "Sidebar navigation items. Notion-style transparent with hover fill.",
+      "html": "<button class=\"ds-btn-flat\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\"><path d=\"M2 4h12M2 8h12M2 12h12\" stroke=\"#5F6775\" stroke-width=\"1.5\" stroke-linecap=\"round\"/></svg> Dashboard</button>",
+      "css": ".ds-btn-flat { display: flex; align-items: center; gap: 8px; background: transparent; color: #5F6775; border: none; border-radius: 4px; padding: 8px 12px; font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 14px; font-weight: 400; cursor: pointer; width: 100%; text-align: left; transition: background 0.08s ease-out; } .ds-btn-flat:hover { background: #EFEFED; } .ds-btn-flat:active { background: #E8E8E6; } .ds-btn-flat[aria-current='page'] { background: #E8E8E6; color: #1A1D23; font-weight: 500; } .ds-btn-flat:focus-visible { outline: 2px solid #3B82F6; outline-offset: -2px; }"
+    },
+    {
+      "name": "Standard Card",
+      "kind": "card",
+      "refersTo": "card-standard",
+      "description": "Section container on settings pages. White, bordered, 12px radius.",
+      "html": "<div class=\"ds-card\"><span class=\"ds-card-title\">Store Information</span><p class=\"ds-card-subtitle\">Basic details about your store</p></div>",
+      "css": ".ds-card { background: #FFFFFF; border: 1px solid #E8EAF0; border-radius: 12px; padding: 22px; } .ds-card-title { display: block; font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 15px; font-weight: 600; color: #1A1D23; margin-bottom: 4px; } .ds-card-subtitle { font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 12px; color: #8F96A3; margin: 0; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard form input. 6px radius, 36px height, ruled-line border.",
+      "html": "<div class=\"ds-field\"><label class=\"ds-label\">Store Name</label><input class=\"ds-input\" type=\"text\" placeholder=\"Enter store name\" /></div>",
+      "css": ".ds-field { display: flex; flex-direction: column; gap: 6px; } .ds-label { font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 11px; font-weight: 600; color: #5F6775; letter-spacing: 0.04em; } .ds-input { font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 15px; color: #1A1D23; background: #FFFFFF; border: 1px solid #E8EAF0; border-radius: 6px; padding: 0 12px; height: 36px; outline: none; transition: border-color 0.08s ease-out; } .ds-input:focus { border-color: #3B82F6; outline: 2px solid rgba(59,130,246,0.15); outline-offset: 0; } .ds-input::placeholder { color: #8F96A3; } .ds-input:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Status Banner (Info)",
+      "kind": "custom",
+      "refersTo": null,
+      "description": "Inline status message below editor cards. Info variant.",
+      "html": "<div class=\"ds-banner-info\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" fill=\"none\"><circle cx=\"8\" cy=\"8\" r=\"7\" stroke=\"#1D4ED8\" stroke-width=\"1.5\"/><path d=\"M8 7v4M8 5h.01\" stroke=\"#1D4ED8\" stroke-width=\"1.5\" stroke-linecap=\"round\"/></svg> Changes saved successfully.</div>",
+      "css": ".ds-banner-info { display: flex; align-items: center; gap: 8px; background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 10px 12px; font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 13px; color: #1D4ED8; }"
+    },
+    {
+      "name": "KPI Card",
+      "kind": "card",
+      "refersTo": null,
+      "description": "Dashboard metric card. Tracked label above, large numeral below.",
+      "html": "<div class=\"ds-kpi\"><span class=\"ds-kpi-label\">TODAY'S REVENUE</span><span class=\"ds-kpi-value\">$4,280.50</span></div>",
+      "css": ".ds-kpi { background: #FFFFFF; border: 1px solid #E8EAF0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 6px; } .ds-kpi-label { font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 11px; font-weight: 600; color: #5F6775; letter-spacing: 0.04em; } .ds-kpi-value { font-family: 'Segoe UI Variable', 'Segoe UI', sans-serif; font-size: 28px; font-weight: 600; color: #1A1D23; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Register",
+    "overview": "This is a system that disappears into the task. The cashier sees totals, tax breakdowns, and change due. The manager sees today's revenue, top movers, and register differences. Neither notices the interface. The design exists to make numbers legible, actions immediate, and errors impossible to miss.\n\nThe aesthetic is Notion-meets-Fluent: warm neutrals, a single blue accent used sparingly for primary actions, flat surfaces separated by thin ruled lines rather than shadows, and a typographic hierarchy built on weight and tracking rather than color or decoration. The system is dense where density serves the operator (tables, dashboards, tax configuration) and spacious where focus matters (checkout, login).\n\nWhat this system explicitly rejects: generic \"AI SaaS\" landing aesthetics with purple-to-blue gradients and glassmorphism on every surface; cards-inside-cards-inside-cards nesting; bouncy or elastic easing; gray text on colored backgrounds; consumer-mobile shopping-app energy; anything that reads \"demo\" or \"concept.\"",
+    "keyCharacteristics": [
+      "Flat surfaces, 1px borders, no shadows",
+      "Single accent color (Operational Blue) reserved for primary actions only",
+      "Tracked uppercase labels (CharacterSpacing=40) as the metadata signal",
+      "Platform-native typography (Segoe UI Variable) at a tight fixed scale",
+      "Square global CornerRadius with intentional radius on interactive elements",
+      "Semantic color vocabulary always paired with icons and text"
+    ],
+    "rules": [
+      { "name": "The Numbers-First Rule", "body": "Totals, taxes, change due, stock levels, and register differences always win the visual hierarchy contest. Numerals get the largest size, the heaviest weight, and the highest contrast on any surface. Decorative chrome never competes with them.", "section": "colors" },
+      { "name": "The One-Accent Rule", "body": "Operational Blue appears on primary actions and current selection only. Its rarity is the point. If more than 10% of a screen is blue, something is wrong.", "section": "colors" },
+      { "name": "The Tracking Rule", "body": "Every label that describes a data field uses CharacterSpacing=40. This is the system's single strongest visual signal for 'this is metadata, not content.' Never apply tracking to body text or values.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "No box-shadow, no ThemeShadow, no elevation tokens. If a new surface needs to feel distinct, use a 1px border or a background color step. Shadows are prohibited outside the checkout cart card exception.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Operational Blue (#1976D2) exclusively for primary actions and current selection.",
+      "Do apply CharacterSpacing=40 to every field label, table header, and KPI label.",
+      "Do use 1px Ruled Line (#E8EAF0) borders to separate surfaces.",
+      "Do give numerals the largest size and heaviest weight on any surface.",
+      "Do use semantic color triples (background + border + text) for all state communication.",
+      "Do keep transitions at 80ms or instant.",
+      "Do honor the OS reduced-motion setting.",
+      "Do maintain full keyboard operation for every cashier task."
+    ],
+    "donts": [
+      "Don't use shadows or ThemeShadow on any surface except the checkout cart card Translation exception.",
+      "Don't nest cards inside cards.",
+      "Don't use purple-to-blue gradients, glassmorphism, or oversized hero cards in operational UI.",
+      "Don't use bouncy, elastic, or playful easing.",
+      "Don't use gray text on colored backgrounds or neon accents.",
+      "Don't use Inter, custom web fonts, or display typefaces.",
+      "Don't use border-left or border-right greater than 1px as a colored accent stripe.",
+      "Don't use gradient text.",
+      "Don't use decorative emoji as icons or inspirational empty-state copy.",
+      "Don't animate numbers that the user is actively reading.",
+      "Don't auto-dismiss confirmations of destructive actions.",
+      "Don't make anything look like a demo or concept."
+    ]
+  }
+}

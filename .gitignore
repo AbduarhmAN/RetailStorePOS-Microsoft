@@ -1,0 +1,95 @@
+## Visual Studio / user-specific
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+mono_crash.*
+
+## Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+## Visual Studio cache
+.vs/
+
+## Extensions / packages
+.vsix
+/packages/
+*.nupkg
+
+## Packaged app outputs
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+AppPackages/
+BundleArtifacts/
+
+## Deployment / generated artifacts
+artifacts/
+*.pdb
+*.backup
+*.bak
+
+## Python cache
+__pycache__/
+*.py[cod]
+
+## Local data / seed scripts
+[Ss]cripts/
+
+## Local databases
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+## Windows metadata
+Thumbs.db
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+## Keep deployment scripts tracked
+![Dd]eployment/
+![Dd]eployment/*
+/.gemini/commands
+/node_modules
+/.specify
+/specs/001-fix-dashboard-charts
+/GEMINI.md
+/package-lock.json
+/package.json
+/.agent
+
+## Security - Private keys and secrets
+*.pem
+!*public*.pem
+*private*
+*.key
+.env
+.env.*
+
+## Temporary files and local dev artifacts
+.tmp/
+supabase/.temp/
+
+# Local AI tool config — contains API keys
+opencode.json
+
+## Test certificates with private keys
+Deployment/Certification/*.pfx
