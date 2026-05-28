@@ -2,9 +2,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.UI;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
+using RetailStorePOS.App.Services.Licensing;
 using RetailStorePOS.Data.Modules.Sales;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.ViewModels;
@@ -13,17 +16,41 @@ namespace RetailStorePOS.WinUiLogin.Views;
 
 public sealed partial class ReportsReceiptsPage : Page
 {
+    private enum ReportHistoryRangePreset
+    {
+        Today,
+        Last3Days,
+        Last7Days,
+        WeekToDate,
+        Last30Days,
+        MonthToDate
+    }
+
     private static readonly Regex ExpectedCashCentsRegex = new(
         @"(?<prefix>\bExpected cash\s+)(?<cents>-?\d+)\s+cents\b",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+    private static readonly SolidColorBrush SelectedHistoryRangeBrush = new(Colors.LightGray);
+    private static readonly SolidColorBrush UnselectedHistoryRangeBrush = new(Colors.Transparent);
 
     public ReportsViewModel ViewModel { get; } = new();
+    private ReportHistoryRangePreset _selectedReportHistoryPreset = ReportHistoryRangePreset.Last3Days;
 
     public ReportsReceiptsPage()
     {
         NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
         InitializeComponent();
         ViewModel.XReportGenerated += ViewModel_XReportGenerated;
+        if (LoginRuntime.FeatureAccess is not null)
+        {
+            LoginRuntime.FeatureAccess.FeatureAccessChanged += (_, _) =>
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    EnsureAllowedReportHistoryPreset();
+                    UpdateReportHistoryUi();
+                });
+        }
+
+        EnsureAllowedReportHistoryPreset();
         ApplyLocalizedStaticText();
         ViewModel.Loc.PropertyChanged += (s, e) =>
         {
@@ -39,6 +66,8 @@ public sealed partial class ReportsReceiptsPage : Page
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
+        EnsureAllowedReportHistoryPreset();
+        UpdateReportHistoryUi();
         DispatcherQueue.TryEnqueue(() => ViewModel.RefreshCommand.Execute(null));
     }
 
@@ -99,15 +128,18 @@ public sealed partial class ReportsReceiptsPage : Page
         try
         {
             var reports = await Task.Run(() => XReportHelper.GetAvailableReports());
-            var rows = reports.Select(BuildXReportHistoryRow).ToList();
+            var rows = FilterXReportHistory(reports).Select(BuildXReportHistoryRow).ToList();
             if (rows.Count == 0)
             {
                 await ShowMessageAsync(
                     LocalizationHelper.GetString("ReportsReceipts_XReportHistory_Dialog_Title", "X Report List"),
-                    LocalizationHelper.GetString("ReportsReceipts_XReportHistory_Empty", "No saved X reports were found."));
+                    string.Format(
+                        LocalizationHelper.GetString("ReportsReceipts_XReportHistory_FilteredEmptyFormat", "No saved X reports were found for {0}."),
+                        GetSelectedReportHistoryRangeLabel()));
                 return;
             }
 
+            UpdateHistoryDialogDescriptions();
             XReportHistoryDialog.Title = LocalizationHelper.GetString("ReportsReceipts_XReportHistory_Dialog_Title", "X Report List");
             XReportHistoryDialog.CloseButtonText = LocalizationHelper.GetString("Generic_Close", "Close");
             XReportHistoryEmptyText.Visibility = Visibility.Collapsed;
@@ -131,15 +163,18 @@ public sealed partial class ReportsReceiptsPage : Page
         try
         {
             var history = await Task.Run(() => LoginRuntime.RegisterSessions.GetSessionHistory());
-            var rows = history.Select(BuildRegisterSessionHistoryRow).ToList();
+            var rows = FilterRegisterSessionHistory(history).Select(BuildRegisterSessionHistoryRow).ToList();
             if (rows.Count == 0)
             {
                 await ShowMessageAsync(
                     LocalizationHelper.GetString("ReportsReceipts_RegisterReport_HistoryDialog_Title", "Register Sessions"),
-                    LocalizationHelper.GetString("ReportsReceipts_RegisterReport_NoSessions", "No register sessions were found."));
+                    string.Format(
+                        LocalizationHelper.GetString("ReportsReceipts_RegisterReport_FilteredEmptyFormat", "No register sessions were found for {0}."),
+                        GetSelectedReportHistoryRangeLabel()));
                 return;
             }
 
+            UpdateHistoryDialogDescriptions();
             RegisterSessionHistoryDialog.Title = LocalizationHelper.GetString("ReportsReceipts_RegisterReport_HistoryDialog_Title", "Register Sessions");
             RegisterSessionHistoryDialog.CloseButtonText = LocalizationHelper.GetString("Generic_Close", "Close");
             RegisterSessionHistoryEmptyText.Visibility = Visibility.Collapsed;
@@ -370,21 +405,43 @@ public sealed partial class ReportsReceiptsPage : Page
 
     private void ApplyLocalizedStaticText()
     {
+        ReportHistoryTitleText.Text = LocalizationHelper.GetString(
+            "ReportsReceipts_ReportHistory_Title",
+            "Report History");
+        ReportHistorySubtitleText.Text = LocalizationHelper.GetString(
+            "ReportsReceipts_ReportHistory_Subtitle",
+            "Receipts stay unrestricted. These filters apply only to X report history and register sessions.");
+        ReportHistoryQuickRangeLabelText.Text = LocalizationHelper.GetString(
+            "ReportsReceipts_ReportHistory_QuickRangeLabel",
+            "History Range");
+        ReportHistoryTodayButtonText.Text = LocalizationHelper.GetString("ReportsReceipts_Range_Today", "Today");
+        ReportHistoryLast3DaysButtonText.Text = LocalizationHelper.GetString(
+            "ReportsReceipts_ReportHistory_Range_Last3Days",
+            "Last 3 Days");
+        ReportHistoryLast7DaysMenuItem.Text = LocalizationHelper.GetString("ReportsReceipts_Range_Last7Days", "Last 7 Days");
+        ReportHistoryWeekToDateMenuItem.Text = LocalizationHelper.GetString(
+            "ReportsReceipts_ReportHistory_Range_WeekToDate",
+            "Week to Date");
+        ReportHistoryLast30DaysMenuItem.Text = LocalizationHelper.GetString("ReportsReceipts_Range_Last30Days", "Last 30 Days");
+        ReportHistoryMonthToDateMenuItem.Text = LocalizationHelper.GetString(
+            "ReportsReceipts_ReportHistory_Range_MonthToDate",
+            "Month to Date");
         XReportHistoryButtonText.Text = LocalizationHelper.GetString("ReportsReceipts_XReportHistory_Button", "X Report List");
         RegisterReportButtonText.Text = LocalizationHelper.GetString("ReportsReceipts_RegisterReport_Button", "Register Report");
 
-        XReportHistoryDescriptionText.Text = LocalizationHelper.GetString(
+        XReportHistoryDescriptionText.Text = BuildHistoryDialogDescription(
             "ReportsReceipts_XReportHistory_Description",
             "Browse the X report PDFs already saved on this device. Select any report to open it.");
         XReportHistoryEmptyText.Text = LocalizationHelper.GetString(
             "ReportsReceipts_XReportHistory_Empty",
             "No saved X reports were found.");
-        RegisterSessionHistoryDescriptionText.Text = LocalizationHelper.GetString(
+        RegisterSessionHistoryDescriptionText.Text = BuildHistoryDialogDescription(
             "ReportsReceipts_RegisterReport_HistoryDialog_Description",
             "Browse the register sessions already saved in the database. Select any session to open its report details.");
         RegisterSessionHistoryEmptyText.Text = LocalizationHelper.GetString(
             "ReportsReceipts_RegisterReport_NoSessions",
             "No register sessions were found.");
+        UpdateReportHistoryUi();
     }
 
     private async Task ShowMessageAsync(string title, string message)
@@ -404,6 +461,188 @@ public sealed partial class ReportsReceiptsPage : Page
         };
 
         await dialog.ShowAsync();
+    }
+
+    private bool CanUseExtendedReportHistory =>
+        LoginRuntime.FeatureAccess?.CanUse(FeatureAccessService.Features.AdvancedReports) ?? false;
+
+    private void ReportHistoryTodayButton_Click(object sender, RoutedEventArgs e)
+    {
+        SetReportHistoryPreset(ReportHistoryRangePreset.Today);
+    }
+
+    private void ReportHistoryLast3DaysButton_Click(object sender, RoutedEventArgs e)
+    {
+        SetReportHistoryPreset(ReportHistoryRangePreset.Last3Days);
+    }
+
+    private async void ReportHistoryMoreRangesButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (!CanUseExtendedReportHistory)
+        {
+            await ShowMessageAsync(
+                LocalizationHelper.GetString("ReportsReceipts_ReportHistory_LockedTitle", "Extended report history"),
+                LocalizationHelper.GetString(
+                    "ReportsReceipts_ReportHistory_LockedMessage",
+                    "Free tier can browse report history for Today and Last 3 Days. Upgrade to unlock Last 7 Days, Week to Date, Last 30 Days, and Month to Date."));
+            return;
+        }
+
+        if (ReportHistoryMoreRangesButton.ContextFlyout is MenuFlyout flyout)
+        {
+            flyout.ShowAt(ReportHistoryMoreRangesButton);
+        }
+    }
+
+    private void ReportHistoryPresetMenuItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuFlyoutItem { Tag: string tag })
+        {
+            return;
+        }
+
+        var preset = tag switch
+        {
+            "Last7Days" => ReportHistoryRangePreset.Last7Days,
+            "WeekToDate" => ReportHistoryRangePreset.WeekToDate,
+            "Last30Days" => ReportHistoryRangePreset.Last30Days,
+            "MonthToDate" => ReportHistoryRangePreset.MonthToDate,
+            _ => ReportHistoryRangePreset.Last3Days
+        };
+
+        SetReportHistoryPreset(preset);
+    }
+
+    private void SetReportHistoryPreset(ReportHistoryRangePreset preset)
+    {
+        _selectedReportHistoryPreset = preset;
+        EnsureAllowedReportHistoryPreset();
+        UpdateReportHistoryUi();
+    }
+
+    private void EnsureAllowedReportHistoryPreset()
+    {
+        if (!CanUseExtendedReportHistory && IsPremiumReportHistoryPreset(_selectedReportHistoryPreset))
+        {
+            _selectedReportHistoryPreset = ReportHistoryRangePreset.Last3Days;
+        }
+    }
+
+    private void UpdateReportHistoryUi()
+    {
+        var rangeLabel = GetSelectedReportHistoryRangeLabel();
+        ReportHistoryRangeText.Text = string.Format(
+            LocalizationHelper.GetString("ReportsReceipts_ReportHistory_RangeStatusFormat", "History range: {0}"),
+            rangeLabel);
+        ReportHistoryAccessText.Text = CanUseExtendedReportHistory
+            ? LocalizationHelper.GetString("ReportsReceipts_ReportHistory_AccessPaid", "Paid history unlocked")
+            : LocalizationHelper.GetString("ReportsReceipts_ReportHistory_AccessFree", "Free tier: Today and Last 3 Days only");
+        ReportHistoryMoreRangesButtonText.Text = IsPremiumReportHistoryPreset(_selectedReportHistoryPreset)
+            ? rangeLabel
+            : LocalizationHelper.GetString("ReportsReceipts_ReportHistory_MoreRanges", "More Ranges");
+
+        SetHistoryRangeButtonState(ReportHistoryTodayButton, _selectedReportHistoryPreset == ReportHistoryRangePreset.Today);
+        SetHistoryRangeButtonState(ReportHistoryLast3DaysButton, _selectedReportHistoryPreset == ReportHistoryRangePreset.Last3Days);
+        SetHistoryRangeButtonState(ReportHistoryMoreRangesButton, IsPremiumReportHistoryPreset(_selectedReportHistoryPreset));
+        UpdateHistoryDialogDescriptions();
+    }
+
+    private static void SetHistoryRangeButtonState(Button button, bool isSelected)
+    {
+        button.Background = isSelected ? SelectedHistoryRangeBrush : UnselectedHistoryRangeBrush;
+    }
+
+    private string BuildHistoryDialogDescription(string resourceKey, string fallback)
+    {
+        var baseText = LocalizationHelper.GetString(resourceKey, fallback);
+        var rangeText = string.Format(
+            LocalizationHelper.GetString("ReportsReceipts_ReportHistory_CurrentWindowFormat", "Showing {0}."),
+            GetSelectedReportHistoryRangeLabel());
+        return string.Join(Environment.NewLine, baseText, rangeText);
+    }
+
+    private void UpdateHistoryDialogDescriptions()
+    {
+        XReportHistoryDescriptionText.Text = BuildHistoryDialogDescription(
+            "ReportsReceipts_XReportHistory_Description",
+            "Browse the X report PDFs already saved on this device. Select any report to open it.");
+        RegisterSessionHistoryDescriptionText.Text = BuildHistoryDialogDescription(
+            "ReportsReceipts_RegisterReport_HistoryDialog_Description",
+            "Browse the register sessions already saved in the database. Select any session to open its report details.");
+    }
+
+    private IReadOnlyList<XReportHelper.XReportFileEntry> FilterXReportHistory(IReadOnlyList<XReportHelper.XReportFileEntry> reports)
+    {
+        var (start, end) = GetSelectedReportHistoryWindow();
+        return reports
+            .Where(report =>
+            {
+                var anchorDate = (report.BusinessDate ?? report.LastModifiedLocal.Date).Date;
+                return anchorDate >= start && anchorDate <= end;
+            })
+            .ToList();
+    }
+
+    private IReadOnlyList<RegisterSessionHistoryEntry> FilterRegisterSessionHistory(IReadOnlyList<RegisterSessionHistoryEntry> sessions)
+    {
+        var (start, end) = GetSelectedReportHistoryWindow();
+        return sessions
+            .Where(session =>
+            {
+                var anchorDate = ResolveSessionHistoryDate(session);
+                return anchorDate.HasValue && anchorDate.Value >= start && anchorDate.Value <= end;
+            })
+            .ToList();
+    }
+
+    private static DateTime? ResolveSessionHistoryDate(RegisterSessionHistoryEntry session)
+    {
+        return ParseStoredUtc(session.ClosedAt)?.Date
+            ?? ParseStoredUtc(session.OpenedAt)?.Date;
+    }
+
+    private (DateTime Start, DateTime End) GetSelectedReportHistoryWindow()
+    {
+        var today = DateTime.Today;
+        return _selectedReportHistoryPreset switch
+        {
+            ReportHistoryRangePreset.Today => (today, today),
+            ReportHistoryRangePreset.Last3Days => (today.AddDays(-2), today),
+            ReportHistoryRangePreset.Last7Days => (today.AddDays(-6), today),
+            ReportHistoryRangePreset.WeekToDate => (GetStartOfWeek(today), today),
+            ReportHistoryRangePreset.Last30Days => (today.AddDays(-29), today),
+            ReportHistoryRangePreset.MonthToDate => (new DateTime(today.Year, today.Month, 1), today),
+            _ => (today.AddDays(-2), today)
+        };
+    }
+
+    private string GetSelectedReportHistoryRangeLabel()
+    {
+        return _selectedReportHistoryPreset switch
+        {
+            ReportHistoryRangePreset.Today => LocalizationHelper.GetString("ReportsReceipts_Range_Today", "Today"),
+            ReportHistoryRangePreset.Last3Days => LocalizationHelper.GetString("ReportsReceipts_ReportHistory_Range_Last3Days", "Last 3 Days"),
+            ReportHistoryRangePreset.Last7Days => LocalizationHelper.GetString("ReportsReceipts_Range_Last7Days", "Last 7 Days"),
+            ReportHistoryRangePreset.WeekToDate => LocalizationHelper.GetString("ReportsReceipts_ReportHistory_Range_WeekToDate", "Week to Date"),
+            ReportHistoryRangePreset.Last30Days => LocalizationHelper.GetString("ReportsReceipts_Range_Last30Days", "Last 30 Days"),
+            ReportHistoryRangePreset.MonthToDate => LocalizationHelper.GetString("ReportsReceipts_ReportHistory_Range_MonthToDate", "Month to Date"),
+            _ => LocalizationHelper.GetString("ReportsReceipts_ReportHistory_Range_Last3Days", "Last 3 Days")
+        };
+    }
+
+    private static bool IsPremiumReportHistoryPreset(ReportHistoryRangePreset preset)
+    {
+        return preset is ReportHistoryRangePreset.Last7Days
+            or ReportHistoryRangePreset.WeekToDate
+            or ReportHistoryRangePreset.Last30Days
+            or ReportHistoryRangePreset.MonthToDate;
+    }
+
+    private static DateTime GetStartOfWeek(DateTime value)
+    {
+        var firstDay = CultureInfo.CurrentCulture.DateTimeFormat.FirstDayOfWeek;
+        var offset = (7 + (value.DayOfWeek - firstDay)) % 7;
+        return value.Date.AddDays(-offset);
     }
 
     private static XReportHistoryRow BuildXReportHistoryRow(XReportHelper.XReportFileEntry report)

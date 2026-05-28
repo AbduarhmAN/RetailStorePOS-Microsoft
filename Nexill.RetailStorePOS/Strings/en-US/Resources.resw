@@ -1025,6 +1025,45 @@
   <data name="ReportsReceipts_QuickRange_30Days.Content" xml:space="preserve">
     <value>30 Days</value>
   </data>
+  <data name="ReportsReceipts_ReportHistory_Title" xml:space="preserve">
+    <value>Report History</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Subtitle" xml:space="preserve">
+    <value>Receipts stay unrestricted. These filters apply only to X report history and register sessions.</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_QuickRangeLabel" xml:space="preserve">
+    <value>History Range</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_MoreRanges" xml:space="preserve">
+    <value>More Ranges</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Range_Last3Days" xml:space="preserve">
+    <value>Last 3 Days</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Range_WeekToDate" xml:space="preserve">
+    <value>Week to Date</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Range_MonthToDate" xml:space="preserve">
+    <value>Month to Date</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_RangeStatusFormat" xml:space="preserve">
+    <value>History range: {0}</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_AccessFree" xml:space="preserve">
+    <value>Free tier: Today and Last 3 Days only</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_AccessPaid" xml:space="preserve">
+    <value>Paid history unlocked</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_CurrentWindowFormat" xml:space="preserve">
+    <value>Showing {0}.</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_LockedTitle" xml:space="preserve">
+    <value>Extended report history</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_LockedMessage" xml:space="preserve">
+    <value>Free tier can browse report history for Today and Last 3 Days. Upgrade to unlock Last 7 Days, Week to Date, Last 30 Days, and Month to Date.</value>
+  </data>
   <data name="ReportsReceipts_XReport_Button.Text" xml:space="preserve">
     <value>Generate X Report</value>
   </data>
@@ -1110,6 +1149,9 @@
   <data name="ReportsReceipts_XReportHistory_Empty" xml:space="preserve">
     <value>No saved X reports were found.</value>
   </data>
+  <data name="ReportsReceipts_XReportHistory_FilteredEmptyFormat" xml:space="preserve">
+    <value>No saved X reports were found for {0}.</value>
+  </data>
   <data name="ReportsReceipts_XReportHistory_ErrorFormat" xml:space="preserve">
     <value>Unable to load the X report list. {0}</value>
   </data>
@@ -1136,6 +1178,9 @@
   </data>
   <data name="ReportsReceipts_RegisterReport_HistoryDialog_Description" xml:space="preserve">
     <value>Browse the register sessions already saved in the database. Select any session to open its report details.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_FilteredEmptyFormat" xml:space="preserve">
+    <value>No register sessions were found for {0}.</value>
   </data>
   <data name="ReportsReceipts_RegisterReport_NoSessions" xml:space="preserve">
     <value>No register sessions were found.</value>

@@ -1022,6 +1022,45 @@
   <data name="ReportsReceipts_QuickRange_30Days.Content" xml:space="preserve">
     <value>30 يوم</value>
   </data>
+  <data name="ReportsReceipts_ReportHistory_Title" xml:space="preserve">
+    <value>سجل التقارير</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Subtitle" xml:space="preserve">
+    <value>قسم الإيصالات يبقى بدون تقييد. هذه التصفية تطبق فقط على سجل تقارير X وجلسات اليومية.</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_QuickRangeLabel" xml:space="preserve">
+    <value>نطاق السجل</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_MoreRanges" xml:space="preserve">
+    <value>نطاقات إضافية</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Range_Last3Days" xml:space="preserve">
+    <value>آخر 3 أيام</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Range_WeekToDate" xml:space="preserve">
+    <value>من بداية الأسبوع</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_Range_MonthToDate" xml:space="preserve">
+    <value>من بداية الشهر</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_RangeStatusFormat" xml:space="preserve">
+    <value>نطاق السجل: {0}</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_AccessFree" xml:space="preserve">
+    <value>الخطة المجانية: اليوم وآخر 3 أيام فقط</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_AccessPaid" xml:space="preserve">
+    <value>سجل التقارير المدفوع متاح</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_CurrentWindowFormat" xml:space="preserve">
+    <value>المعروض: {0}.</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_LockedTitle" xml:space="preserve">
+    <value>سجل تقارير موسع</value>
+  </data>
+  <data name="ReportsReceipts_ReportHistory_LockedMessage" xml:space="preserve">
+    <value>الخطة المجانية تتيح استعراض سجل التقارير لليوم وآخر 3 أيام فقط. قم بالترقية لفتح آخر 7 أيام، من بداية الأسبوع، آخر 30 يوم، ومن بداية الشهر.</value>
+  </data>
   <data name="ReportsReceipts_XReport_Button.Text" xml:space="preserve">
     <value>إصدار تقرير X</value>
   </data>
@@ -1107,6 +1146,9 @@
   <data name="ReportsReceipts_XReportHistory_Empty" xml:space="preserve">
     <value>لم يتم العثور على تقارير X محفوظة.</value>
   </data>
+  <data name="ReportsReceipts_XReportHistory_FilteredEmptyFormat" xml:space="preserve">
+    <value>لم يتم العثور على تقارير X محفوظة ضمن {0}.</value>
+  </data>
   <data name="ReportsReceipts_XReportHistory_ErrorFormat" xml:space="preserve">
     <value>تعذر تحميل قائمة تقارير X. {0}</value>
   </data>
@@ -1133,6 +1175,9 @@
   </data>
   <data name="ReportsReceipts_RegisterReport_HistoryDialog_Description" xml:space="preserve">
     <value>استعرض جلسات اليومية المحفوظة في قاعدة البيانات. اختر أي جلسة لفتح تفاصيل تقريرها.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_FilteredEmptyFormat" xml:space="preserve">
+    <value>لم يتم العثور على جلسات يومية ضمن {0}.</value>
   </data>
   <data name="ReportsReceipts_RegisterReport_NoSessions" xml:space="preserve">
     <value>لم يتم العثور على جلسات يومية.</value>

@@ -30,6 +30,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
                     </Grid.RowDefinitions>
 
                     <Grid ColumnSpacing="16">
@@ -70,7 +71,137 @@
                                 <Button Content="{x:Bind ViewModel.ReportsReceipts_QuickRange_Today, Mode=OneWay}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
                                 <Button Content="{x:Bind ViewModel.ReportsReceipts_QuickRange_7Days, Mode=OneWay}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
                                 <Button Content="{x:Bind ViewModel.ReportsReceipts_QuickRange_30Days, Mode=OneWay}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
-                                <Rectangle Width="1" Height="20" Fill="{StaticResource BorderDivider}" Margin="8,0,4,0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Date_From, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Date_To, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Search_Label, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <Grid ColumnSpacing="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox PlaceholderText="{x:Bind ViewModel.ReportsReceipts_Search_Box, Mode=OneWay}" CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                                <Button Grid.Column="1" ToolTipService.ToolTip="{x:Bind ViewModel.ReportsReceipts_Search_ClearTooltip, Mode=OneWay}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}">
+                                    <SymbolIcon Symbol="Clear" Foreground="{StaticResource MutedText}" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Row="2" RowSpacing="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Spacing="2">
+                                <TextBlock x:Name="ReportHistoryTitleText"
+                                           Text="Report History"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="ReportHistorySubtitleText"
+                                           Text="Receipts stay unrestricted. These filters apply only to X report history and register sessions."
+                                           Style="{StaticResource NotionMetaTextStyle}"
+                                           TextWrapping="Wrap" />
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1"
+                                        Spacing="2"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center">
+                                <TextBlock x:Name="ReportHistoryRangeText"
+                                           Text="History range: Last 3 Days"
+                                           Style="{StaticResource NotionMetaTextStyle}"
+                                           HorizontalAlignment="Right" />
+                                <TextBlock x:Name="ReportHistoryAccessText"
+                                           Text="Free tier: Today and Last 3 Days only"
+                                           Style="{StaticResource NotionMetaTextStyle}"
+                                           HorizontalAlignment="Right" />
+                            </StackPanel>
+                        </Grid>
+
+                        <Grid Grid.Row="1" ColumnSpacing="16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock x:Name="ReportHistoryQuickRangeLabelText"
+                                           Text="History Range"
+                                           Style="{StaticResource NotionMetaTextStyle}"
+                                           Margin="0,0,0,8" />
+                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <Button x:Name="ReportHistoryTodayButton"
+                                            Style="{StaticResource NotionButtonStyle}"
+                                            Click="ReportHistoryTodayButton_Click">
+                                        <TextBlock x:Name="ReportHistoryTodayButtonText"
+                                                   Text="Today"
+                                                   FontSize="13" />
+                                    </Button>
+                                    <Button x:Name="ReportHistoryLast3DaysButton"
+                                            Style="{StaticResource NotionButtonStyle}"
+                                            Click="ReportHistoryLast3DaysButton_Click">
+                                        <TextBlock x:Name="ReportHistoryLast3DaysButtonText"
+                                                   Text="Last 3 Days"
+                                                   FontSize="13" />
+                                    </Button>
+                                    <Button x:Name="ReportHistoryMoreRangesButton"
+                                            Style="{StaticResource NotionButtonStyle}"
+                                            Click="ReportHistoryMoreRangesButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Glyph="&#xE70D;" FontSize="12" />
+                                            <TextBlock x:Name="ReportHistoryMoreRangesButtonText"
+                                                       Text="More Ranges"
+                                                       FontSize="13" />
+                                        </StackPanel>
+                                        <Button.ContextFlyout>
+                                            <MenuFlyout x:Name="ReportHistoryMoreRangesFlyout">
+                                                <MenuFlyoutItem x:Name="ReportHistoryLast7DaysMenuItem"
+                                                                Text="Last 7 Days"
+                                                                Tag="Last7Days"
+                                                                Click="ReportHistoryPresetMenuItem_Click" />
+                                                <MenuFlyoutItem x:Name="ReportHistoryWeekToDateMenuItem"
+                                                                Text="Week to Date"
+                                                                Tag="WeekToDate"
+                                                                Click="ReportHistoryPresetMenuItem_Click" />
+                                                <MenuFlyoutItem x:Name="ReportHistoryLast30DaysMenuItem"
+                                                                Text="Last 30 Days"
+                                                                Tag="Last30Days"
+                                                                Click="ReportHistoryPresetMenuItem_Click" />
+                                                <MenuFlyoutItem x:Name="ReportHistoryMonthToDateMenuItem"
+                                                                Text="Month to Date"
+                                                                Tag="MonthToDate"
+                                                                Click="ReportHistoryPresetMenuItem_Click" />
+                                            </MenuFlyout>
+                                        </Button.ContextFlyout>
+                                    </Button>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="1"
+                                        Orientation="Horizontal"
+                                        Spacing="8"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Bottom">
                                 <Button Style="{StaticResource AccentBlueButtonStyle}" Command="{x:Bind ViewModel.GenerateXReportCommand}"
                                         Translation="0,0,8">
                                     <Button.Shadow>
@@ -102,31 +233,7 @@
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Date_From, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
-                            <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Date_To, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
-                            <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="3">
-                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Search_Label, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
-                            <Grid ColumnSpacing="4">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBox PlaceholderText="{x:Bind ViewModel.ReportsReceipts_Search_Box, Mode=OneWay}" CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
-                                <Button Grid.Column="1" ToolTipService.ToolTip="{x:Bind ViewModel.ReportsReceipts_Search_ClearTooltip, Mode=OneWay}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}">
-                                    <SymbolIcon Symbol="Clear" Foreground="{StaticResource MutedText}" />
-                                </Button>
-                            </Grid>
-                        </StackPanel>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Border>
