@@ -15,11 +15,11 @@ namespace RetailStorePOS.App.Services.Licensing;
 ///   <item>Validated license activation snapshot supplied by
 ///         <see cref="LicenseValidationService"/>. When a current, signed,
 ///         non-expired snapshot is present, the feature must be in its
-///         <c>Features</c> list to be allowed.</item>
-///   <item>Pre-release default policy: paid features that the build knows about
-///         are allowed even with no snapshot, so the app remains usable while
-///         licensing is being rolled out. Unknown feature keys are denied.
-///         Flip this to deny-by-default once licensing is mandatory.</item>
+///         <c>Features</c> list or be covered by a declared parent
+///         entitlement to be allowed.</item>
+///   <item>Default policy: Denies all paid features by default when no license is
+///         active. Known and unknown feature keys alike are locked down until
+///         an entitlement is verified.</item>
 /// </list>
 ///
 /// All decisions are local, synchronous, and deny-by-default for unknown keys.
@@ -77,6 +77,7 @@ public sealed class FeatureAccessService
         _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         _snapshotAccessor = snapshotAccessor ?? (static () => null);
         _clock = clock ?? (static () => DateTimeOffset.UtcNow);
+        ClearLegacyOverridesOnce();
     }
 
     /// <summary>
@@ -104,24 +105,23 @@ public sealed class FeatureAccessService
 
         // 3. Validated license snapshot (when present and currently valid) is
         //    the source of truth: allow iff the feature is listed in the
-        //    certificate. We deliberately do not fall back to the pre-release
-        //    default if the snapshot exists but is missing the feature, so a
+        //    certificate. We deliberately do not fall back to the general
+        //    default policy if the snapshot exists but is missing the feature, so a
         //    user with a Standard license cannot accidentally see Premium UI.
         var snapshot = SafeGetSnapshot();
         if (snapshot is not null && snapshot.IsCurrentlyValid(_clock()))
         {
-            return snapshot.HasFeature(featureKey);
+            return SnapshotAllowsFeature(snapshot, featureKey);
         }
 
-        // 4. Pre-release default policy. See class doc — keep allowing known
-        //    paid features so the app stays usable for users who have not
-        //    activated yet. Unknown keys remain denied.
+        // 4. Default policy. See class doc — locks down all paid features by default
+        //    for users who have not activated yet.
         return GetDefaultPolicy(featureKey);
     }
 
     /// <summary>
     /// True iff a validated license snapshot is currently in force. UI can use
-    /// this to switch a "pre-release access" badge for "Active license".
+    /// this to switch a "Free Tier" badge for "Active license".
     /// </summary>
     public bool IsLicenseEnforcementActive
     {
@@ -262,16 +262,49 @@ public sealed class FeatureAccessService
         }
     }
 
+    private const string LegacyOverridesClearedKey = "feature.dev.legacy_overrides_cleared";
+
+    private void ClearLegacyOverridesOnce()
+    {
+        var alreadyCleared = _settings.GetSetting(LegacyOverridesClearedKey, "0");
+        if (alreadyCleared != "1")
+        {
+            try
+            {
+                SetDeveloperOverride(Features.AdvancedReports, null);
+                SetDeveloperOverride(Features.DashboardDatePill, null);
+                _settings.SetSetting(LegacyOverridesClearedKey, "1");
+            }
+            catch (Exception)
+            {
+                // Degrade gracefully if settings storage is failing/read-only
+            }
+        }
+    }
+
     private static bool GetDefaultPolicy(string featureKey)
     {
-        // Pre-release default: known paid feature keys are allowed so the build
-        // can exercise their UI without a license certificate. Unknown keys are
-        // denied so typos at call sites do not silently bypass gating.
+        // Default policy: Locks down all paid features (including AdvancedReports
+        // and DashboardDatePill) by default when no license entitlement is present.
         return featureKey switch
         {
-            Features.AdvancedReports => true,
-            Features.DashboardDatePill => true,
+            Features.AdvancedReports => false,
+            Features.DashboardDatePill => false,
             _ => false
         };
+    }
+
+    private static bool SnapshotAllowsFeature(LicenseActivationSnapshot snapshot, string featureKey)
+    {
+        if (snapshot.HasFeature(featureKey))
+        {
+            return true;
+        }
+
+        // DashboardDatePill is an enhancement inside the paid reports tier.
+        // Existing Premium certificates that list AdvancedReports should not
+        // need a second activation just to unlock the dashboard period picker.
+        return string.Equals(featureKey, Features.DashboardDatePill, StringComparison.Ordinal)
+            && snapshot.HasFeature(Features.AdvancedReports);
     }
 }

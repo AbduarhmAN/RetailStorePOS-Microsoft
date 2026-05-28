@@ -133,10 +133,22 @@
                                    Foreground="#92400E"
                                    FontWeight="SemiBold"/>
                     </Border>
-                    <Border x:Name="TodayDatePill" Background="White" CornerRadius="8" Padding="12,7" BorderBrush="#E8EAF0" BorderThickness="1">
+                    <Border x:Name="TodayDatePill"
+                            Background="White"
+                            CornerRadius="8"
+                            Padding="12,7"
+                            BorderBrush="#E8EAF0"
+                            BorderThickness="1"
+                            MinWidth="132"
+                            Tapped="TodayDatePill_Tapped">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <SymbolIcon Symbol="Calendar" Foreground="#8F96A3"/>
                             <TextBlock x:Name="TodayDateText" Text="{x:Bind TodayDateValue, Mode=OneWay}" FontSize="13" Foreground="#1A1D23"/>
+                            <FontIcon x:Name="DatePillChevron"
+                                      Glyph="&#xE70D;"
+                                      FontSize="10"
+                                      Foreground="#8F96A3"
+                                      Visibility="Collapsed"/>
                         </StackPanel>
                     </Border>
                     <!-- 
@@ -383,7 +395,7 @@
                                             HorizontalAlignment="Left"
                                             VerticalAlignment="Top"
                                             Spacing="6">
-                                    <TextBlock Text="{x:Bind ReportsDashboard_MedianLabel, Mode=OneWay}"
+                                    <TextBlock Text="{x:Bind AvgInvoiceSubLabel, Mode=OneWay}"
                                                FontSize="12"
                                                FontWeight="Normal"
                                                Foreground="#8F96A3" />

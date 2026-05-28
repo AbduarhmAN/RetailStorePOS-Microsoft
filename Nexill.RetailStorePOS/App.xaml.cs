@@ -18,8 +18,9 @@ public partial class App : Application
 
     public App()
     {
-        // 1. CRITICAL: Initialize language before ANY other code runs.
-        // This must happen before StartupTrace.Write to minimize risk of resource manager locking.
+        // Initialize the resource language without touching the database. The
+        // persisted app language is applied after LoginRuntime finishes opening
+        // the database so the native splash path is not blocked by migrations.
         InitializeLanguage();
 
         StartupTrace.Write("App.ctor:start");
@@ -43,20 +44,11 @@ public partial class App : Application
 
         if (HasPackageIdentity())
         {
-            try
-            {
-                StartupTrace.Write("App.ctor:before AppNotificationManager.Register");
-                AppNotificationManager.Default.Register();
-                StartupTrace.Write("App.ctor:after AppNotificationManager.Register");
-            }
-            catch (Exception ex)
-            {
-                // CRITICAL FIX: Microsoft Store Cert environments might reject Toast Notifications
-                // or throw a COMException if the manifest is missing the correct COM server extensions.
-                // We catch it here so the app doesn't fatally crash before the MainWindow opens!
-                StartupTrace.Write($"AppNotificationManager.Register failed: {ex.Message}");
-                WriteCrashLog("AppNotificationManager.Register", ex);
-            }
+            // Notification registration is not required to render the login
+            // window. In dev/package layouts without a COM notification server
+            // this throws and can add seconds plus crash-log pressure to every
+            // launch, so keep it out of the startup path.
+            StartupTrace.Write("AppNotificationManager.Register deferred");
         }
         else
         {
@@ -258,11 +250,28 @@ public partial class App : Application
 
         try
         {
-            var dbPath = DatabasePaths.GetDatabasePath("RetailStorePOS");
-            global::RetailStorePOS.Data.Modules.Migrations.DatabaseInitializer.Initialize(dbPath);
-            var factory = new SqliteConnectionFactory(dbPath);
-            var settings = new SettingsRepository(factory);
-            var lang = LocalizationHelper.NormalizeLanguageTag(settings.GetAppLanguage());
+            string? languageTag = null;
+            try
+            {
+                languageTag = ApplicationLanguages.PrimaryLanguageOverride;
+            }
+            catch
+            {
+            }
+
+            if (string.IsNullOrWhiteSpace(languageTag))
+            {
+                try
+                {
+                    var languages = ApplicationLanguages.Languages;
+                    languageTag = languages.Count > 0 ? languages[0] : null;
+                }
+                catch
+                {
+                }
+            }
+
+            var lang = LocalizationHelper.NormalizeLanguageTag(languageTag);
 
             if (!string.IsNullOrEmpty(lang))
             {

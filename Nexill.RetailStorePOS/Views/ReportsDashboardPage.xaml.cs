@@ -6,6 +6,7 @@ using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using global::RetailStorePOS.Data.Modules.Contracts;
 using global::RetailStorePOS.Data.Modules.Products;
@@ -55,6 +56,70 @@ public sealed class DashboardAlertItem
     public SolidColorBrush BadgeForeground { get; set; } = new(Color.FromArgb(255, 95, 103, 117));
 }
 
+internal enum DashboardDateRangePreset
+{
+    Today,
+    Last7Days,
+    Last30Days,
+    Custom
+}
+
+internal sealed class DashboardDateRangeSelection
+{
+    private DashboardDateRangeSelection(DashboardDateRangePreset preset, DateTime startLocalDate, DateTime endLocalDate)
+    {
+        Preset = preset;
+        StartLocalDate = startLocalDate.Date;
+        EndLocalDate = endLocalDate.Date;
+    }
+
+    public DashboardDateRangePreset Preset { get; }
+    public DateTime StartLocalDate { get; }
+    public DateTime EndLocalDate { get; }
+
+    public static DashboardDateRangeSelection Today()
+        => new(DashboardDateRangePreset.Today, DateTime.Today, DateTime.Today);
+
+    public static DashboardDateRangeSelection LastDays(int days)
+    {
+        var clampedDays = Math.Max(1, days);
+        return new(
+            clampedDays == 30 ? DashboardDateRangePreset.Last30Days : DashboardDateRangePreset.Last7Days,
+            DateTime.Today.AddDays(-(clampedDays - 1)),
+            DateTime.Today);
+    }
+
+    public static DashboardDateRangeSelection Custom(DateTime startLocalDate, DateTime endLocalDate)
+    {
+        var start = startLocalDate.Date;
+        var end = endLocalDate.Date;
+        if (end < start)
+        {
+            (start, end) = (end, start);
+        }
+
+        return new(DashboardDateRangePreset.Custom, start, end);
+    }
+}
+
+internal sealed class DashboardReportingPeriod
+{
+    public required DateTime CurrentStartLocal { get; init; }
+    public required DateTime CurrentEndLocalExclusive { get; init; }
+    public required DateTime ComparisonStartLocal { get; init; }
+    public required DateTime ComparisonEndLocalExclusive { get; init; }
+    public required DateTime ComparisonFullEndLocalExclusive { get; init; }
+    public required bool IsPaidRange { get; init; }
+    public required bool UsesTodayPacingComparison { get; init; }
+
+    public DateTime CurrentStartUtc => CurrentStartLocal.ToUniversalTime();
+    public DateTime CurrentEndUtc => CurrentEndLocalExclusive.ToUniversalTime();
+    public DateTime ComparisonStartUtc => ComparisonStartLocal.ToUniversalTime();
+    public DateTime ComparisonEndUtc => ComparisonEndLocalExclusive.ToUniversalTime();
+    public DateTime ComparisonFullEndUtc => ComparisonFullEndLocalExclusive.ToUniversalTime();
+    public int DayCount => Math.Max(1, (int)(CurrentEndLocalExclusive.Date - CurrentStartLocal.Date).TotalDays);
+}
+
 public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -76,6 +141,8 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
     private DateTime _donutAnimStart;
     private DateTimeOffset _lastRefreshCompletedAt = DateTimeOffset.MinValue;
     private InventorySummary? _lastInventorySummary;
+    private DashboardDateRangeSelection _selectedDateRange = DashboardDateRangeSelection.LastDays(7);
+    private bool _canUseDashboardDateRange;
     private static readonly TimeSpan DashboardRefreshInterval = TimeSpan.FromMinutes(1);
 
 
@@ -93,18 +160,19 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
     public LocalizationService Loc => LocalizationService.Instance;
 
     public string ReportsDashboard_Subtitle => Loc["ReportsDashboard_Subtitle.Text"];
-    public string ReportsDashboard_KPI_SalesToday => Loc["ReportsDashboard_KPI_SalesToday.Text"];
-    public string ReportsDashboard_KPI_NetProfit => Loc["ReportsDashboard_KPI_NetProfit.Text"];
+    public string ReportsDashboard_KPI_SalesToday => _canUseDashboardDateRange ? Loc["ReportsDashboard_KPI_SalesPeriod.Text"] : Loc["ReportsDashboard_KPI_SalesToday.Text"];
+    public string ReportsDashboard_KPI_NetProfit => _canUseDashboardDateRange ? Loc["ReportsDashboard_KPI_NetProfitPeriod.Text"] : Loc["ReportsDashboard_KPI_NetProfit.Text"];
     public string ReportsDashboard_KPI_InvoiceCount => Loc["ReportsDashboard_KPI_InvoiceCount.Text"];
     public string ReportsDashboard_KPI_AvgInvoiceValue => Loc["ReportsDashboard_KPI_AvgInvoiceValue.Text"];
     public string ReportsDashboard_MedianLabel => Loc["ReportsDashboard_MedianLabel.Text"];
+    public string AvgInvoiceSubLabel => _canUseDashboardDateRange ? Loc["ReportsDashboard_AvgInvoice_ComparisonLabel.Text"] : Loc["ReportsDashboard_MedianLabel.Text"];
     public string ReportsDashboard_Target_Title => Loc["ReportsDashboard_Target_Title.Text"];
-    public string ReportsDashboard_Target_TodayLabel => Loc["ReportsDashboard_Target_TodayLabel.Text"];
-    public string ReportsDashboard_Target_GoalLabel => Loc["ReportsDashboard_Target_GoalLabel.Text"];
+    public string ReportsDashboard_Target_TodayLabel => _canUseDashboardDateRange ? Loc["ReportsDashboard_Target_PeriodLabel.Text"] : Loc["ReportsDashboard_Target_TodayLabel.Text"];
+    public string ReportsDashboard_Target_GoalLabel => _canUseDashboardDateRange ? Loc["ReportsDashboard_Target_PeriodGoalLabel.Text"] : Loc["ReportsDashboard_Target_GoalLabel.Text"];
     public string ReportsDashboard_Alerts_Title => Loc["ReportsDashboard_Alerts_Title.Text"];
     public string ReportsDashboard_TopProducts_Title => Loc["ReportsDashboard_TopProducts_Title.Text"];
     public string ReportsDashboard_StockStatus_Title => Loc["ReportsDashboard_StockStatus_Title.Text"];
-    public string ReportsDashboard_Discounts_Title => Loc["ReportsDashboard_Discounts_Title.Text"];
+    public string ReportsDashboard_Discounts_Title => _canUseDashboardDateRange ? Loc["ReportsDashboard_Discounts_PeriodTitle.Text"] : Loc["ReportsDashboard_Discounts_Title.Text"];
     public string ReportsDashboard_StockHealth_Title => Loc["ReportsDashboard_StockHealth_Title.Text"];
     public string ReportsDashboard_TeachingTip_Title => Loc["ReportsDashboard_TeachingTip_Title.Title"];
     public string Generic_Close => Loc["Generic_Close"];
@@ -206,7 +274,7 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
     private void RefreshLocalizedProperties()
     {
         GreetingValue = GetGreeting();
-        TodayDateValue = CurrencyDisplayHelper.FormatDate(DateTime.Now);
+        TodayDateValue = GetDatePillText();
         
         // Re-run inventory status formatting to pick up new language strings
         if (_lastInventorySummary != null)
@@ -222,6 +290,7 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         OnPropertyChanged(nameof(ReportsDashboard_KPI_InvoiceCount));
         OnPropertyChanged(nameof(ReportsDashboard_KPI_AvgInvoiceValue));
         OnPropertyChanged(nameof(ReportsDashboard_MedianLabel));
+        OnPropertyChanged(nameof(AvgInvoiceSubLabel));
         OnPropertyChanged(nameof(ReportsDashboard_Target_Title));
         OnPropertyChanged(nameof(ReportsDashboard_Target_TodayLabel));
         OnPropertyChanged(nameof(ReportsDashboard_Target_GoalLabel));
@@ -273,14 +342,27 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
 
     private void ApplyFeatureGating()
     {
-        // Date pill in the dashboard header is a paid-tier surface. When the
-        // active license snapshot does not list DashboardDatePill (or a dev
-        // override / force-free-mode denies it), hide the pill. The rest of
-        // the dashboard header continues to render normally.
-        var canShowDatePill = LoginRuntime.FeatureAccess?.CanUse(FeatureAccessService.Features.DashboardDatePill) ?? false;
+        // The date pill remains visible for everyone. Paid users can open it
+        // as a period selector; free users keep the original static today pill.
+        var previousAccess = _canUseDashboardDateRange;
+        _canUseDashboardDateRange = LoginRuntime.FeatureAccess?.CanUse(FeatureAccessService.Features.DashboardDatePill) ?? false;
+
         if (TodayDatePill is not null)
         {
-            TodayDatePill.Visibility = canShowDatePill ? Visibility.Visible : Visibility.Collapsed;
+            TodayDatePill.Visibility = Visibility.Visible;
+            TodayDatePill.Opacity = _canUseDashboardDateRange ? 1.0 : 0.92;
+        }
+
+        if (DatePillChevron is not null)
+        {
+            DatePillChevron.Visibility = _canUseDashboardDateRange ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        RefreshLocalizedProperties();
+
+        if (previousAccess != _canUseDashboardDateRange && _hasLoadedDashboard)
+        {
+            _ = RefreshAsync();
         }
     }
 
@@ -413,6 +495,37 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         textBlock.Foreground = new SolidColorBrush(delta >= 0 ? Color.FromArgb(255, 46, 125, 50) : Color.FromArgb(255, 198, 40, 40));
     }
 
+    private static string GetDeltaPositiveKey(DashboardReportingPeriod period)
+        => period.IsPaidRange && !period.UsesTodayPacingComparison
+            ? "ReportsDashboard_Period_Delta_Positive"
+            : "ReportsDashboard_Sales_Delta_Positive";
+
+    private static string GetDeltaNegativeKey(DashboardReportingPeriod period)
+        => period.IsPaidRange && !period.UsesTodayPacingComparison
+            ? "ReportsDashboard_Period_Delta_Negative"
+            : "ReportsDashboard_Sales_Delta_Negative";
+
+    private void ApplyPercentDelta(
+        TextBlock textBlock,
+        decimal current,
+        decimal previous,
+        string positiveKey,
+        string negativeKey,
+        Action<string> assignText)
+    {
+        var delta = previous > 0
+            ? (double)((current - previous) / previous) * 100.0
+            : (current > 0 ? 100.0 : 0.0);
+        var value = CurrencyDisplayHelper.FormatNumber((decimal)Math.Abs(delta), "0.#");
+
+        assignText(string.Format(
+            LocalizationHelper.GetString(delta >= 0 ? positiveKey : negativeKey),
+            value));
+        textBlock.Foreground = new SolidColorBrush(delta >= 0
+            ? Color.FromArgb(255, 46, 125, 50)
+            : Color.FromArgb(255, 198, 40, 40));
+    }
+
     private void RevealContentContainers()
     {
         SalesTodaySkeleton.Visibility = Visibility.Collapsed; SalesTodayContent.Visibility = Visibility.Visible;
@@ -484,18 +597,171 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         StopSkeletonShimmer();
     }
 
+    private void TodayDatePill_Tapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (!_canUseDashboardDateRange)
+        {
+            return;
+        }
+
+        var flyout = new MenuFlyout();
+        AddDateRangeFlyoutItem(flyout, LocalizationHelper.GetString("ReportsDashboard_DateRange_Today"), DashboardDateRangeSelection.Today());
+        AddDateRangeFlyoutItem(flyout, LocalizationHelper.GetString("ReportsDashboard_DateRange_Last7Days"), DashboardDateRangeSelection.LastDays(7));
+        AddDateRangeFlyoutItem(flyout, LocalizationHelper.GetString("ReportsDashboard_DateRange_Last30Days"), DashboardDateRangeSelection.LastDays(30));
+
+        var customItem = new MenuFlyoutItem
+        {
+            Text = LocalizationHelper.GetString("ReportsDashboard_DateRange_Custom")
+        };
+        customItem.Click += (_, _) => _ = ShowCustomDateRangeDialogAsync();
+        flyout.Items.Add(customItem);
+
+        flyout.ShowAt(TodayDatePill);
+    }
+
+    private void AddDateRangeFlyoutItem(MenuFlyout flyout, string text, DashboardDateRangeSelection selection)
+    {
+        var item = new MenuFlyoutItem { Text = text };
+        item.Click += async (_, _) => await SelectDateRangeAsync(selection);
+        flyout.Items.Add(item);
+    }
+
+    private async Task ShowCustomDateRangeDialogAsync()
+    {
+        var startPicker = new CalendarDatePicker
+        {
+            Header = LocalizationHelper.GetString("ReportsDashboard_DateRange_From"),
+            Date = new DateTimeOffset(_selectedDateRange.StartLocalDate),
+            MaxDate = new DateTimeOffset(DateTime.Today),
+            MinWidth = 240
+        };
+        var endPicker = new CalendarDatePicker
+        {
+            Header = LocalizationHelper.GetString("ReportsDashboard_DateRange_To"),
+            Date = new DateTimeOffset(_selectedDateRange.EndLocalDate),
+            MaxDate = new DateTimeOffset(DateTime.Today),
+            MinWidth = 240
+        };
+
+        var panel = new StackPanel
+        {
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = LocalizationHelper.GetString("ReportsDashboard_DateRange_CustomDescription"),
+                    TextWrapping = TextWrapping.Wrap,
+                    Foreground = new SolidColorBrush(Color.FromArgb(255, 95, 103, 117))
+                },
+                startPicker,
+                endPicker
+            }
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = LocalizationHelper.GetString("ReportsDashboard_DateRange_CustomTitle"),
+            Content = panel,
+            PrimaryButtonText = LocalizationHelper.GetString("ReportsDashboard_DateRange_Apply"),
+            CloseButtonText = LocalizationHelper.GetString("Generic_Close"),
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result != ContentDialogResult.Primary || startPicker.Date is null || endPicker.Date is null)
+        {
+            return;
+        }
+
+        await SelectDateRangeAsync(DashboardDateRangeSelection.Custom(startPicker.Date.Value.Date, endPicker.Date.Value.Date));
+    }
+
+    private async Task SelectDateRangeAsync(DashboardDateRangeSelection selection)
+    {
+        _selectedDateRange = selection;
+        TodayDateValue = GetDatePillText();
+        await RefreshAsync();
+    }
+
+    private string GetDatePillText()
+    {
+        if (!_canUseDashboardDateRange)
+        {
+            return CurrencyDisplayHelper.FormatDate(DateTime.Now);
+        }
+
+        return _selectedDateRange.Preset switch
+        {
+            DashboardDateRangePreset.Today => LocalizationHelper.GetString("ReportsDashboard_DateRange_Today"),
+            DashboardDateRangePreset.Last7Days => LocalizationHelper.GetString("ReportsDashboard_DateRange_Last7Days"),
+            DashboardDateRangePreset.Last30Days => LocalizationHelper.GetString("ReportsDashboard_DateRange_Last30Days"),
+            _ when _selectedDateRange.StartLocalDate == _selectedDateRange.EndLocalDate
+                => CurrencyDisplayHelper.FormatDate(_selectedDateRange.StartLocalDate),
+            _ => string.Format(
+                LocalizationHelper.GetString("ReportsDashboard_DateRange_CustomFormat"),
+                CurrencyDisplayHelper.FormatDate(_selectedDateRange.StartLocalDate),
+                CurrencyDisplayHelper.FormatDate(_selectedDateRange.EndLocalDate))
+        };
+    }
+
+    private DashboardReportingPeriod GetActiveReportingPeriod()
+    {
+        if (!_canUseDashboardDateRange)
+        {
+            return CreateTodayReportingPeriod(isPaidRange: false);
+        }
+
+        var today = DateTime.Today;
+        var start = _selectedDateRange.StartLocalDate.Date;
+        var endInclusive = _selectedDateRange.EndLocalDate.Date;
+        var endExclusive = endInclusive.AddDays(1);
+
+        if (start == today && endInclusive == today)
+        {
+            return CreateTodayReportingPeriod(isPaidRange: true);
+        }
+
+        var days = Math.Max(1, (int)(endExclusive - start).TotalDays);
+        var comparisonStart = start.AddDays(-days);
+
+        return new DashboardReportingPeriod
+        {
+            CurrentStartLocal = start,
+            CurrentEndLocalExclusive = endExclusive,
+            ComparisonStartLocal = comparisonStart,
+            ComparisonEndLocalExclusive = start,
+            ComparisonFullEndLocalExclusive = start,
+            IsPaidRange = true,
+            UsesTodayPacingComparison = false
+        };
+    }
+
+    private static DashboardReportingPeriod CreateTodayReportingPeriod(bool isPaidRange)
+    {
+        var today = DateTime.Today;
+        var yesterday = today.AddDays(-1);
+        var nowOffset = DateTime.Now.TimeOfDay;
+
+        return new DashboardReportingPeriod
+        {
+            CurrentStartLocal = today,
+            CurrentEndLocalExclusive = today.AddDays(1),
+            ComparisonStartLocal = yesterday,
+            ComparisonEndLocalExclusive = yesterday.Add(nowOffset),
+            ComparisonFullEndLocalExclusive = today,
+            IsPaidRange = isPaidRange,
+            UsesTodayPacingComparison = true
+        };
+    }
+
 
     private async Task PopulateDashboardAsync()
     {
         RefreshLocalizedProperties();
 
-        var todayStartUtc = DateTime.Today.ToUniversalTime();
-        var todayEndUtc = DateTime.Today.AddDays(1).ToUniversalTime();
-        var yesterdayStartUtc = DateTime.Today.AddDays(-1).ToUniversalTime();
-        var yesterdayEndUtc = DateTime.Today.ToUniversalTime();
-        var currentLocalTimeOffset = DateTime.Now.TimeOfDay;
-        var yesterdayPacingEndUtc = yesterdayStartUtc.Add(currentLocalTimeOffset);
-        var pastWeekStartUtc = DateTime.Today.AddDays(-6).ToUniversalTime();
+        var period = GetActiveReportingPeriod();
 
         // Reveal the main Grid instantly so skeletons appear
         DashboardScrollViewer.Visibility = Visibility.Visible;
@@ -505,23 +771,23 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         {
             return new
             {
-                Today = ReportingSalesModule.GetDashboardMetrics(todayStartUtc, todayEndUtc),
-                YestPacing = ReportingSalesModule.GetDashboardMetrics(yesterdayStartUtc, yesterdayPacingEndUtc),
-                YestFull = ReportingSalesModule.GetDashboardMetrics(yesterdayStartUtc, yesterdayEndUtc)
+                Current = ReportingSalesModule.GetDashboardMetrics(period.CurrentStartUtc, period.CurrentEndUtc),
+                Comparison = ReportingSalesModule.GetDashboardMetrics(period.ComparisonStartUtc, period.ComparisonEndUtc),
+                ComparisonFull = ReportingSalesModule.GetDashboardMetrics(period.ComparisonStartUtc, period.ComparisonFullEndUtc)
             };
         });
 
         // Fire all remaining data fetches in parallel
         await Task.WhenAll(
-            LoadSalesCardAsync(metricsData.Today, metricsData.YestPacing),
-            LoadProfitCardAsync(metricsData.Today),
-            LoadInvoiceCountCardAsync(metricsData.Today, metricsData.YestPacing),
-            LoadAvgInvoiceCardAsync(metricsData.Today),
-            LoadSalesTargetCardAsync(metricsData.Today, metricsData.YestFull),
-            LoadDiscountsCardAsync(metricsData.Today, metricsData.YestFull),
-            LoadTopProductsCardAsync(todayStartUtc, todayEndUtc),
+            LoadSalesCardAsync(metricsData.Current, metricsData.Comparison, period),
+            LoadProfitCardAsync(metricsData.Current, metricsData.Comparison, period),
+            LoadInvoiceCountCardAsync(metricsData.Current, metricsData.Comparison, period),
+            LoadAvgInvoiceCardAsync(metricsData.Current, metricsData.Comparison, period),
+            LoadSalesTargetCardAsync(metricsData.Current, metricsData.ComparisonFull, period),
+            LoadDiscountsCardAsync(metricsData.Current, metricsData.ComparisonFull, period),
+            LoadTopProductsCardAsync(period),
             LoadInventoryCardsAsync(),
-            LoadSparklinesAsync(pastWeekStartUtc, todayEndUtc)
+            LoadSparklinesAsync(period)
         );
 
         // All data is loaded – now reveal everything and animate
@@ -569,6 +835,10 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         // Animate Stock Health donut
         if (_donutSegments != null)
         {
+            if (_donutAnimTimer != null)
+            {
+                _donutAnimTimer.Stop();
+            }
             _donutAnimStart = DateTime.UtcNow;
             _donutAnimTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(16) };
             _donutAnimTimer.Tick += DonutAnimTimer_Tick;
@@ -626,44 +896,50 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         }
     }
 
-    private async Task LoadSalesCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
+    private async Task LoadSalesCardAsync(DashboardMetrics currentMetrics, DashboardMetrics comparisonMetrics, DashboardReportingPeriod period)
     {
         await EnqueueOnUI(() =>
         {
-            var todayTotal = todayMetrics.Revenue;
-            var yesterdayPacingTotal = yesterdayMetrics.Revenue;
-            SalesTodayValue = CurrencyDisplayHelper.FormatConfiguredAmount(todayTotal);
+            var currentTotal = currentMetrics.Revenue;
+            var comparisonTotal = comparisonMetrics.Revenue;
+            SalesTodayValue = CurrencyDisplayHelper.FormatConfiguredAmount(currentTotal);
 
-            double salesDelta = yesterdayPacingTotal > 0
-                ? (double)((todayTotal - yesterdayPacingTotal) / yesterdayPacingTotal) * 100.0
-                : (todayTotal > 0 ? 100.0 : 0);
+            double salesDelta = comparisonTotal > 0
+                ? (double)((currentTotal - comparisonTotal) / comparisonTotal) * 100.0
+                : (currentTotal > 0 ? 100.0 : 0);
 
             if (salesDelta >= 0)
             {
                 var valStr = CurrencyDisplayHelper.FormatNumber((decimal)salesDelta, "0.#");
-                SalesDeltaValue = string.Format(LocalizationHelper.GetString("ReportsDashboard_Sales_Delta_Positive"), valStr);
+                SalesDeltaValue = string.Format(LocalizationHelper.GetString(GetDeltaPositiveKey(period)), valStr);
                 SalesDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
             }
             else
             {
                 var valStr = CurrencyDisplayHelper.FormatNumber((decimal)Math.Abs(salesDelta), "0.#");
-                SalesDeltaValue = string.Format(LocalizationHelper.GetString("ReportsDashboard_Sales_Delta_Negative"), valStr);
+                SalesDeltaValue = string.Format(LocalizationHelper.GetString(GetDeltaNegativeKey(period)), valStr);
                 SalesDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 198, 40, 40));
             }
         });
     }
 
-    private async Task LoadProfitCardAsync(DashboardMetrics todayMetrics)
+    private async Task LoadProfitCardAsync(DashboardMetrics currentMetrics, DashboardMetrics comparisonMetrics, DashboardReportingPeriod period)
     {
         await EnqueueOnUI(() =>
         {
-            var todayTotal = todayMetrics.Revenue;
-            var todayProfit = todayMetrics.Profit;
-            NetProfitValue = CurrencyDisplayHelper.FormatConfiguredAmount(todayProfit);
+            var currentTotal = currentMetrics.Revenue;
+            var currentProfit = currentMetrics.Profit;
+            NetProfitValue = CurrencyDisplayHelper.FormatConfiguredAmount(currentProfit);
 
-            if (todayTotal > 0)
+            if (period.IsPaidRange)
             {
-                var marginPct = (double)(todayProfit / todayTotal) * 100.0;
+                ApplyPercentDelta(ProfitDeltaText, currentProfit, comparisonMetrics.Profit, GetDeltaPositiveKey(period), GetDeltaNegativeKey(period), value => ProfitDeltaValue = value);
+                return;
+            }
+
+            if (currentTotal > 0)
+            {
+                var marginPct = (double)(currentProfit / currentTotal) * 100.0;
                 var valStr = CurrencyDisplayHelper.FormatNumber((decimal)marginPct, "0.#");
                 ProfitDeltaValue = string.Format(LocalizationHelper.GetString("ReportsDashboard_Profit_MarginFormat"), valStr);
                 ProfitDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
@@ -676,71 +952,82 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         });
     }
 
-    private async Task LoadInvoiceCountCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
+    private async Task LoadInvoiceCountCardAsync(DashboardMetrics currentMetrics, DashboardMetrics comparisonMetrics, DashboardReportingPeriod period)
     {
         await EnqueueOnUI(() =>
         {
-            var todayInvoiceCount = todayMetrics.InvoiceCount;
-            var yesterdayPacingInvoiceCount = yesterdayMetrics.InvoiceCount;
-            InvoiceCountValue = CurrencyDisplayHelper.FormatInt(todayInvoiceCount);
+            var currentInvoiceCount = currentMetrics.InvoiceCount;
+            var comparisonInvoiceCount = comparisonMetrics.InvoiceCount;
+            InvoiceCountValue = CurrencyDisplayHelper.FormatInt(currentInvoiceCount);
 
-            double invoiceDelta = yesterdayPacingInvoiceCount > 0
-                ? ((double)(todayInvoiceCount - yesterdayPacingInvoiceCount) / yesterdayPacingInvoiceCount) * 100.0
-                : (todayInvoiceCount > 0 ? 100.0 : 0);
+            double invoiceDelta = comparisonInvoiceCount > 0
+                ? ((double)(currentInvoiceCount - comparisonInvoiceCount) / comparisonInvoiceCount) * 100.0
+                : (currentInvoiceCount > 0 ? 100.0 : 0);
 
             if (invoiceDelta >= 0)
             {
                 var valStr = CurrencyDisplayHelper.FormatNumber((decimal)invoiceDelta, "0.#");
-                InvoiceDeltaValue = string.Format(LocalizationHelper.GetString("ReportsDashboard_Invoice_Delta_Positive"), valStr);
+                InvoiceDeltaValue = string.Format(LocalizationHelper.GetString(period.IsPaidRange ? GetDeltaPositiveKey(period) : "ReportsDashboard_Invoice_Delta_Positive"), valStr);
                 InvoiceDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 46, 125, 50));
             }
             else
             {
                 var valStr = CurrencyDisplayHelper.FormatNumber((decimal)Math.Abs(invoiceDelta), "0.#");
-                InvoiceDeltaValue = string.Format(LocalizationHelper.GetString("ReportsDashboard_Invoice_Delta_Negative"), valStr);
+                InvoiceDeltaValue = string.Format(LocalizationHelper.GetString(period.IsPaidRange ? GetDeltaNegativeKey(period) : "ReportsDashboard_Invoice_Delta_Negative"), valStr);
                 InvoiceDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 198, 40, 40));
             }
         });
     }
 
-    private async Task LoadAvgInvoiceCardAsync(DashboardMetrics todayMetrics)
+    private async Task LoadAvgInvoiceCardAsync(DashboardMetrics currentMetrics, DashboardMetrics comparisonMetrics, DashboardReportingPeriod period)
     {
         await EnqueueOnUI(() =>
         {
-            var avgInvoice = todayMetrics.InvoiceCount > 0 ? todayMetrics.Revenue / todayMetrics.InvoiceCount : 0m;
+            var avgInvoice = currentMetrics.InvoiceCount > 0 ? currentMetrics.Revenue / currentMetrics.InvoiceCount : 0m;
             AvgInvoiceValue = CurrencyDisplayHelper.FormatConfiguredAmount(avgInvoice);
 
-            if (todayMetrics.InvoiceCount > 0)
+            if (period.IsPaidRange)
             {
-                MedianValue = CurrencyDisplayHelper.FormatConfiguredAmount(todayMetrics.MedianInvoice);
+                var comparisonAverage = comparisonMetrics.InvoiceCount > 0 ? comparisonMetrics.Revenue / comparisonMetrics.InvoiceCount : 0m;
+                ApplyPercentDelta(MedianText, avgInvoice, comparisonAverage, GetDeltaPositiveKey(period), GetDeltaNegativeKey(period), value => MedianValue = value);
+            }
+            else if (currentMetrics.InvoiceCount > 0)
+            {
+                MedianValue = CurrencyDisplayHelper.FormatConfiguredAmount(currentMetrics.MedianInvoice);
+                MedianText.Foreground = new SolidColorBrush(Color.FromArgb(255, 143, 150, 163));
             }
             else
             {
                 MedianValue = string.Empty;
+                MedianText.Foreground = new SolidColorBrush(Color.FromArgb(255, 143, 150, 163));
             }
         });
     }
 
-    private async Task LoadSalesTargetCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
+    private async Task LoadSalesTargetCardAsync(DashboardMetrics currentMetrics, DashboardMetrics comparisonMetrics, DashboardReportingPeriod period)
     {
         var prefs = await LoginRuntime.LocalPreferences.LoadPreferencesAsync();
-        var dailyTargetAmount = prefs.DailyTarget;
+        var targetAmount = period.IsPaidRange
+            ? prefs.DailyTarget * period.DayCount
+            : prefs.DailyTarget;
 
         await EnqueueOnUI(() =>
         {
-            var todayTotal = todayMetrics.Revenue;
-            var yesterdayFullTotal = yesterdayMetrics.Revenue;
+            var currentTotal = currentMetrics.Revenue;
+            var comparisonTotal = comparisonMetrics.Revenue;
 
-            var achievedPct = dailyTargetAmount > 0 ? (double)(todayTotal / dailyTargetAmount) * 100.0 : 0;
+            var achievedPct = targetAmount > 0 ? (double)(currentTotal / targetAmount) * 100.0 : 0;
             
-            CurrentSalesValue = CurrencyDisplayHelper.FormatConfiguredAmount(todayTotal);
-            TargetValueText = CurrencyDisplayHelper.FormatConfiguredAmount(dailyTargetAmount);
+            CurrentSalesValue = CurrencyDisplayHelper.FormatConfiguredAmount(currentTotal);
+            TargetValueText = CurrencyDisplayHelper.FormatConfiguredAmount(targetAmount);
             SalesAchievedPctValue = CurrencyDisplayHelper.FormatPercent(achievedPct, "0");
             
-            TargetSubValue = string.Format(LocalizationHelper.GetString("ReportsDashboard_Target_YesterdayPerformance"), CurrencyDisplayHelper.FormatConfiguredAmount(yesterdayFullTotal));
+            TargetSubValue = string.Format(
+                LocalizationHelper.GetString(period.IsPaidRange ? "ReportsDashboard_Target_PreviousPeriodPerformance" : "ReportsDashboard_Target_YesterdayPerformance"),
+                CurrencyDisplayHelper.FormatConfiguredAmount(comparisonTotal));
 
-            _todayBarPct = dailyTargetAmount > 0 ? Math.Min(1.0, Math.Max(0, (double)(todayTotal / dailyTargetAmount))) : 0;
-            _yesterdayBarPct = dailyTargetAmount > 0 ? Math.Min(1.0, Math.Max(0, (double)(yesterdayFullTotal / dailyTargetAmount))) : 0;
+            _todayBarPct = targetAmount > 0 ? Math.Min(1.0, Math.Max(0, (double)(currentTotal / targetAmount))) : 0;
+            _yesterdayBarPct = targetAmount > 0 ? Math.Min(1.0, Math.Max(0, (double)(comparisonTotal / targetAmount))) : 0;
         });
     }
 
@@ -763,6 +1050,11 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         if (containerWidth <= 0) return;
 
         _salesBarAnimated = true;
+
+        if (_salesBarAnimTimer != null)
+        {
+            _salesBarAnimTimer.Stop();
+        }
 
         // Reset bars to 0
         YesterdayBar.Width = 0;
@@ -803,9 +1095,9 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         _salesBarAnimTimer.Start();
     }
 
-    private async Task LoadTopProductsCardAsync(DateTime todayStartUtc, DateTime todayEndUtc)
+    private async Task LoadTopProductsCardAsync(DashboardReportingPeriod period)
     {
-        var topProducts = await Task.Run(() => ReportingSalesModule.GetTopProducts(todayStartUtc, todayEndUtc, 5));
+        var topProducts = await Task.Run(() => ReportingSalesModule.GetTopProducts(period.CurrentStartUtc, period.CurrentEndUtc, 5));
         await EnqueueOnUI(() =>
         {
             var topProductsTotalRevenue = topProducts.Sum(item => item.Revenue);
@@ -819,7 +1111,7 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
                             ? Math.Min(100, Math.Max(0, (double)(item.Revenue / topProductsTotalRevenue) * 100.0))
                             : 0
                     })
-                    : new[] { new DashboardProductItem { Name = LocalizationHelper.GetString("ReportsDashboard_TopProducts_None"), Revenue = CurrencyDisplayHelper.FormatConfiguredAmount(0m), Pct = 0 } }
+                    : new[] { new DashboardProductItem { Name = LocalizationHelper.GetString(period.IsPaidRange ? "ReportsDashboard_TopProducts_None_Period" : "ReportsDashboard_TopProducts_None"), Revenue = CurrencyDisplayHelper.FormatConfiguredAmount(0m), Pct = 0 } }
             );
         });
     }
@@ -836,60 +1128,122 @@ public sealed partial class ReportsDashboardPage : Page, INotifyPropertyChanged
         return null;
     }
 
-    private async Task LoadDiscountsCardAsync(DashboardMetrics todayMetrics, DashboardMetrics yesterdayMetrics)
+    private async Task LoadDiscountsCardAsync(DashboardMetrics currentMetrics, DashboardMetrics comparisonMetrics, DashboardReportingPeriod period)
     {
         await EnqueueOnUI(() =>
         {
-            var todayDiscountAmount = todayMetrics.DiscountAmount;
-            var yesterdayDiscountAmount = yesterdayMetrics.DiscountAmount;
-            var discountsDeltaPct = yesterdayDiscountAmount > 0
-                ? (double)((todayDiscountAmount - yesterdayDiscountAmount) / yesterdayDiscountAmount) * 100.0
-                : todayDiscountAmount > 0 ? 100.0 : 0.0;
+            var currentDiscountAmount = currentMetrics.DiscountAmount;
+            var comparisonDiscountAmount = comparisonMetrics.DiscountAmount;
 
-            DiscountsTotalText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(todayDiscountAmount);
-            DiscountsDeltaText.Text = CurrencyDisplayHelper.FormatStringWithDigits(discountsDeltaPct == 0 ? "0%" : $"{discountsDeltaPct:+0.#;-0.#}%");
-            DiscountsCountText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Discounts_CountFormat"), CurrencyDisplayHelper.FormatInt(todayMetrics.DiscountCount));
+            DiscountsTotalText.Text = CurrencyDisplayHelper.FormatConfiguredAmount(currentDiscountAmount);
+
+            if (period.IsPaidRange)
+            {
+                ApplyPercentDelta(DiscountsDeltaText, currentDiscountAmount, comparisonDiscountAmount, GetDeltaPositiveKey(period), GetDeltaNegativeKey(period), value => DiscountsDeltaText.Text = value);
+            }
+            else
+            {
+                var discountsDeltaPct = comparisonDiscountAmount > 0
+                    ? (double)((currentDiscountAmount - comparisonDiscountAmount) / comparisonDiscountAmount) * 100.0
+                    : currentDiscountAmount > 0 ? 100.0 : 0.0;
+                DiscountsDeltaText.Text = CurrencyDisplayHelper.FormatStringWithDigits(discountsDeltaPct == 0 ? "0%" : $"{discountsDeltaPct:+0.#;-0.#}%");
+                DiscountsDeltaText.Foreground = new SolidColorBrush(Color.FromArgb(255, 95, 103, 117));
+            }
+
+            DiscountsCountText.Text = string.Format(LocalizationHelper.GetString("ReportsDashboard_Discounts_CountFormat"), CurrencyDisplayHelper.FormatInt(currentMetrics.DiscountCount));
         });
     }
 
-    private async Task LoadSparklinesAsync(DateTime pastWeekStartUtc, DateTime todayEndUtc)
+    private static DashboardSparklineBucket GetSparklineBucket(DashboardReportingPeriod period)
     {
-        var pastWeekSparklines = await Task.Run(() => ReportingSalesModule.GetDailySparklines(pastWeekStartUtc, todayEndUtc));
+        if (period.DayCount <= 1)
+        {
+            return DashboardSparklineBucket.Hour;
+        }
+
+        if (period.DayCount <= 31)
+        {
+            return DashboardSparklineBucket.Day;
+        }
+
+        return period.DayCount > 730
+            ? DashboardSparklineBucket.Year
+            : DashboardSparklineBucket.Month;
+    }
+
+    private static List<string> BuildSparklineBucketKeys(DashboardReportingPeriod period, DashboardSparklineBucket bucket)
+    {
+        var keys = new List<string>();
+        switch (bucket)
+        {
+            case DashboardSparklineBucket.Hour:
+                for (var cursor = period.CurrentStartLocal; cursor < period.CurrentEndLocalExclusive; cursor = cursor.AddHours(1))
+                {
+                    keys.Add(cursor.ToString("yyyy-MM-dd HH:00"));
+                }
+                break;
+
+            case DashboardSparklineBucket.Day:
+                for (var cursor = period.CurrentStartLocal.Date; cursor < period.CurrentEndLocalExclusive.Date; cursor = cursor.AddDays(1))
+                {
+                    keys.Add(cursor.ToString("yyyy-MM-dd"));
+                }
+                break;
+
+            case DashboardSparklineBucket.Month:
+                for (var cursor = new DateTime(period.CurrentStartLocal.Year, period.CurrentStartLocal.Month, 1);
+                     cursor < period.CurrentEndLocalExclusive;
+                     cursor = cursor.AddMonths(1))
+                {
+                    keys.Add(cursor.ToString("yyyy-MM"));
+                }
+                break;
+
+            default:
+                for (var cursor = new DateTime(period.CurrentStartLocal.Year, 1, 1);
+                     cursor < period.CurrentEndLocalExclusive;
+                     cursor = cursor.AddYears(1))
+                {
+                    keys.Add(cursor.ToString("yyyy"));
+                }
+                break;
+        }
+
+        return keys;
+    }
+
+    private async Task LoadSparklinesAsync(DashboardReportingPeriod period)
+    {
+        var bucket = GetSparklineBucket(period);
+        var sparklineRows = await Task.Run(() => ReportingSalesModule.GetDashboardSparklines(period.CurrentStartUtc, period.CurrentEndUtc, bucket));
         await EnqueueOnUI(() =>
         {
-            var numDays = 7;
-            var salesSparkData = new double[numDays + 1];
-            var profitSparkData = new double[numDays + 1];
-            var invoiceSparkData = new double[numDays + 1];
-            var avgSparkData = new double[numDays + 1];
+            var buckets = BuildSparklineBucketKeys(period, bucket);
+            var salesSparkData = new double[buckets.Count + 1];
+            var profitSparkData = new double[buckets.Count + 1];
+            var invoiceSparkData = new double[buckets.Count + 1];
+            var avgSparkData = new double[buckets.Count + 1];
 
             salesSparkData[0] = profitSparkData[0] = invoiceSparkData[0] = avgSparkData[0] = 0;
 
-            var startDate = DateTime.Today.AddDays(-6);
-            foreach (var day in pastWeekSparklines)
+            var rowByBucket = sparklineRows.ToDictionary(row => row.LocalDay, StringComparer.Ordinal);
+            for (var i = 0; i < buckets.Count; i++)
             {
-                if (DateTime.TryParse(day.LocalDay, out var parsedDate))
+                var idx = i + 1;
+                if (rowByBucket.TryGetValue(buckets[i], out var row))
                 {
-                    int dayOffset = (int)(parsedDate.Date - startDate).TotalDays;
-                    if (dayOffset >= 0 && dayOffset < numDays)
-                    {
-                        var idx = dayOffset + 1;
-                        salesSparkData[idx] = (double)day.Revenue;
-                        profitSparkData[idx] = (double)day.Profit;
-                        invoiceSparkData[idx] = day.InvoiceCount;
-                    }
+                    salesSparkData[idx] = (double)row.Revenue;
+                    profitSparkData[idx] = (double)row.Profit;
+                    invoiceSparkData[idx] = row.InvoiceCount;
                 }
+
+                avgSparkData[idx] = invoiceSparkData[idx] > 0 ? salesSparkData[idx] / invoiceSparkData[idx] : 0;
             }
 
-            for (int i = 1; i <= numDays; i++)
-            {
-                avgSparkData[i] = invoiceSparkData[i] > 0 ? salesSparkData[i] / invoiceSparkData[i] : 0;
-            }
-
-            if (SalesSparkline[0] is LineSeries<double> ls) ls.Values = new ObservableCollection<double>(salesSparkData);
-            if (ProfitSparkline[0] is LineSeries<double> lp) lp.Values = new ObservableCollection<double>(profitSparkData);
-            if (InvoiceSparkline[0] is LineSeries<double> li) li.Values = new ObservableCollection<double>(invoiceSparkData);
-            if (AvgInvoiceSparkline[0] is LineSeries<double> la) la.Values = new ObservableCollection<double>(avgSparkData);
+            if (SalesSparkline[0] is LineSeries<double> ls) ls.Values = salesSparkData;
+            if (ProfitSparkline[0] is LineSeries<double> lp) lp.Values = profitSparkData;
+            if (InvoiceSparkline[0] is LineSeries<double> li) li.Values = invoiceSparkData;
+            if (AvgInvoiceSparkline[0] is LineSeries<double> la) la.Values = avgSparkData;
         });
     }
 

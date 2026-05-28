@@ -71,27 +71,6 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
-            <NavigationView.PaneFooter>
-                <StackPanel Orientation="Horizontal" Padding="12,0" Spacing="8" VerticalAlignment="Center">
-                    <Button x:Name="RunReadinessButton"
-                            x:Uid="ReportsPage_RunReadinessButton"
-                            Click="RunReadinessButton_Click"
-                            VerticalAlignment="Center" />
-                    <ProgressRing x:Name="ReadinessProgressRing"
-                                  IsActive="False"
-                                  Visibility="Collapsed"
-                                  Width="20" Height="20"
-                                  VerticalAlignment="Center"/>
-                    <TextBlock x:Name="ReadinessStatusText"
-                               VerticalAlignment="Center"
-                               Foreground="Gray"/>
-                    <TextBlock x:Name="LastRefreshText"
-                               x:Uid="ReportsPage_LastRefreshText"
-                               VerticalAlignment="Center"
-                               Margin="12,0,0,0"
-                               Foreground="Gray"/>
-                </StackPanel>
-            </NavigationView.PaneFooter>
         </NavigationView>
 
         <Frame x:Name="ReportsContentFrame" Grid.Row="1" IsNavigationStackEnabled="False">

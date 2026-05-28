@@ -55,6 +55,7 @@ public sealed partial class SettingsPage : Page
     private void UpdateNavigationAccess()
     {
         var mustChangePassword = LoginRuntime.Auth.CurrentUser?.MustChangePassword == true;
+        var isAuthenticated = LoginRuntime.Auth.IsLoggedIn;
 
         CheckoutNavItem.Visibility = !mustChangePassword && LoginRuntime.Auth.CanCheckout ? Visibility.Visible : Visibility.Collapsed;
         ProductsNavItem.Visibility = !mustChangePassword && LoginRuntime.Auth.CanManageProducts ? Visibility.Visible : Visibility.Collapsed;
@@ -64,7 +65,7 @@ public sealed partial class SettingsPage : Page
         UsersNav.Visibility = LoginRuntime.Auth.CanManageUsers ? Visibility.Visible : Visibility.Collapsed;
         PrefsNav.Visibility = mustChangePassword ? Visibility.Collapsed : Visibility.Visible;
         AboutNavItem.Visibility = mustChangePassword ? Visibility.Collapsed : Visibility.Visible;
-        SignOutNavItem.Visibility = Visibility.Visible;
+        SignOutNavItem.Visibility = isAuthenticated ? Visibility.Visible : Visibility.Collapsed;
         SettingsRootNav.Visibility = Visibility.Visible;
     }
 
@@ -121,7 +122,15 @@ public sealed partial class SettingsPage : Page
 
         if (tag.Equals("signout", StringComparison.OrdinalIgnoreCase))
         {
-            LoginRuntime.Auth.Logout();
+            try
+            {
+                LoginRuntime.Authorization.RequireAuthenticated();
+                LoginRuntime.Auth.Logout();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                MainWindow.Current?.RefreshShellChrome();
+            }
             return;
         }
 

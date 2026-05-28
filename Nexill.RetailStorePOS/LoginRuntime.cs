@@ -3,6 +3,7 @@ using RetailStorePOS.App.Modules.Products;
 using RetailStorePOS.App.Services;
 using RetailStorePOS.App.Services.Licensing;
 using global::RetailStorePOS.Data;
+using global::RetailStorePOS.Data.Models;
 using global::RetailStorePOS.Data.Modules.Migrations;
 using global::RetailStorePOS.Data.Modules.Products;
 using global::RetailStorePOS.Data.Modules.Sales;
@@ -154,13 +155,6 @@ public static class LoginRuntime
                     $"Lifecycle: Detected unfinished run {state.ActiveRunId} started at {state.ActiveRunStartedAt}, " +
                     $"last activity at {state.LastActivityAt} ({state.LastActivitySource ?? "unknown"})");
                 
-                // Emit unclean_exit for the unfinished prior run with crash-boundary signals
-                _ = Telemetry.LogUncleanExitAsync(
-                    state.ActiveRunId,
-                    state.ActiveRunStartedAt,
-                    state.LastActivityAt,
-                    state.LastActivitySource);
-
                 var lastKnownActivity = state.LastActivityAt?.ToUniversalTime() ?? state.ActiveRunStartedAt?.ToUniversalTime();
                 if (lastKnownActivity.HasValue)
                 {
@@ -186,24 +180,19 @@ public static class LoginRuntime
                 StartupTrace.Write("Lifecycle: No unfinished run detected. (Clean start)");
             }
 
-            // Create new active run
-            var newRunId = Guid.NewGuid().ToString();
-            _ = Telemetry.LogAppLaunchAsync(newRunId);
+            // Do not start telemetry writes during the splash/login path. On
+            // large local stores this can compete with page creation and push
+            // the app into memory pressure before the user can interact.
+            StartupTrace.Write("Lifecycle: Startup telemetry deferred");
         }
         catch (Exception ex)
         {
             ReportException(ex, "WinUiLogin.LifecycleOrchestration");
         }
 
-        try
-        {
-            Telemetry.StartBackgroundSync();
-        }
-        catch (Exception ex)
-        {
-            ReportException(ex, "WinUiLogin.Telemetry.StartBackgroundSync");
-        }
+        StartupTrace.Write("Telemetry.StartBackgroundSync:deferred");
 
+        StartupTrace.Write("LoginRuntime.Initialize:repositories:start");
         Products = new ProductRepository(ConnectionFactory);
         Sales = new SaleRepository(ConnectionFactory);
         AdvancedReportsRaw = new AdvancedReportsQueryService(ConnectionFactory);
@@ -257,6 +246,7 @@ public static class LoginRuntime
         AdvancedReports = new AuthorizedAdvancedReportsService(AdvancedReportsRaw, Authorization);
         RegisterSessions = new RegisterSessionRepository(ConnectionFactory);
         RefreshOnboardingState();
+        StartupTrace.Write("LoginRuntime.Initialize:repositories:end");
 
         var workspaceManager = new ReadinessWorkspaceManager();
         Readiness = new ReadinessService(
@@ -264,16 +254,54 @@ public static class LoginRuntime
             new ReadinessReportStore()
         );
 
+        StartupTrace.Write("LoginRuntime.Initialize:bootstrap-admin:start");
         EnsureBootstrapAdminOnFirstRun();
         RefreshBootstrapAdminPasswordState();
         ProductSearch = new ProductSearchService(Products);
+        StartupTrace.Write("LoginRuntime.Initialize:complete");
+    }
+
+
+    public static void ApplyPersistedLanguageSetting()
+    {
+        if (Settings is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var language = LocalizationHelper.NormalizeLanguageTag(Settings.GetAppLanguage());
+            LocalizationService.Instance.SetLanguage(language);
+            StartupTrace.Write($"LoginRuntime.Initialize:language-applied:{language}");
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"LoginRuntime.Initialize:language-apply-failed:{ex.Message}");
+        }
     }
 
     public static BootstrapAdminHint? ConsumeBootstrapAdminHint()
     {
-        var hint = PendingBootstrapAdminHint;
+        var hint = PendingBootstrapAdminHint ?? GetBootstrapAdminHintForDisplay();
         PendingBootstrapAdminHint = null;
         return hint;
+    }
+
+    public static BootstrapAdminHint? GetBootstrapAdminHintForDisplay()
+    {
+        if (Users is null || BootstrapCredentials is null)
+        {
+            return PendingBootstrapAdminHint;
+        }
+
+        var admin = Users.GetByUsername(BootstrapAdminUsername);
+        if (admin is null || !admin.IsAdmin || !admin.IsActive || !admin.MustChangePassword)
+        {
+            return null;
+        }
+
+        return GetValidBootstrapAdminHint(admin) ?? RotateBootstrapAdminTemporaryCredentials(admin);
     }
 
     public static void ReportException(Exception exception, string operationName)
@@ -392,7 +420,8 @@ public static class LoginRuntime
             Auth.Logout();
             PendingBootstrapAdminHint = new BootstrapAdminHint(
                 BootstrapAdminUsername,
-                creds.Password);
+                creds.Password,
+                creds.Pin);
             StartupTrace.Write("LoginRuntime.EnsureBootstrapAdminOnFirstRun:created");
         }
         catch (Exception ex)
@@ -431,16 +460,58 @@ public static class LoginRuntime
         // if it does, the operator has not yet performed the change-password
         // flow. Once they do, BootstrapCredentials.Clear() empties the
         // temp store and this check returns false.
-        var creds = BootstrapCredentials?.Load();
-        IsBootstrapPasswordChangeStillRequired =
-            creds is not null &&
-            UserRepository.VerifyPassword(creds.Password, admin.PasswordHash);
+        var hint = GetValidBootstrapAdminHint(admin) ?? RotateBootstrapAdminTemporaryCredentials(admin);
+        IsBootstrapPasswordChangeStillRequired = hint is not null;
 
         if (!IsBootstrapPasswordChangeStillRequired)
         {
             // Password was changed (or temp store was wiped). Make sure we
             // do not keep stale credentials on disk forever.
             BootstrapCredentials?.Clear();
+        }
+    }
+
+    private static BootstrapAdminHint? GetValidBootstrapAdminHint(User admin)
+    {
+        var creds = BootstrapCredentials?.Load();
+        if (creds is null)
+        {
+            return null;
+        }
+
+        if (creds.Pin.Length != 4 || !creds.Pin.All(char.IsDigit))
+        {
+            return null;
+        }
+
+        var passwordMatches = UserRepository.VerifyPassword(creds.Password, admin.PasswordHash);
+        var pinMatches = UserRepository.VerifyPin(creds.Pin, admin.PinHash);
+        return passwordMatches || pinMatches
+            ? new BootstrapAdminHint(BootstrapAdminUsername, creds.Password, creds.Pin)
+            : null;
+    }
+
+    private static BootstrapAdminHint? RotateBootstrapAdminTemporaryCredentials(User admin)
+    {
+        try
+        {
+            var creds = BootstrapCredentials.GenerateAndPersist();
+            admin.PasswordHash = UserRepository.HashPassword(creds.Password);
+            admin.PinHash = UserRepository.HashPin(creds.Pin);
+            admin.MustChangePassword = true;
+            Users.Update(admin);
+
+            var hint = new BootstrapAdminHint(BootstrapAdminUsername, creds.Password, creds.Pin);
+            PendingBootstrapAdminHint = hint;
+            IsBootstrapPasswordChangeStillRequired = true;
+            StartupTrace.Write("LoginRuntime.RotateBootstrapAdminTemporaryCredentials:rotated");
+            return hint;
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"LoginRuntime.RotateBootstrapAdminTemporaryCredentials:failed:{ex.Message}");
+            ReportException(ex, "WinUiLogin.RotateBootstrapAdminTemporaryCredentials");
+            return null;
         }
     }
 
@@ -561,4 +632,4 @@ public static class LoginRuntime
     }
 }
 
-public sealed record BootstrapAdminHint(string Username, string Password);
+public sealed record BootstrapAdminHint(string Username, string Password, string Pin);

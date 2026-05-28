@@ -203,7 +203,7 @@ public sealed partial class CloseRegisterDialog : ContentDialog
             return LocalizationHelper.Format("CloseRegisterDialog_SessionOpenedAt", dateStr);
         }
 
-        return LocalizationHelper.GetString("CloseRegisterDialog_SessionMetaText");
+        return LocalizationHelper.GetString("CloseRegisterDialog_SessionMetaText.Text");
     }
 
     private void CloseRegisterDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)

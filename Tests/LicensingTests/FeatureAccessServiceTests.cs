@@ -93,11 +93,27 @@ public sealed class FeatureAccessServiceTests
     }
 
     [TestMethod]
+    public void NoSnapshot_DashboardDatePill_IsDeniedByDefault()
+    {
+        var service = BuildService(snapshot: null);
+        Assert.IsFalse(service.CanUse(FeatureAccessService.Features.DashboardDatePill));
+    }
+
+    [TestMethod]
     public void Snapshot_WithFeature_AllowsThatFeature()
     {
         var snapshot = BuildSnapshot(features: new[] { FeatureAccessService.Features.AdvancedReports });
         var service = BuildService(snapshot);
         Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+        Assert.IsTrue(service.IsLicenseEnforcementActive);
+    }
+
+    [TestMethod]
+    public void Snapshot_WithAdvancedReports_AllowsDashboardDatePill()
+    {
+        var snapshot = BuildSnapshot(features: new[] { FeatureAccessService.Features.AdvancedReports });
+        var service = BuildService(snapshot);
+        Assert.IsTrue(service.CanUse(FeatureAccessService.Features.DashboardDatePill));
         Assert.IsTrue(service.IsLicenseEnforcementActive);
     }
 

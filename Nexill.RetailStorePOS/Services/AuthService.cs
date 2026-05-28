@@ -132,9 +132,9 @@ public sealed class AuthService
             return new LoginResult(false, "Username is required.");
         }
 
-        if (string.IsNullOrEmpty(pin) || pin.Length < 4)
+        if (string.IsNullOrEmpty(pin) || pin.Length != 4 || !pin.All(char.IsDigit))
         {
-            return new LoginResult(false, "PIN must be at least 4 digits.");
+            return new LoginResult(false, "PIN must be exactly 4 digits.");
         }
 
         var user = _userRepository.GetByUsername(username);
@@ -227,9 +227,9 @@ public sealed class AuthService
 
     public LoginResult UnlockWithPin(string pin, long expectedUserId)
     {
-        if (string.IsNullOrEmpty(pin) || pin.Length < 4)
+        if (string.IsNullOrEmpty(pin) || pin.Length != 4 || !pin.All(char.IsDigit))
         {
-            return new LoginResult(false, "PIN must be at least 4 digits.");
+            return new LoginResult(false, "PIN must be exactly 4 digits.");
         }
 
         var user = _userRepository.GetById(expectedUserId);

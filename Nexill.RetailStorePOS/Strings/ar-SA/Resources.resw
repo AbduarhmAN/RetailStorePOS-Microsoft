@@ -146,10 +146,10 @@
     <value>تسجيل دخول المدير</value>
   </data>
   <data name="LoginPage_Status_DefaultAdminCreated" xml:space="preserve">
-    <value>تم إنشاء حساب المدير الافتراضي</value>
+    <value>تم إنشاء مدير مؤقت</value>
   </data>
   <data name="LoginPage_Status_DefaultAdminMessage" xml:space="preserve">
-    <value>سجل الدخول باستخدام اسم المستخدم {0} وكلمة المرور {1} , ثم قم بتغييرها بعد الإعداد.</value>
+    <value>سجل الدخول باسم المستخدم {0} وكلمة المرور المؤقتة {1} والرقم السري المؤقت {2}. قم بتغيير كلمة المرور بعد الإعداد.</value>
   </data>
   <data name="LoginPage_CashierPanelTitle.Text" xml:space="preserve">
     <value>الكاشير</value>
@@ -194,22 +194,28 @@
     <value>إعداد المدير لأول مرة</value>
   </data>
   <data name="LoginPage_OnboardingHint_Body.Text" xml:space="preserve">
-    <value>اسم المستخدم الافتراضي: admin | كلمة المرور: 1234</value>
+    <value>اسم المستخدم هو admin. يتم إنشاء كلمة المرور والرقم السري لهذا التثبيت وتظهر في رسالة المدير المؤقت.</value>
+  </data>
+  <data name="LoginPage_OnboardingHint_Body_WithCredentials" xml:space="preserve">
+    <value>اسم المستخدم: {0} | كلمة المرور: {1} | الرقم السري: {2}</value>
   </data>
   <data name="LoginPage_PinLabel.Text" xml:space="preserve">
     <value>ادخل الرقم السري</value>
   </data>
   <data name="LoginPage_PinPasswordBox.PlaceholderText" xml:space="preserve">
-    <value>ادخل الرقم السري المكون من 4 ارقام</value>
+    <value>ادخل الرقم السري المكون من 4 أرقام</value>
   </data>
   <data name="LoginPage_LoginButton.Content" xml:space="preserve">
     <value>تسجيل الدخول</value>
   </data>
   <data name="LoginPage_CashierPinTip.Title" xml:space="preserve">
-    <value>الرقم السري للكاشير</value>
+    <value>الرقم السري المؤقت</value>
   </data>
   <data name="LoginPage_CashierPinTip.Subtitle" xml:space="preserve">
-    <value>الرقم السري الافتراضي هو 1234.</value>
+    <value>استخدم الرقم السري المؤقت الذي تم إنشاؤه لهذا التثبيت.</value>
+  </data>
+  <data name="LoginPage_CashierPinTip_Subtitle_WithPin" xml:space="preserve">
+    <value>الرقم السري المؤقت المكون من 4 أرقام: {0}</value>
   </data>
   <data name="LoginPage_CloseButton.Content" xml:space="preserve">
     <value>اغلاق</value>
@@ -769,56 +775,6 @@
   <data name="Reports_Nav_Receipts.Content" xml:space="preserve">
     <value>الفواتير</value>
   </data>
-  <data name="ReportsPage_LastRefreshText.Text" xml:space="preserve">
-    <value>لم يتم التحديث بعد</value>
-  </data>
-  <data name="ReportsPage_RunReadinessButton.Content" xml:space="preserve">
-    <value>تشغيل فحص الجاهزية</value>
-  </data>
-  <data name="ReportsPage_LastRefresh_Format" xml:space="preserve">
-    <value>آخر تحديث: {0}</value>
-  </data>
-  <data name="ReportsPage_LastRefresh_NotRefreshed" xml:space="preserve">
-    <value>لم يتم التحديث بعد</value>
-  </data>
-  <data name="ReportsPage_LastRefresh_Unknown" xml:space="preserve">
-    <value>الحالة غير معروفة</value>
-  </data>
-  <data name="ReportsPage_Readiness_Running" xml:space="preserve">
-    <value>جار تشغيل فحص الجاهزية...</value>
-  </data>
-  <data name="ReportsPage_Readiness_StatusSummary" xml:space="preserve">
-    <value>نتيجة الجاهزية {0}: {1} أعطال مانعة و{2} ملاحظات.</value>
-  </data>
-  <data name="ReportsPage_Readiness_DialogTitle" xml:space="preserve">
-    <value>نتائج فحص الجاهزية</value>
-  </data>
-  <data name="ReportsPage_Readiness_DialogBody" xml:space="preserve">
-    <value>الحالة: {0}
-بدأ في: {1}
-اكتمل في: {2}
-
-الأعطال المانعة: {3}
-الملاحظات: {4}
-
-{5}</value>
-  </data>
-  <data name="ReportsPage_Readiness_CloseButton" xml:space="preserve">
-    <value>موافق</value>
-  </data>
-  <data name="ReportsPage_Readiness_ErrorFormat" xml:space="preserve">
-    <value>خطأ: {0}</value>
-  </data>
-  <data name="ReportsPage_Readiness_OverallStatus_Passed" xml:space="preserve">
-    <value>ناجح</value>
-  </data>
-  <data name="ReportsPage_Readiness_OverallStatus_Failed" xml:space="preserve">
-    <value>فاشل</value>
-  </data>
-  <data name="ReportsPage_Readiness_OverallStatus_CompletedWithObservations" xml:space="preserve">
-    <value>اكتمل مع ملاحظات</value>
-  </data>
-
   
   <data name="ReportsDashboard_StaleStatusText.Text" xml:space="preserve">
     <value>عرض اللقطة المحفوظة (جار التحديث...)</value>
@@ -832,8 +788,14 @@
   <data name="ReportsDashboard_KPI_SalesToday.Text" xml:space="preserve">
     <value>مبيعات اليوم</value>
   </data>
+  <data name="ReportsDashboard_KPI_SalesPeriod.Text" xml:space="preserve">
+    <value>المبيعات</value>
+  </data>
   <data name="ReportsDashboard_KPI_NetProfit.Text" xml:space="preserve">
     <value>صافي أرباح اليوم</value>
+  </data>
+  <data name="ReportsDashboard_KPI_NetProfitPeriod.Text" xml:space="preserve">
+    <value>صافي الأرباح</value>
   </data>
   <data name="ReportsDashboard_KPI_InvoiceCount.Text" xml:space="preserve">
     <value>عدد الفواتير</value>
@@ -844,14 +806,23 @@
   <data name="ReportsDashboard_MedianLabel.Text" xml:space="preserve">
     <value>القيمة الوسيطة:</value>
   </data>
+  <data name="ReportsDashboard_AvgInvoice_ComparisonLabel.Text" xml:space="preserve">
+    <value>مقارنة بالفترة السابقة:</value>
+  </data>
   <data name="ReportsDashboard_Target_Title.Text" xml:space="preserve">
     <value>المبيعات مقابل الهدف</value>
   </data>
   <data name="ReportsDashboard_Target_TodayLabel.Text" xml:space="preserve">
     <value>اليوم</value>
   </data>
+  <data name="ReportsDashboard_Target_PeriodLabel.Text" xml:space="preserve">
+    <value>الفترة</value>
+  </data>
   <data name="ReportsDashboard_Target_GoalLabel.Text" xml:space="preserve">
     <value>الهدف اليومي</value>
+  </data>
+  <data name="ReportsDashboard_Target_PeriodGoalLabel.Text" xml:space="preserve">
+    <value>هدف الفترة</value>
   </data>
   <data name="ReportsDashboard_Alerts_Title.Text" xml:space="preserve">
     <value>تنبيهات هامة</value>
@@ -864,6 +835,9 @@
   </data>
   <data name="ReportsDashboard_Discounts_Title.Text" xml:space="preserve">
     <value>خصومات اليوم</value>
+  </data>
+  <data name="ReportsDashboard_Discounts_PeriodTitle.Text" xml:space="preserve">
+    <value>الخصومات</value>
   </data>
   <data name="ReportsDashboard_StockHealth_Title.Text" xml:space="preserve">
     <value>حالة المخزون</value>
@@ -909,14 +883,56 @@
   <data name="ReportsDashboard_Invoice_Delta_Negative" xml:space="preserve">
     <value>- {0}% مقارنة بأمس</value>
   </data>
+  <data name="ReportsDashboard_Period_Delta_Positive" xml:space="preserve">
+    <value>+ {0}% مقارنة بالفترة السابقة</value>
+  </data>
+  <data name="ReportsDashboard_Period_Delta_Negative" xml:space="preserve">
+    <value>- {0}% مقارنة بالفترة السابقة</value>
+  </data>
   <data name="ReportsDashboard_Target_YesterdayPerformance" xml:space="preserve">
     <value>أداء أمس: {0}</value>
+  </data>
+  <data name="ReportsDashboard_Target_PreviousPeriodPerformance" xml:space="preserve">
+    <value>الفترة السابقة: {0}</value>
   </data>
   <data name="ReportsDashboard_TopProducts_None" xml:space="preserve">
     <value>لم يتم بيع أي منتجات اليوم</value>
   </data>
+  <data name="ReportsDashboard_TopProducts_None_Period" xml:space="preserve">
+    <value>لم يتم بيع أي منتجات في هذه الفترة</value>
+  </data>
   <data name="ReportsDashboard_Discounts_CountFormat" xml:space="preserve">
     <value>تم تطبيق {0} خصم</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Today" xml:space="preserve">
+    <value>اليوم</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Last7Days" xml:space="preserve">
+    <value>آخر 7 أيام</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Last30Days" xml:space="preserve">
+    <value>آخر 30 يومًا</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Custom" xml:space="preserve">
+    <value>فترة مخصصة</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_From" xml:space="preserve">
+    <value>من تاريخ</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_To" xml:space="preserve">
+    <value>إلى تاريخ</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_CustomTitle" xml:space="preserve">
+    <value>اختيار فترة لوحة التحكم</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_CustomDescription" xml:space="preserve">
+    <value>اختر أول يوم وآخر يوم لإدخالهما في فترة لوحة التحكم.</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Apply" xml:space="preserve">
+    <value>تطبيق</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_CustomFormat" xml:space="preserve">
+    <value>{0} - {1}</value>
   </data>
   <data name="ReportsDashboard_Stock_ShelfLabel" xml:space="preserve">
     <value>الرف </value>
@@ -1078,6 +1094,192 @@
   </data>
   <data name="ReportsReceipts_StoreFallback" xml:space="preserve">
     <value>المتجر</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Button" xml:space="preserve">
+    <value>قائمة تقارير X</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Dialog_Title" xml:space="preserve">
+    <value>قائمة تقارير X</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Description" xml:space="preserve">
+    <value>استعرض ملفات PDF لتقارير X المحفوظة على هذا الجهاز. اختر أي تقرير لفتحه.</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Empty" xml:space="preserve">
+    <value>لم يتم العثور على تقارير X محفوظة.</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_ErrorFormat" xml:space="preserve">
+    <value>تعذر تحميل قائمة تقارير X. {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_OpenFailed" xml:space="preserve">
+    <value>تعذر فتح ملف PDF لتقرير X المحدد.</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_TitleDateFormat" xml:space="preserve">
+    <value>تقرير X • {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_TitleFallbackFormat" xml:space="preserve">
+    <value>تقرير X • {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_SubtitleFormat" xml:space="preserve">
+    <value>آخر تحديث {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_MetaFormat" xml:space="preserve">
+    <value>الملف {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_Button" xml:space="preserve">
+    <value>تقرير اليومية</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryDialog_Title" xml:space="preserve">
+    <value>جلسات اليومية</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryDialog_Description" xml:space="preserve">
+    <value>استعرض جلسات اليومية المحفوظة في قاعدة البيانات. اختر أي جلسة لفتح تفاصيل تقريرها.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_NoSessions" xml:space="preserve">
+    <value>لم يتم العثور على جلسات يومية.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ErrorFormat" xml:space="preserve">
+    <value>تعذر تحميل تقرير اليومية. {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_Dialog_Title" xml:space="preserve">
+    <value>تقرير اليومية</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_SessionMissing" xml:space="preserve">
+    <value>تعذر تحميل جلسة اليومية المحددة.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_DetailTitleFormat" xml:space="preserve">
+    <value>جلسة اليومية #{0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HeadlineFormat" xml:space="preserve">
+    <value>الجلسة #{0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_SessionMetaFormat" xml:space="preserve">
+    <value>فُتحت {0} بواسطة {1}{2}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedSuffixFormat" xml:space="preserve">
+    <value> • أُغلقت {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpenedAtFormat" xml:space="preserve">
+    <value>وقت الفتح: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedAtFormat" xml:space="preserve">
+    <value>وقت الإغلاق: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedAtPending" xml:space="preserve">
+    <value>لم تُغلق بعد</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpenedByFormat" xml:space="preserve">
+    <value>فُتحت بواسطة: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CurrentCashierFormat" xml:space="preserve">
+    <value>الكاشير الحالي: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedByFormat" xml:space="preserve">
+    <value>أُغلقت بواسطة: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedByUnknown" xml:space="preserve">
+    <value>أُغلقت بواسطة: غير مسجل</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OwnershipOpenFormat" xml:space="preserve">
+    <value>المسؤول الحالي: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OwnershipClosedFormat" xml:space="preserve">
+    <value>فُتحت بواسطة {0} • أُغلقت بواسطة {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OwnershipClosedNoUserFormat" xml:space="preserve">
+    <value>فُتحت بواسطة {0} • أُغلقت</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpeningNoteFormat" xml:space="preserve">
+    <value>ملاحظة الفتح: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingNoteFormat" xml:space="preserve">
+    <value>ملاحظة الإغلاق: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpeningNoteLabel" xml:space="preserve">
+    <value>ملاحظة الفتح</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingNoteLabel" xml:space="preserve">
+    <value>ملاحظة الإغلاق</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_SalesCaptionFormat" xml:space="preserve">
+    <value>{0} عملية بيع • الضريبة {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CashCaptionFormat" xml:space="preserve">
+    <value>التعديلات {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CardCaption" xml:space="preserve">
+    <value>المبيعات غير النقدية المسجلة في هذه الجلسة</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ExpectedCashCaption" xml:space="preserve">
+    <value>عهدة الفتح + المبيعات النقدية + صافي التعديلات</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpeningCaptionFormat" xml:space="preserve">
+    <value>بدأت بواسطة {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingPending" xml:space="preserve">
+    <value>قيد الانتظار</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingCaptionOpen" xml:space="preserve">
+    <value>يُسجل عند إغلاق الجلسة</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingCaptionClosedFormat" xml:space="preserve">
+    <value>أُغلقت بواسطة {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingCaptionClosed" xml:space="preserve">
+    <value>المبلغ النقدي الفعلي الذي عُدّ داخل الدرج عند الإغلاق</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CashierSalesCountFormat" xml:space="preserve">
+    <value>{0} عملية بيع</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CashierBreakdownFormat" xml:space="preserve">
+    <value>نقدي {0} • بطاقة {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_AdjustmentReasonFallback" xml:space="preserve">
+    <value>تعديل نقدي</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_AdjustmentDetailFormat" xml:space="preserve">
+    <value>{0} • {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryTitleClosedFormat" xml:space="preserve">
+    <value>{0} • {1} - {2}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryTitleOpenFormat" xml:space="preserve">
+    <value>{0} • بدأت {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistorySubtitleOpenFormat" xml:space="preserve">
+    <value>فُتحت بواسطة {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistorySubtitleClosedFormat" xml:space="preserve">
+    <value>فُتحت بواسطة {0} • أُغلقت بواسطة {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistorySubtitleClosedNoUserFormat" xml:space="preserve">
+    <value>فُتحت بواسطة {0} • أُغلقت</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryMetaFormat" xml:space="preserve">
+    <value>الجلسة #{0} • {1} عملية بيع • مبلغ الفتح {2}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryStateClosedFormat" xml:space="preserve">
+    <value>مغلقة • {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryStateClosed" xml:space="preserve">
+    <value>مغلقة</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryStateActive" xml:space="preserve">
+    <value>نشطة</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_UnassignedCashier" xml:space="preserve">
+    <value>كاشير غير محدد</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_UserFallbackFormat" xml:space="preserve">
+    <value>المستخدم #{0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_TimeRangeClosedFormat" xml:space="preserve">
+    <value>{0} → {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_TimeRangeOpenFormat" xml:space="preserve">
+    <value>{0} → نشطة</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_UnknownTime" xml:space="preserve">
+    <value>وقت غير معروف</value>
   </data>
 
   
@@ -2071,6 +2273,18 @@
   <data name="Users_Status_AdminCredentialsRequired" xml:space="preserve">
     <value>يتطلب مستخدم المسؤول كلمة مرور أو رمز PIN على الأقل.</value>
   </data>
+  <data name="Users_Validation_ChangeTemporaryPassword" xml:space="preserve">
+    <value>غيّر كلمة مرور المسؤول المؤقتة.</value>
+  </data>
+  <data name="Users_Validation_ChooseNewPassword" xml:space="preserve">
+    <value>اختر كلمة مرور مسؤول جديدة.</value>
+  </data>
+  <data name="Users_Validation_ChangeTemporaryPin" xml:space="preserve">
+    <value>غيّر رمز PIN المؤقت المكون من 4 أرقام.</value>
+  </data>
+  <data name="Users_Validation_ChooseNewPin" xml:space="preserve">
+    <value>اختر رمز PIN جديدًا من 4 أرقام.</value>
+  </data>
   <data name="Users_Status_PinRequired" xml:space="preserve">
     <value>رمز PIN مطلوب للصرافين.</value>
   </data>
@@ -2396,6 +2610,12 @@
   </data>
   <data name="Operations_ProBadge.Text" xml:space="preserve">
     <value>Pro</value>
+  </data>
+  <data name="Operations_OperatorFilter_Label.Text" xml:space="preserve">
+    <value>المستخدم</value>
+  </data>
+  <data name="Operations_Operator_All" xml:space="preserve">
+    <value>كل المستخدمين</value>
   </data>
   <data name="Operations_Heatmap_Title.Text" xml:space="preserve">
     <value>خريطة حرارية لساعات وأيام الأسبوع</value>

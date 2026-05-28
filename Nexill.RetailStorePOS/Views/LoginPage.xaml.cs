@@ -22,6 +22,7 @@ public sealed partial class LoginPage : Page
     private static readonly SolidColorBrush UnselectedModeBrush = new(ColorHelper.FromArgb(255, 61, 66, 92));
     private Storyboard? _modeIndicatorStoryboard;
     private bool _isIndicatorTransitionActive;
+    private bool _cashierPinTipDismissed;
 
     public LoginPage()
     {
@@ -80,7 +81,8 @@ public sealed partial class LoginPage : Page
     private void UpdateOnboardingHintVisibility()
     {
         var isCleared = LoginRuntime.IsOnboardingPhaseCleared;
-        OnboardingHintPanel.Visibility = isCleared ? Visibility.Collapsed : Visibility.Visible;
+        var shouldShow = !isCleared && LoginRuntime.IsBootstrapPasswordChangeStillRequired;
+        AdminOnboardingHintPanel.Visibility = shouldShow ? Visibility.Visible : Visibility.Collapsed;
         UpdateFirstRunCashierTipVisibility();
     }
 
@@ -163,7 +165,7 @@ public sealed partial class LoginPage : Page
             FocusCurrentMode();
         }
 
-        UpdateFirstRunCashierTipVisibility();
+        UpdateOnboardingHintVisibility();
         StartupTrace.Write($"LoginPage.ApplyModeComplete:{modeIndex}");
     }
 
@@ -366,7 +368,7 @@ public sealed partial class LoginPage : Page
             EnsureCashierSelection();
         }
 
-        UpdateFirstRunCashierTipVisibility();
+        UpdateOnboardingHintVisibility();
     }
 
     private void PinPasswordBox_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -448,6 +450,7 @@ public sealed partial class LoginPage : Page
             return;
         }
 
+        ViewModel.SetBootstrapAdminHint(hint);
         ApplyMode(AdminMode, focusInput: false, clearStatus: false);
         UsernameBox.Text = hint.Username;
         ViewModel.Username = hint.Username;
@@ -457,7 +460,11 @@ public sealed partial class LoginPage : Page
         StatusInfoBar.IsOpen = true;
         StatusInfoBar.Severity = InfoBarSeverity.Warning;
         StatusInfoBar.Title = LocalizationHelper.GetString("LoginPage_Status_DefaultAdminCreated");
-        StatusInfoBar.Message = string.Format(LocalizationHelper.GetString("LoginPage_Status_DefaultAdminMessage"), hint.Username, hint.Password);
+        StatusInfoBar.Message = string.Format(
+            LocalizationHelper.GetString("LoginPage_Status_DefaultAdminMessage"),
+            hint.Username,
+            hint.Password,
+            hint.Pin);
 
         AdminPasswordBox.Focus(FocusState.Programmatic);
     }
@@ -465,8 +472,17 @@ public sealed partial class LoginPage : Page
     private void UpdateFirstRunCashierTipVisibility()
     {
         var isCleared = LoginRuntime.IsOnboardingPhaseCleared;
-        bool shouldShow = ViewModel.SelectedModeIndex == CashierMode && !isCleared && LoginRuntime.IsBootstrapPasswordChangeStillRequired;
+        var shouldShow = ViewModel.SelectedModeIndex == CashierMode &&
+                         !isCleared &&
+                         LoginRuntime.IsBootstrapPasswordChangeStillRequired &&
+                         !_cashierPinTipDismissed;
         CashierPinTip.IsOpen = shouldShow;
+    }
+
+    private void CashierPinTip_CloseButtonClick(TeachingTip sender, object args)
+    {
+        _cashierPinTipDismissed = true;
+        sender.IsOpen = false;
     }
 
     private void PrepareLockedSessionUi()

@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using RetailStorePOS.App.Services;
 using RetailStorePOS.Data.Models;
 using RetailStorePOS.WinUiLogin.Common;
+using RetailStorePOS.WinUiLogin;
 using Microsoft.UI.Xaml;
 
 namespace RetailStorePOS.WinUiLogin.ViewModels;
@@ -19,6 +20,7 @@ public sealed class LoginWindowViewModel : ObservableObject
     private string _errorMessage = string.Empty;
     private string _successMessage = string.Empty;
     private User? _selectedStaff;
+    private BootstrapAdminHint? _bootstrapAdminHint;
     private bool _isAuthenticated;
     private Task? _initializeTask;
 
@@ -166,6 +168,13 @@ public sealed class LoginWindowViewModel : ObservableObject
         return _initializeTask ??= InitializeCoreAsync();
     }
 
+    public void SetBootstrapAdminHint(BootstrapAdminHint hint)
+    {
+        _bootstrapAdminHint = hint;
+        OnPropertyChanged(nameof(OnboardingHintBody));
+        OnPropertyChanged(nameof(CashierPinTipSubtitle));
+    }
+
     private async Task InitializeCoreAsync()
     {
         var activeStaff = await _authService.GetActiveStaffAsync();
@@ -231,9 +240,9 @@ public sealed class LoginWindowViewModel : ObservableObject
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(Pin) || Pin.Length < 4)
+            if (string.IsNullOrWhiteSpace(Pin) || Pin.Length != 4 || !Pin.All(char.IsDigit))
             {
-                ErrorMessage = "PIN must be 4 digits.";
+                ErrorMessage = "PIN must be exactly 4 digits.";
                 return;
             }
 
@@ -327,11 +336,36 @@ public sealed class LoginWindowViewModel : ObservableObject
     public string PasswordLabel => GetWithLog(nameof(PasswordLabel), "LoginPage_PasswordLabel.Text");
     public string AdminPasswordBoxPlaceholder => GetWithLog(nameof(AdminPasswordBoxPlaceholder), "LoginPage_AdminPasswordBox.PlaceholderText");
     public string OnboardingHintTitle => GetWithLog(nameof(OnboardingHintTitle), "LoginPage_OnboardingHint_Title.Text");
-    public string OnboardingHintBody => GetWithLog(nameof(OnboardingHintBody), "LoginPage_OnboardingHint_Body.Text");
+    public string OnboardingHintBody
+    {
+        get
+        {
+            var hint = GetBootstrapAdminHintForDisplay();
+            if (hint is null)
+            {
+                return GetWithLog(nameof(OnboardingHintBody), "LoginPage_OnboardingHint_Body.Text");
+            }
+
+            return string.Format(
+                Loc["LoginPage_OnboardingHint_Body_WithCredentials"],
+                hint.Username,
+                hint.Password,
+                hint.Pin);
+        }
+    }
     public string PinLabel => GetWithLog(nameof(PinLabel), "LoginPage_PinLabel.Text");
     public string PinPasswordBoxPlaceholder => GetWithLog(nameof(PinPasswordBoxPlaceholder), "LoginPage_PinPasswordBox.PlaceholderText");
     public string CashierPinTipTitle => GetWithLog(nameof(CashierPinTipTitle), "LoginPage_CashierPinTip.Title");
-    public string CashierPinTipSubtitle => GetWithLog(nameof(CashierPinTipSubtitle), "LoginPage_CashierPinTip.Subtitle");
+    public string CashierPinTipSubtitle
+    {
+        get
+        {
+            var hint = GetBootstrapAdminHintForDisplay();
+            return hint is null
+                ? GetWithLog(nameof(CashierPinTipSubtitle), "LoginPage_CashierPinTip.Subtitle")
+                : string.Format(Loc["LoginPage_CashierPinTip_Subtitle_WithPin"], hint.Pin);
+        }
+    }
 
     public string CashierBadgeText
     {
@@ -398,6 +432,21 @@ public sealed class LoginWindowViewModel : ObservableObject
     {
         _ = propName;
         return Loc[key];
+    }
+
+    private BootstrapAdminHint? GetBootstrapAdminHintForDisplay()
+    {
+        if (_bootstrapAdminHint is not null)
+        {
+            return _bootstrapAdminHint;
+        }
+
+        if (!LoginRuntime.IsBootstrapPasswordChangeStillRequired)
+        {
+            return null;
+        }
+
+        return LoginRuntime.GetBootstrapAdminHintForDisplay();
     }
 
     public Visibility SetupCalloutVisibility => IsSetupMode ? Visibility.Visible : Visibility.Collapsed;

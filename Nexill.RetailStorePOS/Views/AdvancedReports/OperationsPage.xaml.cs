@@ -38,16 +38,37 @@ public sealed partial class OperationsPage : Page, INotifyPropertyChanged
     };
 
     private CancellationTokenSource? _refreshCts;
+    private bool _isUpdatingOperatorOptions;
+    private OperatorFilterOption? _selectedOperator;
 
     public OperationsPage()
     {
         NavigationCacheMode = Microsoft.UI.Xaml.Navigation.NavigationCacheMode.Required;
+        OperatorOptions.Add(CreateAllOperatorsOption());
+        _selectedOperator = OperatorOptions[0];
         InitializeComponent();
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
     }
 
     public ObservableCollection<CashierDisplayItem> CashierRows { get; } = new();
+    public ObservableCollection<OperatorFilterOption> OperatorOptions { get; } = new();
+
+    public OperatorFilterOption? SelectedOperator
+    {
+        get => _selectedOperator;
+        set
+        {
+            if (ReferenceEquals(_selectedOperator, value)) return;
+            _selectedOperator = value;
+            OnChanged(nameof(SelectedOperator));
+
+            if (!_isUpdatingOperatorOptions && IsLoaded)
+            {
+                DispatcherQueue.TryEnqueue(() => { _ = ReloadAsync(); });
+            }
+        }
+    }
 
     private string _statusText = string.Empty;
     public string StatusText
@@ -98,7 +119,8 @@ public sealed partial class OperationsPage : Page, INotifyPropertyChanged
 
         var startUtc = PeriodFilter.StartUtc;
         var endUtc = PeriodFilter.EndUtc;
-        var periodKey = BuildPeriodKey(PeriodFilter.ActivePreset, startUtc, endUtc);
+        var selectedCashier = SelectedOperator?.CashierName;
+        var periodKey = BuildPeriodKey(PeriodFilter.ActivePreset, startUtc, endUtc, selectedCashier);
 
         StatusText = LocalizationHelper.GetString("Operations_Status_Loading");
 
@@ -121,17 +143,22 @@ public sealed partial class OperationsPage : Page, INotifyPropertyChanged
         // 2. Live query in the background; replace painted UI with fresh data.
         try
         {
-            var (cells, cashiers) = await Task.Run(() =>
+            var (operatorRows, cells, cashiers) = await Task.Run(() =>
             {
                 token.ThrowIfCancellationRequested();
-                var c = LoginRuntime.AdvancedReports.GetHourDayHeatmap(startUtc, endUtc);
+                var operators = LoginRuntime.AdvancedReports.GetCashierPerformance(startUtc, endUtc);
                 token.ThrowIfCancellationRequested();
-                var k = LoginRuntime.AdvancedReports.GetCashierPerformance(startUtc, endUtc);
-                return (c, k);
+                var c = LoginRuntime.AdvancedReports.GetHourDayHeatmap(startUtc, endUtc, selectedCashier);
+                token.ThrowIfCancellationRequested();
+                var k = string.IsNullOrWhiteSpace(selectedCashier)
+                    ? operators
+                    : LoginRuntime.AdvancedReports.GetCashierPerformance(startUtc, endUtc, selectedCashier);
+                return (operators, c, k);
             }, token).ConfigureAwait(true);
 
             if (token.IsCancellationRequested) return;
 
+            ApplyOperatorOptions(operatorRows, selectedCashier);
             RenderHeatmap(cells);
             ApplyCashierRows(cashiers);
 
@@ -168,13 +195,25 @@ public sealed partial class OperationsPage : Page, INotifyPropertyChanged
         }
     }
 
-    private static string BuildPeriodKey(PeriodFilterControl.PeriodPreset preset, DateTime startUtc, DateTime endUtc)
+    private static string BuildPeriodKey(
+        PeriodFilterControl.PeriodPreset preset,
+        DateTime startUtc,
+        DateTime endUtc,
+        string? cashierName)
     {
+        string baseKey;
         if (preset == PeriodFilterControl.PeriodPreset.Custom)
         {
-            return $"custom-{startUtc:yyyyMMdd}-{endUtc:yyyyMMdd}";
+            baseKey = $"custom-{startUtc:yyyyMMdd}-{endUtc:yyyyMMdd}";
         }
-        return preset.ToString();
+        else
+        {
+            baseKey = preset.ToString();
+        }
+
+        return string.IsNullOrWhiteSpace(cashierName)
+            ? $"{baseKey}-all"
+            : $"{baseKey}-operator-{cashierName.Trim()}";
     }
 
     private void ApplySnapshot(OperationsSnapshot snapshot)
@@ -375,6 +414,52 @@ public sealed partial class OperationsPage : Page, INotifyPropertyChanged
     {
         EmptyCashierVisibility = CashierRows.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
+
+    private void ApplyOperatorOptions(List<CashierPerformanceRow> rows, string? selectedCashierName)
+    {
+        var selectedName = string.IsNullOrWhiteSpace(selectedCashierName) ? null : selectedCashierName.Trim();
+        _isUpdatingOperatorOptions = true;
+        try
+        {
+            OperatorOptions.Clear();
+            var allOption = CreateAllOperatorsOption();
+            OperatorOptions.Add(allOption);
+
+            OperatorFilterOption? selectedOption = selectedName is null ? allOption : null;
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var row in rows)
+            {
+                if (string.IsNullOrWhiteSpace(row.CashierName) || !seen.Add(row.CashierName))
+                {
+                    continue;
+                }
+
+                var option = new OperatorFilterOption(row.CashierName, row.CashierName);
+                OperatorOptions.Add(option);
+                if (selectedName is not null && string.Equals(row.CashierName, selectedName, StringComparison.OrdinalIgnoreCase))
+                {
+                    selectedOption = option;
+                }
+            }
+
+            if (selectedOption is null && selectedName is not null)
+            {
+                selectedOption = new OperatorFilterOption(selectedName, selectedName);
+                OperatorOptions.Add(selectedOption);
+            }
+
+            SelectedOperator = selectedOption ?? allOption;
+        }
+        finally
+        {
+            _isUpdatingOperatorOptions = false;
+        }
+    }
+
+    private static OperatorFilterOption CreateAllOperatorsOption()
+    {
+        return new OperatorFilterOption(LocalizationHelper.GetString("Operations_Operator_All"), cashierName: null);
+    }
 }
 
 public sealed class CashierDisplayItem
@@ -385,4 +470,16 @@ public sealed class CashierDisplayItem
     public string AverageTicketText { get; set; } = string.Empty;
     public string UnitsText { get; set; } = string.Empty;
     public string ItemsPerTicketText { get; set; } = string.Empty;
+}
+
+public sealed class OperatorFilterOption
+{
+    public OperatorFilterOption(string displayName, string? cashierName)
+    {
+        DisplayName = displayName;
+        CashierName = cashierName;
+    }
+
+    public string DisplayName { get; }
+    public string? CashierName { get; }
 }

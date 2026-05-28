@@ -626,7 +626,7 @@
                                         </StackPanel>
 
                                         <!-- Onboarding hint: design-system danger palette + icon -->
-                                        <Border x:Name="OnboardingHintPanel"
+                                        <Border x:Name="AdminOnboardingHintPanel"
                                                 Visibility="Collapsed"
                                                 Background="#FEF2F2"
                                                 BorderBrush="#FCA5A5"
@@ -707,11 +707,12 @@
                      Subtitle="{x:Bind ViewModel.CashierPinTipSubtitle, Mode=OneWay}"
                      Target="{x:Bind PinPasswordBox, Mode=OneTime}"
                      CloseButtonContent="{x:Bind ViewModel.Generic_Close, Mode=OneWay}"
+                     CloseButtonClick="CashierPinTip_CloseButtonClick"
                      PreferredPlacement="Left"
                      TailVisibility="Visible"
                      PlacementMargin="12"
                      ShouldConstrainToRootBounds="True"
-                     IsLightDismissEnabled="True" />
+                     IsLightDismissEnabled="False" />
 
     </Grid>
 </Page>

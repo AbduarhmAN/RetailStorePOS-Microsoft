@@ -149,10 +149,10 @@
     <value>Administrator signed in</value>
   </data>
   <data name="LoginPage_Status_DefaultAdminCreated" xml:space="preserve">
-    <value>Default administrator created</value>
+    <value>Temporary administrator created</value>
   </data>
   <data name="LoginPage_Status_DefaultAdminMessage" xml:space="preserve">
-    <value>Sign in with username '{0}' and password '{1}', then change it after setup.</value>
+    <value>Sign in with username '{0}', temporary password '{1}', and temporary PIN '{2}'. Change the password after setup.</value>
   </data>
   <data name="LoginPage_CashierPanelTitle.Text" xml:space="preserve">
     <value>Cashier access</value>
@@ -197,7 +197,10 @@
     <value>First-Time Administrator Setup</value>
   </data>
   <data name="LoginPage_OnboardingHint_Body.Text" xml:space="preserve">
-    <value>Default Username: admin | Password: 1234</value>
+    <value>Username is admin. The password and PIN are generated for this install and shown in the temporary administrator message.</value>
+  </data>
+  <data name="LoginPage_OnboardingHint_Body_WithCredentials" xml:space="preserve">
+    <value>Username: {0} | Password: {1} | PIN: {2}</value>
   </data>
   <data name="LoginPage_PinLabel.Text" xml:space="preserve">
     <value>Enter PIN</value>
@@ -209,10 +212,13 @@
     <value>Login</value>
   </data>
   <data name="LoginPage_CashierPinTip.Title" xml:space="preserve">
-    <value>Cashier PIN</value>
+    <value>Temporary cashier PIN</value>
   </data>
   <data name="LoginPage_CashierPinTip.Subtitle" xml:space="preserve">
-    <value>The default Cashier PIN is 1234.</value>
+    <value>Use the temporary PIN generated for this install.</value>
+  </data>
+  <data name="LoginPage_CashierPinTip_Subtitle_WithPin" xml:space="preserve">
+    <value>Temporary 4-digit PIN: {0}</value>
   </data>
   <data name="LoginPage_CloseButton.Content" xml:space="preserve">
     <value>Close</value>
@@ -772,56 +778,6 @@
   <data name="Reports_Nav_Receipts.Content" xml:space="preserve">
     <value>Receipts</value>
   </data>
-  <data name="ReportsPage_LastRefreshText.Text" xml:space="preserve">
-    <value>Not refreshed</value>
-  </data>
-  <data name="ReportsPage_RunReadinessButton.Content" xml:space="preserve">
-    <value>Run Readiness Pass</value>
-  </data>
-  <data name="ReportsPage_LastRefresh_Format" xml:space="preserve">
-    <value>Last Refresh: {0}</value>
-  </data>
-  <data name="ReportsPage_LastRefresh_NotRefreshed" xml:space="preserve">
-    <value>Not refreshed</value>
-  </data>
-  <data name="ReportsPage_LastRefresh_Unknown" xml:space="preserve">
-    <value>Status unknown</value>
-  </data>
-  <data name="ReportsPage_Readiness_Running" xml:space="preserve">
-    <value>Running readiness pass...</value>
-  </data>
-  <data name="ReportsPage_Readiness_StatusSummary" xml:space="preserve">
-    <value>Readiness Run {0}: {1} blocking failures, {2} observations.</value>
-  </data>
-  <data name="ReportsPage_Readiness_DialogTitle" xml:space="preserve">
-    <value>Readiness Results</value>
-  </data>
-  <data name="ReportsPage_Readiness_DialogBody" xml:space="preserve">
-    <value>Status: {0}
-Started: {1}
-Completed: {2}
-
-Blocking Failures: {3}
-Observations: {4}
-
-{5}</value>
-  </data>
-  <data name="ReportsPage_Readiness_CloseButton" xml:space="preserve">
-    <value>OK</value>
-  </data>
-  <data name="ReportsPage_Readiness_ErrorFormat" xml:space="preserve">
-    <value>Error: {0}</value>
-  </data>
-  <data name="ReportsPage_Readiness_OverallStatus_Passed" xml:space="preserve">
-    <value>Passed</value>
-  </data>
-  <data name="ReportsPage_Readiness_OverallStatus_Failed" xml:space="preserve">
-    <value>Failed</value>
-  </data>
-  <data name="ReportsPage_Readiness_OverallStatus_CompletedWithObservations" xml:space="preserve">
-    <value>Completed With Observations</value>
-  </data>
-
   <!-- Reports Dashboard Page -->
   <data name="ReportsDashboard_StaleStatusText.Text" xml:space="preserve">
     <value>Viewing Snapshot (Refreshing...)</value>
@@ -835,8 +791,14 @@ Observations: {4}
   <data name="ReportsDashboard_KPI_SalesToday.Text" xml:space="preserve">
     <value>Sales Today</value>
   </data>
+  <data name="ReportsDashboard_KPI_SalesPeriod.Text" xml:space="preserve">
+    <value>Sales</value>
+  </data>
   <data name="ReportsDashboard_KPI_NetProfit.Text" xml:space="preserve">
     <value>Net Profit Today</value>
+  </data>
+  <data name="ReportsDashboard_KPI_NetProfitPeriod.Text" xml:space="preserve">
+    <value>Net Profit</value>
   </data>
   <data name="ReportsDashboard_KPI_InvoiceCount.Text" xml:space="preserve">
     <value>Invoice Count</value>
@@ -847,14 +809,23 @@ Observations: {4}
   <data name="ReportsDashboard_MedianLabel.Text" xml:space="preserve">
     <value>Median:</value>
   </data>
+  <data name="ReportsDashboard_AvgInvoice_ComparisonLabel.Text" xml:space="preserve">
+    <value>vs previous:</value>
+  </data>
   <data name="ReportsDashboard_Target_Title.Text" xml:space="preserve">
     <value>Sales vs Target</value>
   </data>
   <data name="ReportsDashboard_Target_TodayLabel.Text" xml:space="preserve">
     <value>TODAY</value>
   </data>
+  <data name="ReportsDashboard_Target_PeriodLabel.Text" xml:space="preserve">
+    <value>PERIOD</value>
+  </data>
   <data name="ReportsDashboard_Target_GoalLabel.Text" xml:space="preserve">
     <value>TARGET GOAL</value>
+  </data>
+  <data name="ReportsDashboard_Target_PeriodGoalLabel.Text" xml:space="preserve">
+    <value>PERIOD TARGET</value>
   </data>
   <data name="ReportsDashboard_Alerts_Title.Text" xml:space="preserve">
     <value>Critical Alerts</value>
@@ -867,6 +838,9 @@ Observations: {4}
   </data>
   <data name="ReportsDashboard_Discounts_Title.Text" xml:space="preserve">
     <value>Discounts Today</value>
+  </data>
+  <data name="ReportsDashboard_Discounts_PeriodTitle.Text" xml:space="preserve">
+    <value>Discounts</value>
   </data>
   <data name="ReportsDashboard_StockHealth_Title.Text" xml:space="preserve">
     <value>Stock Health</value>
@@ -912,14 +886,56 @@ Observations: {4}
   <data name="ReportsDashboard_Invoice_Delta_Negative" xml:space="preserve">
     <value>- {0}%  vs  yesterday</value>
   </data>
+  <data name="ReportsDashboard_Period_Delta_Positive" xml:space="preserve">
+    <value>+ {0}%  vs  previous period</value>
+  </data>
+  <data name="ReportsDashboard_Period_Delta_Negative" xml:space="preserve">
+    <value>- {0}%  vs  previous period</value>
+  </data>
   <data name="ReportsDashboard_Target_YesterdayPerformance" xml:space="preserve">
     <value>YESTERDAY PERFORMANCE: {0}</value>
+  </data>
+  <data name="ReportsDashboard_Target_PreviousPeriodPerformance" xml:space="preserve">
+    <value>PREVIOUS PERIOD: {0}</value>
   </data>
   <data name="ReportsDashboard_TopProducts_None" xml:space="preserve">
     <value>No products sold today</value>
   </data>
+  <data name="ReportsDashboard_TopProducts_None_Period" xml:space="preserve">
+    <value>No products sold in this period</value>
+  </data>
   <data name="ReportsDashboard_Discounts_CountFormat" xml:space="preserve">
     <value>{0} Discounts Applied</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Today" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Last7Days" xml:space="preserve">
+    <value>Last 7 days</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Last30Days" xml:space="preserve">
+    <value>Last 30 days</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Custom" xml:space="preserve">
+    <value>Custom range</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_From" xml:space="preserve">
+    <value>From date</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_To" xml:space="preserve">
+    <value>To date</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_CustomTitle" xml:space="preserve">
+    <value>Select dashboard period</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_CustomDescription" xml:space="preserve">
+    <value>Choose the first and last day to include in the dashboard period.</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_Apply" xml:space="preserve">
+    <value>Apply</value>
+  </data>
+  <data name="ReportsDashboard_DateRange_CustomFormat" xml:space="preserve">
+    <value>{0} - {1}</value>
   </data>
   <data name="ReportsDashboard_Stock_ShelfLabel" xml:space="preserve">
     <value>Shelf </value>
@@ -1081,6 +1097,192 @@ Observations: {4}
   </data>
   <data name="ReportsReceipts_StoreFallback" xml:space="preserve">
     <value>Store</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Button" xml:space="preserve">
+    <value>X Report List</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Dialog_Title" xml:space="preserve">
+    <value>X Report List</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Description" xml:space="preserve">
+    <value>Browse the X report PDFs already saved on this device. Select any report to open it.</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_Empty" xml:space="preserve">
+    <value>No saved X reports were found.</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_ErrorFormat" xml:space="preserve">
+    <value>Unable to load the X report list. {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_OpenFailed" xml:space="preserve">
+    <value>Unable to open the selected X report PDF.</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_TitleDateFormat" xml:space="preserve">
+    <value>X Report • {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_TitleFallbackFormat" xml:space="preserve">
+    <value>X Report • {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_SubtitleFormat" xml:space="preserve">
+    <value>Updated {0}</value>
+  </data>
+  <data name="ReportsReceipts_XReportHistory_MetaFormat" xml:space="preserve">
+    <value>File {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_Button" xml:space="preserve">
+    <value>Register Report</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryDialog_Title" xml:space="preserve">
+    <value>Register Sessions</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryDialog_Description" xml:space="preserve">
+    <value>Browse the register sessions already saved in the database. Select any session to open its report details.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_NoSessions" xml:space="preserve">
+    <value>No register sessions were found.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ErrorFormat" xml:space="preserve">
+    <value>Unable to load the register report. {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_Dialog_Title" xml:space="preserve">
+    <value>Register Report</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_SessionMissing" xml:space="preserve">
+    <value>The selected register session could not be loaded.</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_DetailTitleFormat" xml:space="preserve">
+    <value>Register Session #{0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HeadlineFormat" xml:space="preserve">
+    <value>Session #{0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_SessionMetaFormat" xml:space="preserve">
+    <value>Opened {0} by {1}{2}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedSuffixFormat" xml:space="preserve">
+    <value> • Closed {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpenedAtFormat" xml:space="preserve">
+    <value>Opened: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedAtFormat" xml:space="preserve">
+    <value>Closed: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedAtPending" xml:space="preserve">
+    <value>Not yet</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpenedByFormat" xml:space="preserve">
+    <value>Opened by: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CurrentCashierFormat" xml:space="preserve">
+    <value>Current cashier: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedByFormat" xml:space="preserve">
+    <value>Closed by: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosedByUnknown" xml:space="preserve">
+    <value>Closed by: not recorded</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OwnershipOpenFormat" xml:space="preserve">
+    <value>Current owner: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OwnershipClosedFormat" xml:space="preserve">
+    <value>Opened by {0} • Closed by {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OwnershipClosedNoUserFormat" xml:space="preserve">
+    <value>Opened by {0} • Closed</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpeningNoteFormat" xml:space="preserve">
+    <value>Opening note: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingNoteFormat" xml:space="preserve">
+    <value>Closing note: {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpeningNoteLabel" xml:space="preserve">
+    <value>Opening note</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingNoteLabel" xml:space="preserve">
+    <value>Closing note</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_SalesCaptionFormat" xml:space="preserve">
+    <value>{0} sale(s) • Tax {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CashCaptionFormat" xml:space="preserve">
+    <value>Adjustments {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CardCaption" xml:space="preserve">
+    <value>Non-cash sales captured in this session</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ExpectedCashCaption" xml:space="preserve">
+    <value>Opening float + cash sales + net adjustments</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_OpeningCaptionFormat" xml:space="preserve">
+    <value>Started by {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingCaptionOpen" xml:space="preserve">
+    <value>Recorded when the session is closed</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingCaptionClosedFormat" xml:space="preserve">
+    <value>Closed by {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_ClosingCaptionClosed" xml:space="preserve">
+    <value>Actual cash counted in the drawer at close</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CashierSalesCountFormat" xml:space="preserve">
+    <value>{0} sale(s)</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_CashierBreakdownFormat" xml:space="preserve">
+    <value>Cash {0} • Card {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_AdjustmentReasonFallback" xml:space="preserve">
+    <value>Cash adjustment</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_AdjustmentDetailFormat" xml:space="preserve">
+    <value>{0} • {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryTitleClosedFormat" xml:space="preserve">
+    <value>{0} • {1} - {2}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryTitleOpenFormat" xml:space="preserve">
+    <value>{0} • Started {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistorySubtitleOpenFormat" xml:space="preserve">
+    <value>Opened by {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistorySubtitleClosedFormat" xml:space="preserve">
+    <value>Opened by {0} • Closed by {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistorySubtitleClosedNoUserFormat" xml:space="preserve">
+    <value>Opened by {0} • Closed</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryMetaFormat" xml:space="preserve">
+    <value>Session #{0} • {1} sale(s) • Opening {2}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryStateClosedFormat" xml:space="preserve">
+    <value>Closed • {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryStateClosed" xml:space="preserve">
+    <value>Closed</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_HistoryStateActive" xml:space="preserve">
+    <value>Active</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_UnassignedCashier" xml:space="preserve">
+    <value>Unassigned cashier</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_UserFallbackFormat" xml:space="preserve">
+    <value>User #{0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_TimeRangeClosedFormat" xml:space="preserve">
+    <value>{0} → {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_TimeRangeOpenFormat" xml:space="preserve">
+    <value>{0} → Active</value>
+  </data>
+  <data name="ReportsReceipts_RegisterReport_UnknownTime" xml:space="preserve">
+    <value>Unknown time</value>
   </data>
 
   <!-- Reports ViewModel -->
@@ -1993,6 +2195,18 @@ Observations: {4}
   <data name="Users_Status_AdminCredentialsRequired" xml:space="preserve">
     <value>Admin user requires at least a password or PIN.</value>
   </data>
+  <data name="Users_Validation_ChangeTemporaryPassword" xml:space="preserve">
+    <value>Change the temporary admin password.</value>
+  </data>
+  <data name="Users_Validation_ChooseNewPassword" xml:space="preserve">
+    <value>Choose a new admin password.</value>
+  </data>
+  <data name="Users_Validation_ChangeTemporaryPin" xml:space="preserve">
+    <value>Change the temporary 4-digit PIN.</value>
+  </data>
+  <data name="Users_Validation_ChooseNewPin" xml:space="preserve">
+    <value>Choose a new 4-digit PIN.</value>
+  </data>
   <data name="Users_Status_PinRequired" xml:space="preserve">
     <value>PIN is required for cashiers.</value>
   </data>
@@ -2439,6 +2653,12 @@ Observations: {4}
   </data>
   <data name="Operations_ProBadge.Text" xml:space="preserve">
     <value>Pro</value>
+  </data>
+  <data name="Operations_OperatorFilter_Label.Text" xml:space="preserve">
+    <value>OPERATOR</value>
+  </data>
+  <data name="Operations_Operator_All" xml:space="preserve">
+    <value>All operators</value>
   </data>
   <data name="Operations_Heatmap_Title.Text" xml:space="preserve">
     <value>Hour × day-of-week heatmap</value>

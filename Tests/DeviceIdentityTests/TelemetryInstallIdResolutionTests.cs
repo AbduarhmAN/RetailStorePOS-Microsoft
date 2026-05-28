@@ -54,8 +54,8 @@ public sealed class TelemetryInstallIdResolutionTests
         var maintenanceResult = DatabaseInitializer.RunMaintenanceMigrations(databasePath);
 
         Assert.IsTrue(maintenanceResult.Success);
-        Assert.AreEqual(22, maintenanceResult.Version);
-        Assert.AreEqual(22, GetUserVersion(databasePath));
+        Assert.AreEqual(24, maintenanceResult.Version);
+        Assert.AreEqual(24, GetUserVersion(databasePath));
 
         var telemetry = new TelemetryService(preferencesService, new SqliteConnectionFactory(databasePath));
         var runId = Guid.NewGuid().ToString();

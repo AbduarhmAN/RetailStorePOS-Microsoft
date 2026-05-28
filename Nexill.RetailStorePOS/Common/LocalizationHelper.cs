@@ -108,28 +108,37 @@ public static class LocalizationHelper
     /// </summary>
     private static string? TryResolve(ResourceManager manager, ResourceContext context, string key)
     {
-        // Tier 1: Canonical WinUI 3 structure (Resources/[Key])
-        var result = ResolveProbe(manager, context, $"Resources/{key}");
-        if (result != null) return result;
-
-        // Tier 2: Assembly-qualified structure (Necessary for some packaged configurations)
-        result = ResolveProbe(manager, context, $"Nexill.RetailStorePOS/Resources/{key}");
-        if (result != null) return result;
-
-        // Tier 3: Dot-to-Slash translation (For x:Uid property subtrees)
         if (key.Contains('.'))
         {
+            // Most .resw property-style keys such as Foo_Bar.Text are stored
+            // under MRT subpaths like Resources/Foo_Bar/Text. Probe that first
+            // to avoid first-chance COM exceptions on the raw dotted form.
             string mrtPath = key.Replace('.', '/');
-            result = ResolveProbe(manager, context, $"Resources/{mrtPath}");
+            var result = ResolveProbe(manager, context, $"Resources/{mrtPath}");
             if (result != null) return result;
 
             result = ResolveProbe(manager, context, $"Nexill.RetailStorePOS/Resources/{mrtPath}");
             if (result != null) return result;
+
+            result = ResolveProbe(manager, context, $"Resources/{key}");
+            if (result != null) return result;
+
+            result = ResolveProbe(manager, context, $"Nexill.RetailStorePOS/Resources/{key}");
+            if (result != null) return result;
         }
         else
         {
-            // Tier 4: Fallback for .Text properties that might be stored as sub-items
+            var result = ResolveProbe(manager, context, $"Resources/{key}");
+            if (result != null) return result;
+
+            result = ResolveProbe(manager, context, $"Nexill.RetailStorePOS/Resources/{key}");
+            if (result != null) return result;
+
+            // Fallback for plain keys that may actually be stored as a .Text sub-item.
             result = ResolveProbe(manager, context, $"Resources/{key}/Text");
+            if (result != null) return result;
+
+            result = ResolveProbe(manager, context, $"Nexill.RetailStorePOS/Resources/{key}/Text");
             if (result != null) return result;
         }
 

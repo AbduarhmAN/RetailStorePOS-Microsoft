@@ -29,9 +29,8 @@ public sealed class BootstrapAdminCredentials
     // 12 character password from a safe (non-confusable) alphabet — enough
     // entropy that brute-force is impractical even if the SQLite file leaks.
     private const int PasswordLength = 12;
-    // 6-digit PIN raises the keyspace from 10^4 to 10^6, ~100x harder to
-    // brute-force at the door than the previous 4-digit "1234" default.
-    private const int PinLength = 6;
+    // Cashier PINs are 4 digits across the app, including Settings.
+    private const int PinLength = 4;
 
     // Excludes 0/O/1/I/l to avoid the kind of mistakes operators make when
     // copying values off a screen.
@@ -57,6 +56,10 @@ public sealed class BootstrapAdminCredentials
     {
         var password = RandomString(PasswordAlphabet, PasswordLength);
         var pin = RandomDigits(PinLength);
+        while (pin == "1234")
+        {
+            pin = RandomDigits(PinLength);
+        }
 
         _settings.SetSetting(TempPasswordKey, EncryptForStorage(password));
         _settings.SetSetting(TempPinKey, EncryptForStorage(pin));

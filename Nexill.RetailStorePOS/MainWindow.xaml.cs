@@ -7,6 +7,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using RetailStorePOS.App.Services;
 using RetailStorePOS.WinUiLogin.Common;
 using RetailStorePOS.WinUiLogin.Views;
 using Windows.Graphics;
@@ -54,7 +55,10 @@ public sealed partial class MainWindow : Window
     private bool? _cachedHasActiveRegisterSession;
     private bool _isRegisterStatusRefreshInFlight;
     private DateTimeOffset _lastRegisterStatusRefreshAt = DateTimeOffset.MinValue;
+    private CashInOutDialog? _activeCashInOutDialog;
+    private CloseRegisterDialog? _activeCloseRegisterDialog;
     private static readonly TimeSpan RegisterStatusRefreshInterval = TimeSpan.FromSeconds(2);
+    private readonly System.Threading.CancellationTokenSource _verificationCts = new();
 
     public MainWindow()
     {
@@ -103,24 +107,7 @@ public sealed partial class MainWindow : Window
 
             // Run the heavy database and runtime initialization off the UI thread
             await Task.Run(() => LoginRuntime.Initialize());
-
-            if (LoginRuntime.Telemetry is not null)
-            {
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        StartupTrace.Write("Telemetry.ImportBootstrapLifecycleEvents:start");
-                        await LoginRuntime.Telemetry.ImportBootstrapLifecycleEventsAsync();
-                        StartupTrace.Write("Telemetry.ImportBootstrapLifecycleEvents:end");
-                    }
-                    catch (Exception ex)
-                    {
-                        StartupTrace.Write($"Telemetry Startup Error: {ex.Message}");
-                        LoginRuntime.ReportException(ex, "WinUiLogin.Telemetry.StartupSync");
-                    }
-                });
-            }
+            LoginRuntime.ApplyPersistedLanguageSetting();
 
             // Snap progress bar to 100% immediately so startup is not artificially delayed.
             pbTimer.Stop();
@@ -145,7 +132,6 @@ public sealed partial class MainWindow : Window
             // Prepare the frame to fade in
             RootFrame.Opacity = 0.0;
             RootFrame.Navigate(typeof(LoginPage));
-            _ = LoginRuntime.WarmProductSearchIndexAsync();
 
             // Pop the window back up on screen
             _appWindow?.Show();
@@ -167,7 +153,22 @@ public sealed partial class MainWindow : Window
             // Clean up splash overlay
             SplashOverlay.Visibility = Visibility.Collapsed;
             _isRuntimeBootstrapComplete = true;
+
+            // Start telemetry background sync and log app launch
+            try
+            {
+                LoginRuntime.Telemetry?.StartBackgroundSync();
+                var runId = Guid.NewGuid().ToString("N");
+                _ = Task.Run(async () => await LoginRuntime.Telemetry.LogAppLaunchAsync(runId));
+            }
+            catch (Exception ex)
+            {
+                StartupTrace.Write($"Telemetry startup failed: {ex.Message}");
+            }
+
+            // Trigger post-launch startup checks and license verification
             _ = RunPostLaunchStartupChecksAsync();
+            _ = RunPostLaunchLicenseVerificationAsync();
         }
         catch (Exception ex)
         {
@@ -249,8 +250,79 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private async Task RunPostLaunchLicenseVerificationAsync()
+    {
+        await Task.Yield();
+        var token = _verificationCts.Token;
+
+        try
+        {
+            // Check snapshot validity immediately without waiting
+            var snapshot = LoginRuntime.License.GetCurrentSnapshot();
+            if (snapshot != null && snapshot.IsCurrentlyValid(DateTimeOffset.UtcNow))
+            {
+                StartupTrace.Write("License: Cached snapshot is currently valid. Skipping post-launch verification.");
+                return;
+            }
+
+            // Delay 3 seconds before background verification, tied to window cancellation
+            await Task.Delay(3000, token);
+
+            var secretKey = SecureStorageService.GetSecret("LicenseKey");
+            var storedLicenseKey = !string.IsNullOrWhiteSpace(secretKey)
+                ? secretKey
+                : LoginRuntime.Settings.GetSetting("license.key", string.Empty);
+            RetailStorePOS.App.Services.Licensing.LicenseActivationResult result;
+
+            if (string.IsNullOrWhiteSpace(storedLicenseKey))
+            {
+                StartupTrace.Write("License: No stored license key found. Attempting install-based reissue.");
+                result = await LoginRuntime.License.ReissueByInstallAsync(token);
+            }
+            else
+            {
+                StartupTrace.Write("License: Running background post-launch verification.");
+                result = await LoginRuntime.License.ActivateAsync(storedLicenseKey.Trim(), token);
+            }
+
+            StartupTrace.Write($"License: Background verification complete. Outcome: {result.Outcome}, ErrorCode: {result.ErrorCode}");
+
+            if (LoginRuntime.Telemetry is not null)
+            {
+                await LoginRuntime.Telemetry.LogGenericEventAsync("license_verification", new
+                {
+                    outcome = result.Outcome.ToString(),
+                    error_code = result.ErrorCode ?? string.Empty
+                });
+
+                if (result.Outcome == RetailStorePOS.App.Services.Licensing.LicenseActivationOutcome.SignatureInvalid)
+                {
+                    await LoginRuntime.Telemetry.LogErrorAsync(
+                        new System.Security.Cryptography.CryptographicException("Local signature verification failed during background check."),
+                        "license_signature_failure");
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            StartupTrace.Write("License: Background verification canceled.");
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"MainWindow.RunPostLaunchLicenseVerificationAsync failed: {ex.Message}");
+            LoginRuntime.ReportException(ex, "WinUiLogin.License.PostLaunchVerification");
+        }
+    }
+
     private void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        try
+        {
+            _verificationCts.Cancel();
+            _verificationCts.Dispose();
+        }
+        catch { /* best effort */ }
+
         _sessionIdleTimer.Stop();
         _sessionIdleTimer.Tick -= SessionIdleTimer_Tick;
         if (_isRuntimeBootstrapComplete)
@@ -484,6 +556,8 @@ public sealed partial class MainWindow : Window
 
                 if (LoginRuntime.Auth.IsLocked)
                 {
+                    HideActiveSensitiveDialogs();
+
                     if (RootFrame.CurrentSourcePageType != typeof(LoginPage))
                     {
                         StartupTrace.Write("MainWindow.Auth_LoginStateChanged:navigate-locked-login");
@@ -496,6 +570,7 @@ public sealed partial class MainWindow : Window
 
                 if (LoginRuntime.Auth.CurrentUser is null && RootFrame.CurrentSourcePageType != typeof(LoginPage))
                 {
+                    QueueRegisterCashierAssignmentCloseIfAny();
                     StartupTrace.Write("MainWindow.Auth_LoginStateChanged:navigate-login");
                     _lockedRouteTag = null;
                     RootFrame.Tag = null;
@@ -509,6 +584,11 @@ public sealed partial class MainWindow : Window
                     NavigateToTag("users");
                     ShowBootstrapPasswordChangeRequiredDialog();
                     return;
+                }
+
+                if (LoginRuntime.Auth.CurrentUser?.Id is > 0)
+                {
+                    QueueRegisterCashierAssignmentSync();
                 }
 
                 if (LoginRuntime.Auth.CurrentUser is not null && RootFrame.CurrentSourcePageType == typeof(LoginPage))
@@ -732,7 +812,16 @@ public sealed partial class MainWindow : Window
     {
         if (tag == "signout")
         {
-            LoginRuntime.Auth.Logout();
+            try
+            {
+                LoginRuntime.Authorization.RequireAuthenticated();
+                LoginRuntime.Auth.Logout();
+            }
+            catch (UnauthorizedAccessException)
+            {
+                UpdateShellChrome();
+                UpdateCloseRegisterMenuState(forceRefresh: true);
+            }
             return;
         }
 
@@ -771,12 +860,17 @@ public sealed partial class MainWindow : Window
 
         ApplyShellLocalization();
 
-        if (LoginRuntime.Auth.CurrentUser is not { } user)
+        if (!LoginRuntime.Auth.IsLoggedIn || LoginRuntime.Auth.CurrentUser is not { } user)
         {
+            _cachedHasActiveRegisterSession = null;
+            _lastRegisterStatusRefreshAt = DateTimeOffset.MinValue;
+            UserMenuFlyout.Hide();
             PaneToggleButton.Visibility = Visibility.Collapsed;
             UserBadge.Visibility = Visibility.Collapsed;
+            UserBadge.IsEnabled = false;
             CashInOutMenuItem.IsEnabled = false;
             CloseRegisterMenuItem.IsEnabled = false;
+            LogoutMenuItem.IsEnabled = false;
             UserNameText.Text = string.Empty;
             RegisterStatusText.Text = string.Empty;
             RegisterStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 148, 163, 184));
@@ -786,6 +880,8 @@ public sealed partial class MainWindow : Window
 
         PaneToggleButton.Visibility = Visibility.Collapsed;
         UserBadge.Visibility = Visibility.Visible;
+        UserBadge.IsEnabled = true;
+        LogoutMenuItem.IsEnabled = true;
 
         var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
             ? user.Username
@@ -797,12 +893,18 @@ public sealed partial class MainWindow : Window
 
     private void UserMenuFlyout_Opening(object sender, object e)
     {
+        if (!LoginRuntime.Auth.IsLoggedIn)
+        {
+            ApplyRegisterSessionState(hasActiveSession: false);
+            return;
+        }
+
         UpdateCloseRegisterMenuState(forceRefresh: true);
     }
 
     private void UpdateCloseRegisterMenuState(bool forceRefresh = false)
     {
-        if (LoginRuntime.Auth.CurrentUser is null)
+        if (!LoginRuntime.Auth.IsLoggedIn || LoginRuntime.Auth.CurrentUser is null)
         {
             _cachedHasActiveRegisterSession = false;
             ApplyRegisterSessionState(hasActiveSession: false);
@@ -842,9 +944,59 @@ public sealed partial class MainWindow : Window
         RegisterStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 239, 68, 68));
     }
 
+    private void QueueRegisterCashierAssignmentSync()
+    {
+        var userId = LoginRuntime.Auth.CurrentUser?.Id;
+        if (userId is not > 0)
+        {
+            return;
+        }
+
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var activeSession = LoginRuntime.RegisterSessions.GetActiveSession();
+                if (activeSession is null)
+                {
+                    return;
+                }
+
+                LoginRuntime.RegisterSessions.EnsureCashierAssignment(activeSession.Id, userId);
+            }
+            catch (Exception ex)
+            {
+                StartupTrace.Write($"MainWindow.QueueRegisterCashierAssignmentSync failed: {ex}");
+                LoginRuntime.ReportException(ex, "MainWindow.QueueRegisterCashierAssignmentSync");
+            }
+        });
+    }
+
+    private void QueueRegisterCashierAssignmentCloseIfAny()
+    {
+        _ = Task.Run(() =>
+        {
+            try
+            {
+                var activeSession = LoginRuntime.RegisterSessions.GetActiveSession();
+                if (activeSession is null)
+                {
+                    return;
+                }
+
+                LoginRuntime.RegisterSessions.CloseActiveCashierAssignments(activeSession.Id);
+            }
+            catch (Exception ex)
+            {
+                StartupTrace.Write($"MainWindow.QueueRegisterCashierAssignmentCloseIfAny failed: {ex}");
+                LoginRuntime.ReportException(ex, "MainWindow.QueueRegisterCashierAssignmentCloseIfAny");
+            }
+        });
+    }
+
     private void QueueRegisterStatusRefresh(bool forceRefresh)
     {
-        if (LoginRuntime.Auth.CurrentUser is not { } user)
+        if (!LoginRuntime.Auth.IsLoggedIn || LoginRuntime.Auth.CurrentUser is not { } user)
         {
             return;
         }
@@ -909,10 +1061,30 @@ public sealed partial class MainWindow : Window
         RootGrid.FlowDirection = LocalizationHelper.IsRtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
     }
 
+    private void HideActiveSensitiveDialogs()
+    {
+        try
+        {
+            _activeCashInOutDialog?.Hide();
+        }
+        catch
+        {
+        }
+
+        try
+        {
+            _activeCloseRegisterDialog?.Hide();
+        }
+        catch
+        {
+        }
+    }
+
     private async void CashInOut_Click(object sender, RoutedEventArgs e)
     {
         try
         {
+            LoginRuntime.Authorization.RequireAuthenticated();
             var summary = LoginRuntime.RegisterSessions.GetActiveCloseSummary();
             if (summary == null)
             {
@@ -921,6 +1093,11 @@ public sealed partial class MainWindow : Window
             }
 
             await ShowCashInOutDialogAsync(summary.SessionId);
+            UpdateCloseRegisterMenuState(forceRefresh: true);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            UpdateShellChrome();
             UpdateCloseRegisterMenuState(forceRefresh: true);
         }
         catch (Exception ex)
@@ -968,6 +1145,7 @@ public sealed partial class MainWindow : Window
 
         try
         {
+            LoginRuntime.Authorization.RequireAuthenticated();
             var summary = LoginRuntime.RegisterSessions.GetActiveCloseSummary();
             if (summary == null)
             {
@@ -982,22 +1160,28 @@ public sealed partial class MainWindow : Window
 
             while (true)
             {
+                LoginRuntime.Authorization.RequireAuthenticated();
                 var dialogWidthSnapshot = PushContentDialogWidth(Math.Max(520d, this.RootGrid.XamlRoot.Size.Width * 0.5));
                 try
                 {
+                    _activeCloseRegisterDialog = dialog;
                     await dialog.ShowAsync();
                 }
                 finally
                 {
+                    _activeCloseRegisterDialog = null;
                     PopContentDialogWidth(dialogWidthSnapshot);
                 }
 
+                LoginRuntime.Authorization.RequireAuthenticated();
                 var result = dialog.ActionResult;
                 if (result == ContentDialogResult.Secondary)
                 {
                     var changed = await ShowCashInOutDialogAsync(summary.SessionId);
+                    LoginRuntime.Authorization.RequireAuthenticated();
                     if (changed)
                     {
+                        LoginRuntime.Authorization.RequireAuthenticated();
                         summary = LoginRuntime.RegisterSessions.GetActiveCloseSummary();
                         if (summary == null)
                         {
@@ -1021,10 +1205,12 @@ public sealed partial class MainWindow : Window
 
                 try
                 {
+                    LoginRuntime.Authorization.RequireAuthenticated();
                     LoginRuntime.RegisterSessions.CloseRegister(
                         summary.SessionId,
                         dialog.CountedCashCents,
-                        dialog.Note);
+                        dialog.Note,
+                        LoginRuntime.Auth.CurrentUser?.Id);
 
                     LoginRuntime.Audit.Log("REGISTER_CLOSED",
                         $"SessionId: {summary.SessionId}, Counted: {dialog.CountedCashCents}, Note: {dialog.Note}",
@@ -1039,6 +1225,11 @@ public sealed partial class MainWindow : Window
                     dialog.ShowError(ex.Message);
                 }
             }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            UpdateShellChrome();
+            UpdateCloseRegisterMenuState(forceRefresh: true);
         }
         catch (Exception ex)
         {
@@ -1055,14 +1246,24 @@ public sealed partial class MainWindow : Window
 
         while (true)
         {
-            var cashResult = await cashDialog.ShowAsync();
-            if (cashResult != ContentDialogResult.Primary)
+            LoginRuntime.Authorization.RequireAuthenticated();
+            try
             {
-                return false;
+                _activeCashInOutDialog = cashDialog;
+                var cashResult = await cashDialog.ShowAsync();
+                if (cashResult != ContentDialogResult.Primary)
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                _activeCashInOutDialog = null;
             }
 
             try
             {
+                LoginRuntime.Authorization.RequireAuthenticated();
                 LoginRuntime.RegisterSessions.AddCashAdjustment(
                     sessionId,
                     LoginRuntime.Auth.CurrentUser?.Id,
@@ -1079,6 +1280,10 @@ public sealed partial class MainWindow : Window
 
                 return true;
             }
+            catch (UnauthorizedAccessException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 cashDialog.ShowError(ex.Message);
@@ -1090,8 +1295,14 @@ public sealed partial class MainWindow : Window
     {
         try
         {
+            LoginRuntime.Authorization.RequireAuthenticated();
             _lockedRouteTag = null;
             LoginRuntime.Auth.Logout();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            UpdateShellChrome();
+            UpdateCloseRegisterMenuState(forceRefresh: true);
         }
         catch (Exception ex)
         {
@@ -1210,6 +1421,12 @@ public sealed partial class MainWindow : Window
     {
         RootFrame.Tag = tag;
         UpdateShellChrome();
+    }
+
+    public void RefreshShellChrome()
+    {
+        UpdateShellChrome();
+        UpdateCloseRegisterMenuState(forceRefresh: true);
     }
 
     internal void ApplyAppLanguage(string languageTag)

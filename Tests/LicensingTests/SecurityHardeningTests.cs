@@ -39,11 +39,10 @@ public sealed class BootstrapAdminCredentialsTests
         var pair = creds.GenerateAndPersist();
 
         Assert.AreEqual(12, pair.Password.Length, "Password should be 12 chars.");
-        Assert.AreEqual(6, pair.Pin.Length, "PIN should be 6 digits.");
+        Assert.AreEqual(4, pair.Pin.Length, "PIN should be 4 digits.");
         Assert.IsTrue(pair.Pin.All(char.IsDigit), "PIN must be all digits.");
         Assert.AreNotEqual("1234", pair.Password);
         Assert.AreNotEqual("1234", pair.Pin);
-        Assert.AreNotEqual("123456", pair.Pin);
     }
 
     [TestMethod]

@@ -84,7 +84,7 @@ public class DatabaseMigrationTests
         var dbPath = GetTestDbPath();
         DatabaseInitializer.Initialize(dbPath);
 
-        Assert.AreEqual(22, GetUserVersion(dbPath), "Fresh database should be at version 22");
+        Assert.AreEqual(24, GetUserVersion(dbPath), "Fresh database should be at version 24");
     }
 
     [TestMethod]
@@ -105,6 +105,7 @@ public class DatabaseMigrationTests
         Assert.IsTrue(TableExists(dbPath, "tax_groups"));
         Assert.IsTrue(TableExists(dbPath, "register_sessions"));
         Assert.IsTrue(TableExists(dbPath, "register_cash_adjustments"));
+        Assert.IsTrue(TableExists(dbPath, "register_session_assignments"));
         Assert.IsTrue(TableExists(dbPath, "schema_metadata"));
     }
 
@@ -118,6 +119,9 @@ public class DatabaseMigrationTests
         Assert.IsTrue(ColumnExists(dbPath, "users", "last_failed_login_at_utc"));
         Assert.IsTrue(ColumnExists(dbPath, "users", "locked_until_utc"));
         Assert.IsTrue(ColumnExists(dbPath, "users", "must_change_password"));
+        Assert.IsTrue(ColumnExists(dbPath, "sales", "register_session_id"));
+        Assert.IsTrue(ColumnExists(dbPath, "sales", "cashier_user_id"));
+        Assert.IsTrue(ColumnExists(dbPath, "register_sessions", "closed_by_user_id"));
     }
 
     [TestMethod]
@@ -129,7 +133,7 @@ public class DatabaseMigrationTests
         var result = DatabaseInitializer.RunMaintenanceMigrations(dbPath);
 
         Assert.IsTrue(result.Success);
-        Assert.AreEqual(22, result.Version);
+        Assert.AreEqual(24, result.Version);
     }
 
     // ========================================
@@ -218,7 +222,7 @@ public class DatabaseMigrationTests
         // Open again — should not throw
         DatabaseInitializer.Initialize(dbPath);
 
-        Assert.AreEqual(22, GetUserVersion(dbPath));
+        Assert.AreEqual(24, GetUserVersion(dbPath));
     }
 
     // ========================================
@@ -307,7 +311,7 @@ INSERT INTO legacy_probe (name) VALUES ('before encryption');";
         var result = DatabaseInitializer.RunMaintenanceMigrations(dbPath);
 
         Assert.IsTrue(result.Success, "The real v1.1.0 database should upgrade through all current migrations.");
-        Assert.AreEqual(22, result.Version);
+        Assert.AreEqual(24, result.Version);
         Assert.IsTrue(SchemaMetadataHasValue(dbPath, "encryption_version", DatabaseEncryptionService.LegacyPlaintextEncryptionVersion));
         Assert.IsTrue(TableExists(dbPath, "schema_metadata"));
         Assert.IsTrue(TableExists(dbPath, "products"));
@@ -351,7 +355,7 @@ INSERT INTO legacy_probe (name) VALUES ('before encryption');";
         DatabaseInitializer.Initialize(dbPath);
         DatabaseInitializer.Initialize(dbPath);
 
-        Assert.AreEqual(22, GetUserVersion(dbPath));
+        Assert.AreEqual(24, GetUserVersion(dbPath));
     }
 
     [TestMethod]
@@ -367,7 +371,7 @@ INSERT INTO legacy_probe (name) VALUES ('before encryption');";
         Assert.IsTrue(r1.Success);
         Assert.IsTrue(r2.Success);
         Assert.IsTrue(r3.Success);
-        Assert.AreEqual(22, r3.Version);
+        Assert.AreEqual(24, r3.Version);
     }
 
     // ========================================

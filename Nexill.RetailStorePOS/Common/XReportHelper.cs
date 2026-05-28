@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Drawing.Text;
 using System.Text;
+using System.Globalization;
 using RetailStorePOS.Data;
 using RetailStorePOS.Data.Modules.Sales;
 
@@ -31,6 +32,24 @@ public static class XReportHelper
 
         File.WriteAllBytes(pdfPath, BuildReportPdf(sales, date, storeName));
         return pdfPath;
+    }
+
+    public static IReadOnlyList<XReportFileEntry> GetAvailableReports()
+    {
+        var folder = AppDataPaths.Combine("Reports");
+        if (!Directory.Exists(folder))
+        {
+            return Array.Empty<XReportFileEntry>();
+        }
+
+        return Directory.EnumerateFiles(folder, "XReport_*.pdf", SearchOption.TopDirectoryOnly)
+            .Select(path => new XReportFileEntry(
+                path,
+                TryParseBusinessDateFromFileName(Path.GetFileNameWithoutExtension(path)),
+                File.GetLastWriteTime(path)))
+            .OrderByDescending(entry => entry.BusinessDate ?? entry.LastModifiedLocal.Date)
+            .ThenByDescending(entry => entry.LastModifiedLocal)
+            .ToList();
     }
 
     public static bool TryOpenReportPdf(string pdfPath)
@@ -63,6 +82,25 @@ public static class XReportHelper
         {
             return false;
         }
+    }
+
+    private static DateTime? TryParseBusinessDateFromFileName(string? fileNameWithoutExtension)
+    {
+        if (string.IsNullOrWhiteSpace(fileNameWithoutExtension) ||
+            !fileNameWithoutExtension.StartsWith("XReport_", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        var datePart = fileNameWithoutExtension["XReport_".Length..];
+        return DateTime.TryParseExact(
+            datePart,
+            "yyyyMMdd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var parsed)
+            ? parsed
+            : null;
     }
 
     private static byte[] BuildReportPdf(IEnumerable<Sale> sales, DateTime date, string storeName)
@@ -273,6 +311,20 @@ public static class XReportHelper
         yield return new(LineStyle.Separator);
         yield return new(LineStyle.Empty);
         yield return new(LineStyle.Centered, "End of Report");
+    }
+
+    public sealed class XReportFileEntry
+    {
+        public XReportFileEntry(string pdfPath, DateTime? businessDate, DateTime lastModifiedLocal)
+        {
+            PdfPath = pdfPath;
+            BusinessDate = businessDate;
+            LastModifiedLocal = lastModifiedLocal;
+        }
+
+        public string PdfPath { get; }
+        public DateTime? BusinessDate { get; }
+        public DateTime LastModifiedLocal { get; }
     }
 
     private static void DrawCentered(Graphics graphics, string text, Font font, Brush brush, ref float y, float left, float width)

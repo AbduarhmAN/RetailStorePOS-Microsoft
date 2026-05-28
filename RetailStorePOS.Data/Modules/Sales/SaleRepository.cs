@@ -36,6 +36,8 @@ public sealed class SaleRepository
         checkCommand.Transaction = transaction;
         checkCommand.CommandText = "SELECT COUNT(*) FROM pragma_table_info('sale_items') WHERE name='item_cost_cents';";
         var hasCostCol = Convert.ToInt64(checkCommand.ExecuteScalar()) > 0;
+        var hasRegisterSessionIdCol = ColumnExists(connection, "sales", "register_session_id");
+        var hasCashierUserIdCol = ColumnExists(connection, "sales", "cashier_user_id");
 
         if (!hasCostCol)
         {
@@ -47,9 +49,45 @@ public sealed class SaleRepository
 
         using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = @"
-INSERT INTO sales (receipt_number, subtotal_cents, tax_cents, total_cents, tendered_cents, change_cents, payment_type, cashier_name, created_at)
-VALUES (@receipt_number, @subtotal_cents, @tax_cents, @total_cents, @tendered_cents, @change_cents, @payment_type, @cashier_name, @created_at);
+        var saleColumns = new List<string>
+        {
+            "receipt_number",
+            "subtotal_cents",
+            "tax_cents",
+            "total_cents",
+            "tendered_cents",
+            "change_cents",
+            "payment_type",
+            "cashier_name",
+            "created_at"
+        };
+        var saleValues = new List<string>
+        {
+            "@receipt_number",
+            "@subtotal_cents",
+            "@tax_cents",
+            "@total_cents",
+            "@tendered_cents",
+            "@change_cents",
+            "@payment_type",
+            "@cashier_name",
+            "@created_at"
+        };
+        if (hasRegisterSessionIdCol)
+        {
+            saleColumns.Add("register_session_id");
+            saleValues.Add("@register_session_id");
+        }
+
+        if (hasCashierUserIdCol)
+        {
+            saleColumns.Add("cashier_user_id");
+            saleValues.Add("@cashier_user_id");
+        }
+
+        command.CommandText = $@"
+INSERT INTO sales ({string.Join(", ", saleColumns)})
+VALUES ({string.Join(", ", saleValues)});
 SELECT last_insert_rowid();";
 
         command.Parameters.AddWithValue("@receipt_number", receiptNumber);
@@ -61,6 +99,15 @@ SELECT last_insert_rowid();";
         command.Parameters.AddWithValue("@payment_type", sale.PaymentType);
         command.Parameters.AddWithValue("@cashier_name", sale.CashierName ?? string.Empty);
         command.Parameters.AddWithValue("@created_at", createdAtText);
+        if (hasRegisterSessionIdCol)
+        {
+            command.Parameters.AddWithValue("@register_session_id", (object?)sale.RegisterSessionId ?? DBNull.Value);
+        }
+
+        if (hasCashierUserIdCol)
+        {
+            command.Parameters.AddWithValue("@cashier_user_id", (object?)sale.CashierUserId ?? DBNull.Value);
+        }
 
         var saleId = Convert.ToInt64(command.ExecuteScalar());
         sale.Id = saleId;
@@ -118,12 +165,13 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
     {
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
+        var salesProjection = BuildSalesProjection(connection);
 
         if (long.TryParse(query, out _))
         {
             // Numeric input: match receipts that START WITH the typed digits
-            command.CommandText = @"
-                SELECT id, receipt_number, subtotal_cents, tax_cents, total_cents, tendered_cents, change_cents, payment_type, cashier_name, created_at
+            command.CommandText = $@"
+                SELECT {salesProjection}
                 FROM sales
                 WHERE CAST(receipt_number AS TEXT) LIKE @receiptPrefix
                 ORDER BY created_at DESC
@@ -133,8 +181,8 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         else
         {
             // Text input: match cashier name prefix OR exact payment type
-            command.CommandText = @"
-                SELECT id, receipt_number, subtotal_cents, tax_cents, total_cents, tendered_cents, change_cents, payment_type, cashier_name, created_at
+            command.CommandText = $@"
+                SELECT {salesProjection}
                 FROM sales
                 WHERE cashier_name LIKE @prefix OR payment_type LIKE @prefix
                 ORDER BY created_at DESC
@@ -152,19 +200,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
 
         while (reader.Read())
         {
-            sales.Add(new Sale
-            {
-                Id = reader.GetInt64(0),
-                ReceiptNumber = reader.GetInt64(1),
-                Subtotal = MoneyUtils.FromCents(reader.GetInt64(2)),
-                Tax = MoneyUtils.FromCents(reader.GetInt64(3)),
-                Total = MoneyUtils.FromCents(reader.GetInt64(4)),
-                Tendered = MoneyUtils.FromCents(reader.GetInt64(5)),
-                Change = MoneyUtils.FromCents(reader.GetInt64(6)),
-                PaymentType = reader.GetString(7),
-                CashierName = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                CreatedAt = DateTime.Parse(reader.GetString(9)).ToLocalTime()
-            });
+            sales.Add(ReadSale(reader));
         }
 
         if (sales.Count == 0)
@@ -253,8 +289,8 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
 
         using var connection = _factory.OpenConnection();
         using var command = connection.CreateCommand();
-        command.CommandText = @"
-            SELECT id, receipt_number, subtotal_cents, tax_cents, total_cents, tendered_cents, change_cents, payment_type, cashier_name, created_at
+        command.CommandText = $@"
+            SELECT {BuildSalesProjection(connection)}
             FROM sales
             WHERE created_at >= @start AND created_at < @end
             ORDER BY created_at DESC;";
@@ -267,19 +303,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
 
         while (reader.Read())
         {
-            sales.Add(new Sale
-            {
-                Id = reader.GetInt64(0),
-                ReceiptNumber = reader.GetInt64(1),
-                Subtotal = MoneyUtils.FromCents(reader.GetInt64(2)),
-                Tax = MoneyUtils.FromCents(reader.GetInt64(3)),
-                Total = MoneyUtils.FromCents(reader.GetInt64(4)),
-                Tendered = MoneyUtils.FromCents(reader.GetInt64(5)),
-                Change = MoneyUtils.FromCents(reader.GetInt64(6)),
-                PaymentType = reader.GetString(7),
-                CashierName = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
-                CreatedAt = DateTime.Parse(reader.GetString(9)).ToLocalTime()
-            });
+            sales.Add(ReadSale(reader));
         }
 
         if (sales.Count == 0)
@@ -559,6 +583,90 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         return result;
     }
 
+    public List<DailySparklineData> GetDashboardSparklines(
+        DateTime startUtc,
+        DateTime endUtc,
+        DashboardSparklineBucket bucket)
+    {
+        var result = new List<DailySparklineData>();
+        var startString = startUtc.ToString("O");
+        var endString = endUtc.ToString("O");
+        var bucketExpression = bucket switch
+        {
+            DashboardSparklineBucket.Hour => "strftime('%Y-%m-%d %H:00', s.created_at, 'localtime')",
+            DashboardSparklineBucket.Month => "strftime('%Y-%m', s.created_at, 'localtime')",
+            DashboardSparklineBucket.Year => "strftime('%Y', s.created_at, 'localtime')",
+            _ => "date(s.created_at, 'localtime')"
+        };
+
+        using var connection = _factory.OpenConnection();
+
+        using var costColCheck = connection.CreateCommand();
+        costColCheck.CommandText = "SELECT COUNT(*) FROM pragma_table_info('sale_items') WHERE name='item_cost_cents';";
+        var hasCostCol = Convert.ToInt64(costColCheck.ExecuteScalar()) > 0;
+
+        if (!hasCostCol)
+        {
+            using var alterCmd = connection.CreateCommand();
+            alterCmd.CommandText = "ALTER TABLE sale_items ADD COLUMN item_cost_cents INTEGER NOT NULL DEFAULT 0;";
+            alterCmd.ExecuteNonQuery();
+        }
+
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = $@"
+            SELECT
+                {bucketExpression} as local_bucket,
+                SUM(s.total_cents) as bucket_revenue,
+                SUM(s.subtotal_cents) as bucket_subtotal,
+                COUNT(*) as bucket_invoice_count
+            FROM sales s
+            WHERE s.created_at >= @start AND s.created_at < @end
+            GROUP BY local_bucket
+            ORDER BY local_bucket ASC;";
+        cmd.Parameters.AddWithValue("@start", startString);
+        cmd.Parameters.AddWithValue("@end", endString);
+
+        using (var reader = cmd.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                result.Add(new DailySparklineData
+                {
+                    LocalDay = reader.GetString(0),
+                    Revenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : reader.GetInt64(1)),
+                    Profit = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : reader.GetInt64(2)),
+                    InvoiceCount = reader.GetInt32(3)
+                });
+            }
+        }
+
+        using var cogsCmd = connection.CreateCommand();
+        cogsCmd.CommandText = $@"
+            SELECT
+                {bucketExpression} as local_bucket,
+                SUM(si.item_cost_cents * si.quantity)
+            FROM sale_items si
+            INNER JOIN sales s ON si.sale_id = s.id
+            WHERE s.created_at >= @start AND s.created_at < @end
+            GROUP BY local_bucket;";
+        cogsCmd.Parameters.AddWithValue("@start", startString);
+        cogsCmd.Parameters.AddWithValue("@end", endString);
+
+        using var cogsReader = cogsCmd.ExecuteReader();
+        while (cogsReader.Read())
+        {
+            var bucketKey = cogsReader.GetString(0);
+            var cogs = MoneyUtils.FromCents(cogsReader.IsDBNull(1) ? 0 : cogsReader.GetInt64(1));
+            var target = result.FirstOrDefault(r => r.LocalDay == bucketKey);
+            if (target != null)
+            {
+                target.Profit -= cogs;
+            }
+        }
+
+        return result;
+    }
+
     public List<TopProductData> GetTopProducts(DateTime startUtc, DateTime endUtc, int limit = 5)
     {
         var result = new List<TopProductData>();
@@ -635,6 +743,95 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
 
         return new DailySummary { Date = date.Date };
     }
+
+    private static string BuildSalesProjection(SqliteConnection connection)
+    {
+        var columns = new List<string>
+        {
+            "id",
+            "receipt_number",
+            "subtotal_cents",
+            "tax_cents",
+            "total_cents",
+            "tendered_cents",
+            "change_cents",
+            "payment_type",
+            "cashier_name",
+            "created_at"
+        };
+
+        if (ColumnExists(connection, "sales", "register_session_id"))
+        {
+            columns.Add("register_session_id");
+        }
+
+        if (ColumnExists(connection, "sales", "cashier_user_id"))
+        {
+            columns.Add("cashier_user_id");
+        }
+
+        return string.Join(", ", columns);
+    }
+
+    private static Sale ReadSale(SqliteDataReader reader)
+    {
+        var sale = new Sale
+        {
+            Id = reader.GetInt64(reader.GetOrdinal("id")),
+            ReceiptNumber = reader.GetInt64(reader.GetOrdinal("receipt_number")),
+            Subtotal = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("subtotal_cents"))),
+            Tax = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("tax_cents"))),
+            Total = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("total_cents"))),
+            Tendered = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("tendered_cents"))),
+            Change = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("change_cents"))),
+            PaymentType = reader.GetString(reader.GetOrdinal("payment_type")),
+            CashierName = reader.IsDBNull(reader.GetOrdinal("cashier_name")) ? string.Empty : reader.GetString(reader.GetOrdinal("cashier_name")),
+            CreatedAt = DateTime.Parse(reader.GetString(reader.GetOrdinal("created_at"))).ToLocalTime()
+        };
+
+        var registerSessionIdOrdinal = TryGetOrdinal(reader, "register_session_id");
+        if (registerSessionIdOrdinal >= 0 && !reader.IsDBNull(registerSessionIdOrdinal))
+        {
+            sale.RegisterSessionId = reader.GetInt64(registerSessionIdOrdinal);
+        }
+
+        var cashierUserIdOrdinal = TryGetOrdinal(reader, "cashier_user_id");
+        if (cashierUserIdOrdinal >= 0 && !reader.IsDBNull(cashierUserIdOrdinal))
+        {
+            sale.CashierUserId = reader.GetInt64(cashierUserIdOrdinal);
+        }
+
+        return sale;
+    }
+
+    private static int TryGetOrdinal(SqliteDataReader reader, string columnName)
+    {
+        for (var i = 0; i < reader.FieldCount; i++)
+        {
+            if (string.Equals(reader.GetName(i), columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private static bool ColumnExists(SqliteConnection connection, string tableName, string columnName)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = $"PRAGMA table_info({tableName});";
+        using var reader = command.ExecuteReader();
+        while (reader.Read())
+        {
+            if (reader.GetString(1).Equals(columnName, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 public class DailySummary
@@ -655,6 +852,14 @@ public class DashboardMetrics
     public decimal DiscountAmount { get; set; }
     public int DiscountCount { get; set; }
     public decimal MedianInvoice { get; set; }
+}
+
+public enum DashboardSparklineBucket
+{
+    Hour,
+    Day,
+    Month,
+    Year
 }
 
 public class DailySparklineData

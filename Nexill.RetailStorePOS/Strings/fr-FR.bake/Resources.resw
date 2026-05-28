@@ -140,10 +140,10 @@
     <value>Administrator signed in</value>
   </data>
   <data name="LoginPage_Status_DefaultAdminCreated" xml:space="preserve">
-    <value>Default administrator created</value>
+    <value>Temporary administrator created</value>
   </data>
   <data name="LoginPage_Status_DefaultAdminMessage" xml:space="preserve">
-    <value>Sign in with username '{0}' and password '{1}', then change it after setup.</value>
+    <value>Sign in with username '{0}', temporary password '{1}', and temporary PIN '{2}'. Change the password after setup.</value>
   </data>
   <data name="LoginPage_CashierPanelTitle.Text" xml:space="preserve">
     <value>Cashier access</value>
@@ -188,7 +188,10 @@
     <value>First-Time Administrator Setup</value>
   </data>
   <data name="LoginPage_OnboardingHint_Body.Text" xml:space="preserve">
-    <value>Default Username: admin | Password: 1234</value>
+    <value>Username is admin. The password and PIN are generated for this install and shown in the temporary administrator message.</value>
+  </data>
+  <data name="LoginPage_OnboardingHint_Body_WithCredentials" xml:space="preserve">
+    <value>Username: {0} | Password: {1} | PIN: {2}</value>
   </data>
   <data name="LoginPage_PinLabel.Text" xml:space="preserve">
     <value>Enter PIN</value>
@@ -200,10 +203,13 @@
     <value>Login</value>
   </data>
   <data name="LoginPage_CashierPinTip.Title" xml:space="preserve">
-    <value>Cashier PIN</value>
+    <value>Temporary cashier PIN</value>
   </data>
   <data name="LoginPage_CashierPinTip.Subtitle" xml:space="preserve">
-    <value>The default Cashier PIN is 1234.</value>
+    <value>Use the temporary PIN generated for this install.</value>
+  </data>
+  <data name="LoginPage_CashierPinTip_Subtitle_WithPin" xml:space="preserve">
+    <value>Temporary 4-digit PIN: {0}</value>
   </data>
   <data name="LoginPage_CloseButton.Content" xml:space="preserve">
     <value>Close</value>

@@ -1048,6 +1048,13 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                 return;
             }
 
+            var activeSession = LoginRuntime.RegisterSessions.GetActiveSession();
+            var cashierUserId = _authService.CurrentUser?.Id;
+            if (activeSession is not null && cashierUserId is > 0)
+            {
+                LoginRuntime.RegisterSessions.EnsureCashierAssignment(activeSession.Id, cashierUserId);
+            }
+
             var sale = new Sale
             {
                 Subtotal = Subtotal,
@@ -1056,7 +1063,9 @@ public sealed class CheckoutViewModel : ObservableObject, IDisposable
                 Tendered = _tenderedCash,
                 Change = Math.Round(_tenderedCash - AmountDue, 2, MidpointRounding.AwayFromZero),
                 PaymentType = "Cash",
-                CashierName = CurrentCashierDisplay
+                CashierName = CurrentCashierDisplay,
+                RegisterSessionId = activeSession?.Id,
+                CashierUserId = cashierUserId
             };
 
             foreach (var item in CartItems)

@@ -140,6 +140,11 @@ public sealed partial class UsersPage : Page
         QueueUsersOnboardingEvaluation();
     }
 
+    private void EditorPasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+    {
+        ViewModel.ClearAdminPasswordValidation();
+    }
+
     public void ShowAdministratorAccessTeachingTip()
     {
         if (!ViewModel.IsOnboardingActive || _usersOnboardingStep == UsersOnboardingStep.Completed)

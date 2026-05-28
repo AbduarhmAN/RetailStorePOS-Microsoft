@@ -37,6 +37,42 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
         </Style>
+
+        <Style x:Key="OP_FilterShell" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E8EAF0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="MinHeight" Value="52"/>
+        </Style>
+
+        <Style x:Key="OP_FilterLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CharacterSpacing" Value="40"/>
+            <Setter Property="Foreground" Value="#5F6775"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="OP_FilterDivider" TargetType="Border">
+            <Setter Property="Width" Value="1"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Background" Value="#E8EAF0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="OP_FilterComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Padding" Value="8,2,8,2"/>
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#1A1D23"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        </Style>
     </Page.Resources>
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
@@ -48,7 +84,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Header: title + Pro badge + period filter -->
+            <!-- Header: title + Pro badge + reporting filters -->
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -63,7 +99,38 @@
                     </Border>
                 </StackPanel>
 
-                <components:PeriodFilterControl x:Name="PeriodFilter" Grid.Column="1"/>
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            Spacing="10"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center">
+                    <Border Style="{StaticResource OP_FilterShell}">
+                        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <TextBlock x:Uid="Operations_OperatorFilter_Label"
+                                       Style="{StaticResource OP_FilterLabel}"/>
+                            <Border Style="{StaticResource OP_FilterDivider}"/>
+                            <ComboBox x:Name="OperatorFilter"
+                                      Width="180"
+                                      Style="{StaticResource OP_FilterComboBox}"
+                                      ItemsSource="{x:Bind OperatorOptions, Mode=OneWay}"
+                                      SelectedItem="{x:Bind SelectedOperator, Mode=TwoWay}"
+                                      MaxDropDownHeight="320"
+                                      AutomationProperties.Name="Operator filter">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate x:DataType="local:OperatorFilterOption">
+                                        <Grid MinWidth="160" Padding="2,4">
+                                            <TextBlock Text="{x:Bind DisplayName}"
+                                                       FontSize="13"
+                                                       Foreground="#1A1D23"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </Border>
+                    <components:PeriodFilterControl x:Name="PeriodFilter"/>
+                </StackPanel>
             </Grid>
 
             <!-- Heatmap card -->

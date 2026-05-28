@@ -49,5 +49,5 @@ public sealed partial class CrashFeedbackDialog : ContentDialog
     public string CrashFeedbackDialog_DetailsTextBoxPlaceholder => Loc["CrashFeedbackDialog_DetailsTextBox.PlaceholderText"];
     public string CrashFeedbackDialog_SuppressPromptCheckBox => Loc["CrashFeedbackDialog_SuppressPromptCheckBox.Content"];
     public string CrashFeedbackDialog_PrimaryButtonText => Loc["CrashFeedbackDialog.PrimaryButtonText"];
-    public string CrashFeedbackDialog_SecondaryButtonText => Loc["CrashFeedbackDialog.SecondaryButtonText"];
+    public string CrashFeedbackDialog_SecondaryButtonText => Loc["CrashFeedbackDialog.CloseButtonText"];
 }

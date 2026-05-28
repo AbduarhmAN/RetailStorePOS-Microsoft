@@ -64,6 +64,8 @@ CREATE TABLE IF NOT EXISTS sales (
     change_cents INTEGER NOT NULL,
     payment_type TEXT NOT NULL,
     cashier_name TEXT NOT NULL DEFAULT '',
+    register_session_id INTEGER,
+    cashier_user_id INTEGER,
     created_at TEXT NOT NULL
 );
 
@@ -1064,6 +1066,93 @@ CREATE TABLE IF NOT EXISTS schema_metadata (
                         saleItemsSaleProductCmd.ExecuteNonQuery();
                     }
                 }
+            },
+            new MigrationStep
+            {
+                Version = 24,
+                Description = "Add register session attribution columns and cashier assignment tracking",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    if (!ColumnExists(conn, "sales", "register_session_id"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE sales ADD COLUMN register_session_id INTEGER;";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    if (!ColumnExists(conn, "sales", "cashier_user_id"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE sales ADD COLUMN cashier_user_id INTEGER;";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    if (!ColumnExists(conn, "register_sessions", "closed_by_user_id"))
+                    {
+                        using var cmd = conn.CreateCommand();
+                        cmd.CommandText = "ALTER TABLE register_sessions ADD COLUMN closed_by_user_id INTEGER;";
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    using (var tableCmd = conn.CreateCommand())
+                    {
+                        tableCmd.CommandText = @"
+CREATE TABLE IF NOT EXISTS register_session_assignments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    started_at TEXT NOT NULL,
+    ended_at TEXT,
+    note TEXT,
+    FOREIGN KEY (session_id) REFERENCES register_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);";
+                        tableCmd.ExecuteNonQuery();
+                    }
+
+                    using (var salesSessionIndexCmd = conn.CreateCommand())
+                    {
+                        salesSessionIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_sales_register_session ON sales (register_session_id, created_at);";
+                        salesSessionIndexCmd.ExecuteNonQuery();
+                    }
+
+                    using (var salesCashierUserIndexCmd = conn.CreateCommand())
+                    {
+                        salesCashierUserIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_sales_cashier_user ON sales (cashier_user_id, created_at);";
+                        salesCashierUserIndexCmd.ExecuteNonQuery();
+                    }
+
+                    using (var registerClosedByIndexCmd = conn.CreateCommand())
+                    {
+                        registerClosedByIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_register_sessions_closed_by ON register_sessions (closed_by_user_id, opened_at);";
+                        registerClosedByIndexCmd.ExecuteNonQuery();
+                    }
+
+                    using (var assignmentsSessionIndexCmd = conn.CreateCommand())
+                    {
+                        assignmentsSessionIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_register_session_assignments_session ON register_session_assignments (session_id, started_at);";
+                        assignmentsSessionIndexCmd.ExecuteNonQuery();
+                    }
+
+                    using (var assignmentsUserIndexCmd = conn.CreateCommand())
+                    {
+                        assignmentsUserIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_register_session_assignments_user ON register_session_assignments (user_id, started_at);";
+                        assignmentsUserIndexCmd.ExecuteNonQuery();
+                    }
+
+                    using (var assignmentsOpenIndexCmd = conn.CreateCommand())
+                    {
+                        assignmentsOpenIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_register_session_assignments_open ON register_session_assignments (session_id, ended_at);";
+                        assignmentsOpenIndexCmd.ExecuteNonQuery();
+                    }
+                }
             }
         };
     }
@@ -1255,7 +1344,7 @@ ON CONFLICT(key) DO UPDATE SET
     /// The highest migration version this build of the app understands.
     /// Must be updated whenever a new MigrationStep is added to GetMigrationSteps().
     /// </summary>
-    private const int MaxKnownSchemaVersion = 23;
+    private const int MaxKnownSchemaVersion = 24;
 
     private static string GetCurrentAppVersion()
     {

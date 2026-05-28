@@ -127,6 +127,7 @@ values
     ('RETAILSTOREPOS', 'PREMIUM', 'Sales', true),
     ('RETAILSTOREPOS', 'PREMIUM', 'BasicReports', true),
     ('RETAILSTOREPOS', 'PREMIUM', 'AdvancedReports', true),
+    ('RETAILSTOREPOS', 'PREMIUM', 'DashboardDatePill', true),
     ('RETAILSTOREPOS', 'PREMIUM', 'InventoryAnalytics', true),
     ('RETAILSTOREPOS', 'PREMIUM', 'ExportReports', true)
 on conflict (product_code, permission_group, feature_code) do update

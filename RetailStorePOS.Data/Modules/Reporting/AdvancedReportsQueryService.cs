@@ -375,10 +375,11 @@ ORDER BY p.name;";
     /// Day-of-week is SQLite's strftime('%w', ...) -- 0=Sunday..6=Saturday.
     /// Hour is 0..23 (UTC, since timestamps are UTC).
     /// </summary>
-    public List<HourDayCell> GetHourDayHeatmap(DateTime startUtc, DateTime endUtc)
+    public List<HourDayCell> GetHourDayHeatmap(DateTime startUtc, DateTime endUtc, string? cashierName = null)
     {
         var startString = startUtc.ToString("O");
         var endString = endUtc.ToString("O");
+        var cashierFilter = NormalizeCashierFilter(cashierName);
 
         var cells = new List<HourDayCell>();
         using var connection = _factory.OpenConnection();
@@ -391,9 +392,11 @@ SELECT
     SUM(subtotal_cents)                         AS revenue_cents
 FROM sales
 WHERE created_at >= @start AND created_at < @end
+  AND (@cashier IS NULL OR COALESCE(NULLIF(TRIM(cashier_name), ''), '(unspecified)') = @cashier)
 GROUP BY dow, hour;";
         cmd.Parameters.AddWithValue("@start", startString);
         cmd.Parameters.AddWithValue("@end", endString);
+        cmd.Parameters.AddWithValue("@cashier", (object?)cashierFilter ?? DBNull.Value);
 
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
@@ -414,10 +417,11 @@ GROUP BY dow, hour;";
     /// Uses two queries (sales-level + items-level) joined client-side
     /// for SQL clarity.
     /// </summary>
-    public List<CashierPerformanceRow> GetCashierPerformance(DateTime startUtc, DateTime endUtc)
+    public List<CashierPerformanceRow> GetCashierPerformance(DateTime startUtc, DateTime endUtc, string? cashierName = null)
     {
         var startString = startUtc.ToString("O");
         var endString = endUtc.ToString("O");
+        var cashierFilter = NormalizeCashierFilter(cashierName);
 
         var byName = new Dictionary<string, (int Sales, decimal Revenue)>(StringComparer.OrdinalIgnoreCase);
         var itemsByName = new Dictionary<string, double>(StringComparer.OrdinalIgnoreCase);
@@ -433,10 +437,12 @@ SELECT
     SUM(subtotal_cents)                                       AS revenue_cents
 FROM sales
 WHERE created_at >= @start AND created_at < @end
+  AND (@cashier IS NULL OR COALESCE(NULLIF(TRIM(cashier_name), ''), '(unspecified)') = @cashier)
 GROUP BY cashier
 ORDER BY revenue_cents DESC;";
             salesCmd.Parameters.AddWithValue("@start", startString);
             salesCmd.Parameters.AddWithValue("@end", endString);
+            salesCmd.Parameters.AddWithValue("@cashier", (object?)cashierFilter ?? DBNull.Value);
 
             using var reader = salesCmd.ExecuteReader();
             while (reader.Read())
@@ -458,10 +464,12 @@ FROM sale_items si
 INNER JOIN sales s ON si.sale_id = s.id
 WHERE s.created_at >= @start
   AND s.created_at <  @end
+  AND (@cashier IS NULL OR COALESCE(NULLIF(TRIM(s.cashier_name), ''), '(unspecified)') = @cashier)
   AND si.product_id <> 0
 GROUP BY cashier;";
             itemsCmd.Parameters.AddWithValue("@start", startString);
             itemsCmd.Parameters.AddWithValue("@end", endString);
+            itemsCmd.Parameters.AddWithValue("@cashier", (object?)cashierFilter ?? DBNull.Value);
 
             using var reader = itemsCmd.ExecuteReader();
             while (reader.Read())
@@ -488,6 +496,11 @@ GROUP BY cashier;";
         }
         rows.Sort((a, b) => b.Revenue.CompareTo(a.Revenue));
         return rows;
+    }
+
+    private static string? NormalizeCashierFilter(string? cashierName)
+    {
+        return string.IsNullOrWhiteSpace(cashierName) ? null : cashierName.Trim();
     }
 
     /// <summary>

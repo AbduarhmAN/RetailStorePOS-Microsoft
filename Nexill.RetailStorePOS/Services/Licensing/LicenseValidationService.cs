@@ -211,6 +211,53 @@ public sealed class LicenseValidationService
             RequestTimeUtc = _clock().UtcDateTime.ToString("O"),
         };
 
+        return await ExecuteRequestAsync(supabaseUrl, supabaseKey, installId, request, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<LicenseActivationResult> ReissueByInstallAsync(CancellationToken cancellationToken = default)
+    {
+        var supabaseUrl = (_supabaseUrlAccessor() ?? string.Empty).Trim().TrimEnd('/');
+        var supabaseKey = (_supabaseKeyAccessor() ?? string.Empty).Trim();
+        if (supabaseUrl.Length == 0 || supabaseKey.Length == 0)
+        {
+            return LicenseActivationResult.Failure(
+                LicenseActivationOutcome.BackendNotConfigured,
+                "local_backend_not_configured");
+        }
+
+        var installId = _installIdAccessor();
+        if (string.IsNullOrWhiteSpace(installId))
+        {
+            return LicenseActivationResult.Failure(
+                LicenseActivationOutcome.BackendNotConfigured,
+                "local_install_id_unavailable");
+        }
+
+        var nextSequence = AdvanceRequestSequence();
+        var request = new LicenseActivationRequest
+        {
+            Action = "reissue_by_install",
+            MessageType = "license_reissue_request",
+            InstallId = installId,
+            LicenseKey = string.Empty,
+            RequestNonce = Guid.NewGuid().ToString("N"),
+            RequestSequence = nextSequence,
+            RequestTimeUtc = _clock().UtcDateTime.ToString("O"),
+        };
+
+        return await ExecuteRequestAsync(supabaseUrl, supabaseKey, installId, request, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    private async Task<LicenseActivationResult> ExecuteRequestAsync(
+        string supabaseUrl,
+        string supabaseKey,
+        string installId,
+        LicenseActivationRequest request,
+        CancellationToken cancellationToken)
+    {
+        
         LicenseApiEnvelope? envelope;
         try
         {

@@ -68,17 +68,17 @@ public sealed class AuthorizedAdvancedReportsService
     }
 
     /// <inheritdoc cref="AdvancedReportsQueryService.GetHourDayHeatmap" />
-    public List<HourDayCell> GetHourDayHeatmap(DateTime startUtc, DateTime endUtc)
+    public List<HourDayCell> GetHourDayHeatmap(DateTime startUtc, DateTime endUtc, string? cashierName = null)
     {
         _guard.RequireFeature(FeatureAccessService.Features.AdvancedReports);
-        return _query.GetHourDayHeatmap(startUtc, endUtc);
+        return _query.GetHourDayHeatmap(startUtc, endUtc, cashierName);
     }
 
     /// <inheritdoc cref="AdvancedReportsQueryService.GetCashierPerformance" />
-    public List<CashierPerformanceRow> GetCashierPerformance(DateTime startUtc, DateTime endUtc)
+    public List<CashierPerformanceRow> GetCashierPerformance(DateTime startUtc, DateTime endUtc, string? cashierName = null)
     {
         _guard.RequireFeature(FeatureAccessService.Features.AdvancedReports);
-        return _query.GetCashierPerformance(startUtc, endUtc);
+        return _query.GetCashierPerformance(startUtc, endUtc, cashierName);
     }
 
     /// <inheritdoc cref="AdvancedReportsQueryService.GetAbcXyzClassification" />

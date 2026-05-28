@@ -181,14 +181,14 @@ begin
         return;
     end if;
 
-    update public.license_activations
+    update public.license_activations as la
     set
         status = 'active',
-        device_public_key_thumbprint = coalesce(p_device_public_key_thumbprint, device_public_key_thumbprint),
-        last_request_sequence = greatest(last_request_sequence, coalesce(p_request_sequence, last_request_sequence)),
+        device_public_key_thumbprint = coalesce(p_device_public_key_thumbprint, la.device_public_key_thumbprint),
+        last_request_sequence = greatest(la.last_request_sequence, coalesce(p_request_sequence, la.last_request_sequence)),
         last_refreshed_at = p_now,
         updated_at = p_now
-    where id = p_activation_id
+    where la.id = p_activation_id
     returning * into v_row;
 
     return query select

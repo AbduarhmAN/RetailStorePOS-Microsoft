@@ -45,6 +45,13 @@
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
 
+        <Style x:Key="UP_ErrorText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#B91C1C"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
         <Style x:Key="UP_RoleName" TargetType="TextBlock">
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -334,6 +341,9 @@
                                                      MaxLength="4"
                                                      FontFamily="Consolas"
                                                      Style="{StaticResource UP_TextBox}"/>
+                                            <TextBlock Text="{x:Bind ViewModel.PinValidationMessage, Mode=OneWay}"
+                                                       Visibility="{x:Bind ViewModel.PinValidationVisibility, Mode=OneWay}"
+                                                       Style="{StaticResource UP_ErrorText}"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="1"
@@ -342,9 +352,13 @@
                                             <TextBlock Text="{x:Bind ViewModel.Users_Label_AdminPassword, Mode=OneWay}" Style="{StaticResource UP_FieldLabel}"/>
                                             <PasswordBox x:Name="EditorPasswordBox"
                                                          IsEnabled="{x:Bind ViewModel.IsEditUnlocked, Mode=OneWay}"
+                                                         PasswordChanged="EditorPasswordBox_PasswordChanged"
                                                          Style="{StaticResource UP_PasswordBox}"/>
                                             <TextBlock Text="{x:Bind ViewModel.Users_Label_AdminPasswordHint, Mode=OneWay}"
                                                        Style="{StaticResource UP_HelperText}"/>
+                                            <TextBlock Text="{x:Bind ViewModel.AdminPasswordValidationMessage, Mode=OneWay}"
+                                                       Visibility="{x:Bind ViewModel.AdminPasswordValidationVisibility, Mode=OneWay}"
+                                                       Style="{StaticResource UP_ErrorText}"/>
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>

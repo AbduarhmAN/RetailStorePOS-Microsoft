@@ -1,4 +1,5 @@
 import { handleVerifyLicense } from "./handlers/verify-license.ts";
+import { handleReissueByInstall } from "./handlers/reissue-by-install.ts";
 
 type JsonMap = Record<string, unknown>;
 
@@ -14,6 +15,8 @@ export async function routeLicenseRequest(body: LicenseRequestBody) {
   switch (action) {
     case "verify_license":
       return await handleVerifyLicense(body);
+    case "reissue_by_install":
+      return await handleReissueByInstall(body);
     default:
       throw new Error("unsupported_action");
   }

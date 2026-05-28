@@ -27,6 +27,8 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
     private bool _showUnlockPrompt;
     private bool _isDisposed;
     private int _reloadUsersVersion;
+    private string _adminPasswordValidationMessage = string.Empty;
+    private string _pinValidationMessage = string.Empty;
 
     private string _editDisplayName = string.Empty;
     private string _editUsername = string.Empty;
@@ -99,6 +101,8 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(Users_Button_Deactivate_Tip));
         OnPropertyChanged(nameof(Users_Button_Cancel));
         OnPropertyChanged(nameof(Users_Button_Save));
+        OnPropertyChanged(nameof(AdminPasswordValidationMessage));
+        OnPropertyChanged(nameof(PinValidationMessage));
         OnPropertyChanged(nameof(Users_Empty_Title));
         OnPropertyChanged(nameof(Users_Empty_Subtitle));
         OnPropertyChanged(nameof(Users_Unlock_Title));
@@ -161,6 +165,8 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         {
             if (SetProperty(ref _isEditUnlocked, value))
             {
+                ClearCredentialValidation();
+
                 if (value)
                 {
                     ShowUnlockPrompt = false;
@@ -216,13 +222,13 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         ? LocalizationHelper.GetString("Users_Editor_Title_Create")
         : _selectedUser != null
             ? LocalizationHelper.Format("Users_Editor_Title_Profile", EditDisplayName)
-            : LocalizationHelper.GetString("Users_Empty_Title/Text");
+            : LocalizationHelper.GetString("Users_Empty_Title.Text");
 
     public string EditorSubtitle => _isNewUser
         ? LocalizationHelper.GetString("Users_Editor_Subtitle_Create")
         : _selectedUser != null
             ? LocalizationHelper.GetString("Users_Editor_Subtitle_Review")
-            : LocalizationHelper.GetString("Users_Empty_Subtitle/Text");
+            : LocalizationHelper.GetString("Users_Empty_Subtitle.Text");
 
     public string AccessLevelLabel => _isNewUser
         ? (EditIsAdmin ? LocalizationHelper.GetString("Users_Role_NewAdmin") : LocalizationHelper.GetString("Users_Role_NewStaff"))
@@ -294,7 +300,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
     public string Users_Walkthrough_Unlock_Title => Loc["Users_Walkthrough_Unlock.Title"];
     public string Users_Walkthrough_Unlock_Subtitle => Loc["Users_Walkthrough_Unlock.Subtitle"];
     public string Users_Walkthrough_Save_Title => Loc["Users_Walkthrough_Save.Title"];
-    public string Users_Walkthrough_Save_Subtitle => Loc["Users_Walkthrough_Save_Subtitle.Text"];
+    public string Users_Walkthrough_Save_Subtitle => Loc["Users_Walkthrough_Save_Subtitle"];
     public string Generic_Close => Loc["Generic_Close"];
     public string Generic_Next => Loc["Generic_Next"];
     public string Generic_Done => Loc["Generic_Done"];
@@ -342,7 +348,13 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
     public string EditPin
     {
         get => _editPin;
-        set => SetProperty(ref _editPin, value);
+        set
+        {
+            if (SetProperty(ref _editPin, value))
+            {
+                ClearPinValidation();
+            }
+        }
     }
 
     public bool EditCanCheckout
@@ -383,6 +395,36 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
 
     public Visibility AdminPasswordVisibility => EditIsAdmin ? Visibility.Visible : Visibility.Collapsed;
 
+    public string AdminPasswordValidationMessage
+    {
+        get => _adminPasswordValidationMessage;
+        private set
+        {
+            if (SetProperty(ref _adminPasswordValidationMessage, value))
+            {
+                OnPropertyChanged(nameof(AdminPasswordValidationVisibility));
+            }
+        }
+    }
+
+    public string PinValidationMessage
+    {
+        get => _pinValidationMessage;
+        private set
+        {
+            if (SetProperty(ref _pinValidationMessage, value))
+            {
+                OnPropertyChanged(nameof(PinValidationVisibility));
+            }
+        }
+    }
+
+    public Visibility AdminPasswordValidationVisibility =>
+        string.IsNullOrWhiteSpace(AdminPasswordValidationMessage) ? Visibility.Collapsed : Visibility.Visible;
+
+    public Visibility PinValidationVisibility =>
+        string.IsNullOrWhiteSpace(PinValidationMessage) ? Visibility.Collapsed : Visibility.Visible;
+
     public RelayCommand NewUserCommand { get; }
     public RelayCommand<PasswordBox> SaveUserCommand { get; }
     public RelayCommand CancelCommand { get; }
@@ -404,12 +446,29 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         Loc.PropertyChanged -= _localizationChangedHandler;
     }
 
+    public void ClearAdminPasswordValidation()
+    {
+        AdminPasswordValidationMessage = string.Empty;
+    }
+
+    public void ClearPinValidation()
+    {
+        PinValidationMessage = string.Empty;
+    }
+
+    private void ClearCredentialValidation()
+    {
+        ClearAdminPasswordValidation();
+        ClearPinValidation();
+    }
+
     private void OnLoginStateChanged(object? sender, EventArgs e)
     {
         SelectedUser = null;
         _isNewUser = false;
         ShowUnlockPrompt = false;
         IsEditUnlocked = false;
+        ClearCredentialValidation();
         ReloadUsers();
         RaiseSelectionProperties();
         OnPropertyChanged(nameof(CanManageUsers));
@@ -531,6 +590,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         EditUsername = _selectedUser.Username;
         EditIsAdmin = _selectedUser.IsAdmin;
         EditPin = string.Empty;
+        ClearCredentialValidation();
 
         if (_selectedUser.IsAdmin)
         {
@@ -562,6 +622,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         EditCanViewReports = false;
         EditCanOverridePrice = false;
         StatusMessage = string.Empty;
+        ClearCredentialValidation();
     }
 
     private void SetAdminPermissions()
@@ -603,6 +664,7 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
 
         EditDisplayName = EditDisplayName.Trim();
         EditUsername = EditUsername.Trim();
+        ClearCredentialValidation();
 
         if (string.IsNullOrWhiteSpace(EditDisplayName))
         {
@@ -617,6 +679,12 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         }
 
         var enteredPassword = passwordBox?.Password ?? string.Empty;
+
+        if (ValidateBootstrapAdminCredentialChange(enteredPassword))
+        {
+            StatusMessage = string.Empty;
+            return;
+        }
 
         if (_isNewUser)
         {
@@ -708,11 +776,10 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
             }
             else if (_selectedUser != null)
             {
-                var completedBootstrapPasswordChange =
-                    _selectedUser.Username == "admin" &&
-                    passwordBox != null &&
-                    !string.IsNullOrEmpty(passwordBox.Password) &&
-                    passwordBox.Password != "1234";
+                var completedBootstrapPasswordChange = IsBootstrapAdminCredentialChangeCompleted(
+                    _selectedUser,
+                    enteredPassword,
+                    EditPin);
 
                 _selectedUser.DisplayName = EditDisplayName;
                 _selectedUser.Username = EditUsername;
@@ -832,6 +899,8 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(NoSelectionVisibility));
         OnPropertyChanged(nameof(ShowEmptySelectionStateVisibility));
         OnPropertyChanged(nameof(AdminPasswordVisibility));
+        OnPropertyChanged(nameof(AdminPasswordValidationVisibility));
+        OnPropertyChanged(nameof(PinValidationVisibility));
     }
 
     private void OnLocalizationChanged(object? sender, PropertyChangedEventArgs e)
@@ -869,6 +938,80 @@ public sealed class UsersPageViewModel : ObservableObject, IDisposable
 
         return tcs.Task;
     }
+
+    private bool ValidateBootstrapAdminCredentialChange(string enteredPassword)
+    {
+        if (!IsBootstrapAdminSetupUser(_selectedUser))
+        {
+            return false;
+        }
+
+        var temporaryCredentials = LoginRuntime.GetBootstrapAdminHintForDisplay();
+
+        if (string.IsNullOrEmpty(enteredPassword))
+        {
+            AdminPasswordValidationMessage = LocalizationHelper.GetString("Users_Validation_ChangeTemporaryPassword");
+        }
+        else if (temporaryCredentials is not null &&
+                 string.Equals(enteredPassword, temporaryCredentials.Password, StringComparison.Ordinal))
+        {
+            AdminPasswordValidationMessage = LocalizationHelper.GetString("Users_Validation_ChooseNewPassword");
+        }
+        else if (temporaryCredentials is null &&
+                 UserRepository.VerifyPassword(enteredPassword, _selectedUser?.PasswordHash))
+        {
+            AdminPasswordValidationMessage = LocalizationHelper.GetString("Users_Validation_ChooseNewPassword");
+        }
+
+        if (string.IsNullOrEmpty(EditPin))
+        {
+            PinValidationMessage = LocalizationHelper.GetString("Users_Validation_ChangeTemporaryPin");
+        }
+        else if (EditPin.Length != 4 || !EditPin.All(char.IsDigit))
+        {
+            PinValidationMessage = LocalizationHelper.GetString("Users_Status_PinInvalid");
+        }
+        else if (temporaryCredentials is not null &&
+                 string.Equals(EditPin, temporaryCredentials.Pin, StringComparison.Ordinal))
+        {
+            PinValidationMessage = LocalizationHelper.GetString("Users_Validation_ChooseNewPin");
+        }
+        else if (temporaryCredentials is null &&
+                 UserRepository.VerifyPin(EditPin, _selectedUser?.PinHash))
+        {
+            PinValidationMessage = LocalizationHelper.GetString("Users_Validation_ChooseNewPin");
+        }
+
+        return AdminPasswordValidationVisibility == Visibility.Visible ||
+               PinValidationVisibility == Visibility.Visible;
+    }
+
+    private static bool IsBootstrapAdminCredentialChangeCompleted(User selectedUser, string enteredPassword, string enteredPin)
+    {
+        if (!IsBootstrapAdminSetupUser(selectedUser) ||
+            string.IsNullOrEmpty(enteredPassword) ||
+            string.IsNullOrEmpty(enteredPin) ||
+            enteredPin.Length != 4 ||
+            !enteredPin.All(char.IsDigit))
+        {
+            return false;
+        }
+
+        var tempCredentials = LoginRuntime.GetBootstrapAdminHintForDisplay();
+        if (tempCredentials is not null)
+        {
+            return !string.Equals(enteredPassword, tempCredentials.Password, StringComparison.Ordinal) &&
+                   !string.Equals(enteredPin, tempCredentials.Pin, StringComparison.Ordinal);
+        }
+
+        return !UserRepository.VerifyPassword(enteredPassword, selectedUser.PasswordHash) &&
+               !UserRepository.VerifyPin(enteredPin, selectedUser.PinHash);
+    }
+
+    private static bool IsBootstrapAdminSetupUser(User? selectedUser)
+        => selectedUser is not null &&
+           selectedUser.MustChangePassword &&
+           string.Equals(selectedUser.Username, "admin", StringComparison.OrdinalIgnoreCase);
 }
 
 
