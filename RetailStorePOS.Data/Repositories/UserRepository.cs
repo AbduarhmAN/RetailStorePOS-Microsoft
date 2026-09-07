@@ -414,25 +414,25 @@ WHERE id = @id;";
     {
         return new User
         {
-            Id = reader.GetInt64(0),
+            Id = Convert.ToInt64(reader.GetValue(0)),
             Username = reader.GetString(1),
             DisplayName = reader.GetString(2),
             PasswordHash = reader.IsDBNull(3) ? null : reader.GetString(3),
             PinHash = reader.IsDBNull(4) ? null : reader.GetString(4),
-            IsAdmin = reader.GetInt32(5) == 1,
-            CanCheckout = reader.GetInt32(6) == 1,
-            CanManageProducts = reader.GetInt32(7) == 1,
-            CanManageSettings = reader.GetInt32(8) == 1,
-            CanManageUsers = reader.GetInt32(9) == 1,
-            CanViewReports = reader.GetInt32(10) == 1,
-            CanOverridePrice = reader.GetInt32(11) == 1,
-            IsActive = reader.GetInt32(12) == 1,
+            IsAdmin = Convert.ToInt32(reader.GetValue(5)) == 1,
+            CanCheckout = Convert.ToInt32(reader.GetValue(6)) == 1,
+            CanManageProducts = Convert.ToInt32(reader.GetValue(7)) == 1,
+            CanManageSettings = Convert.ToInt32(reader.GetValue(8)) == 1,
+            CanManageUsers = Convert.ToInt32(reader.GetValue(9)) == 1,
+            CanViewReports = Convert.ToInt32(reader.GetValue(10)) == 1,
+            CanOverridePrice = Convert.ToInt32(reader.GetValue(11)) == 1,
+            IsActive = Convert.ToInt32(reader.GetValue(12)) == 1,
             CreatedAt = DateTime.Parse(reader.GetString(13)),
             UpdatedAt = DateTime.Parse(reader.GetString(14)),
-            FailedLoginCount = reader.GetInt32(15),
+            FailedLoginCount = Convert.ToInt32(reader.GetValue(15)),
             LastFailedLoginAtUtc = ReadNullableDateTime(reader, 16),
             LockedUntilUtc = ReadNullableDateTime(reader, 17),
-            MustChangePassword = reader.GetInt32(18) == 1
+            MustChangePassword = Convert.ToInt32(reader.GetValue(18)) == 1
         };
     }
 

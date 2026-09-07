@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace RetailStorePOS.Data.Modules.Reporting;
 
@@ -30,12 +29,6 @@ public sealed class AdvancedReportsSnapshotStore
     private const string JsonExtension = ".json";
     private const string SignatureExtension = ".sig";
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
     private readonly SnapshotSigningService _signing;
 
     public AdvancedReportsSnapshotStore(SnapshotSigningService signing)
@@ -56,7 +49,9 @@ public sealed class AdvancedReportsSnapshotStore
         var sigPath = GetSignaturePath(safeKey);
         EnsureDirectory(jsonPath);
 
-        var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(snapshot, JsonOptions);
+        var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(
+            snapshot,
+            ReportingSignedSnapshotJsonContext.Default.AdvancedReportsSnapshot);
         var signature = _signing.Sign(jsonBytes);
 
         WriteAtomic(jsonPath, jsonBytes);
@@ -91,7 +86,9 @@ public sealed class AdvancedReportsSnapshotStore
                 return null;
             }
 
-            var snapshot = JsonSerializer.Deserialize<AdvancedReportsSnapshot>(jsonBytes, JsonOptions);
+            var snapshot = JsonSerializer.Deserialize(
+                jsonBytes,
+                ReportingSignedSnapshotJsonContext.Default.AdvancedReportsSnapshot);
             if (snapshot is null) return null;
             if (snapshot.SchemaVersion != AdvancedReportsSnapshot.CurrentSchemaVersion) return null;
             return snapshot;

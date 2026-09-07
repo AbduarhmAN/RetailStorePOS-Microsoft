@@ -36,15 +36,15 @@ public sealed class RegisterSessionRepository
         {
             return new RegisterSession
             {
-                Id = reader.GetInt64(0),
-                UserId = reader.GetInt64(1),
-                OpeningAmountCents = reader.GetInt64(2),
+                Id = Convert.ToInt64(reader.GetValue(0)),
+                UserId = Convert.ToInt64(reader.GetValue(1)),
+                OpeningAmountCents = Convert.ToInt64(reader.GetValue(2)),
                 OpeningNote = reader.IsDBNull(3) ? null : reader.GetString(3),
                 OpenedAt = reader.GetString(4),
                 ClosedAt = reader.IsDBNull(5) ? null : reader.GetString(5),
-                ClosingAmountCents = reader.IsDBNull(6) ? null : reader.GetInt64(6),
+                ClosingAmountCents = reader.IsDBNull(6) ? null : Convert.ToInt64(reader.GetValue(6)),
                 ClosingNote = reader.IsDBNull(7) ? null : reader.GetString(7),
-                ClosedByUserId = hasClosedByUserId && !reader.IsDBNull(8) ? reader.GetInt64(8) : null
+                ClosedByUserId = hasClosedByUserId && !reader.IsDBNull(8) ? Convert.ToInt64(reader.GetValue(8)) : null
             };
         }
 
@@ -73,9 +73,9 @@ public sealed class RegisterSessionRepository
         {
             assignments.Add(new RegisterSessionAssignment
             {
-                Id = reader.GetInt64(0),
-                SessionId = reader.GetInt64(1),
-                UserId = reader.GetInt64(2),
+                Id = Convert.ToInt64(reader.GetValue(0)),
+                SessionId = Convert.ToInt64(reader.GetValue(1)),
+                UserId = Convert.ToInt64(reader.GetValue(2)),
                 StartedAt = reader.GetString(3),
                 EndedAt = reader.IsDBNull(4) ? null : reader.GetString(4),
                 Note = reader.IsDBNull(5) ? null : reader.GetString(5)
@@ -118,21 +118,111 @@ public sealed class RegisterSessionRepository
         {
             var session = new RegisterSession
             {
-                Id = reader.GetInt64(0),
-                UserId = reader.GetInt64(1),
-                OpeningAmountCents = reader.GetInt64(2),
+                Id = Convert.ToInt64(reader.GetValue(0)),
+                UserId = Convert.ToInt64(reader.GetValue(1)),
+                OpeningAmountCents = Convert.ToInt64(reader.GetValue(2)),
                 OpeningNote = reader.IsDBNull(3) ? null : reader.GetString(3),
                 OpenedAt = reader.GetString(4),
                 ClosedAt = reader.IsDBNull(5) ? null : reader.GetString(5),
-                ClosingAmountCents = reader.IsDBNull(6) ? null : reader.GetInt64(6),
+                ClosingAmountCents = reader.IsDBNull(6) ? null : Convert.ToInt64(reader.GetValue(6)),
                 ClosingNote = reader.IsDBNull(7) ? null : reader.GetString(7),
-                ClosedByUserId = hasClosedByUserId && !reader.IsDBNull(8) ? reader.GetInt64(8) : null
+                ClosedByUserId = hasClosedByUserId && !reader.IsDBNull(8) ? Convert.ToInt64(reader.GetValue(8)) : null
             };
 
             results.Add(BuildSessionHistoryEntry(connection, session));
         }
 
         return results;
+    }
+
+    public RegisterPeriodReport GetPeriodReport(DateTime periodStartLocal, DateTime periodEndLocal)
+    {
+        var startLocal = periodStartLocal.Date;
+        var endLocal = periodEndLocal.Date;
+        if (endLocal < startLocal)
+        {
+            (startLocal, endLocal) = (endLocal, startLocal);
+        }
+
+        var startUtc = startLocal.ToUniversalTime().ToString("O");
+        var endUtc = endLocal.AddDays(1).ToUniversalTime().ToString("O");
+        using var connection = _factory.OpenConnection();
+
+        var report = new RegisterPeriodReport
+        {
+            PeriodStartLocal = startLocal,
+            PeriodEndLocal = endLocal
+        };
+
+        using (var sessionCommand = connection.CreateCommand())
+        {
+            sessionCommand.CommandText = @"
+                SELECT
+                    COUNT(*),
+                    COALESCE(SUM(CASE WHEN closed_at IS NULL THEN 1 ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN closed_at IS NOT NULL THEN 1 ELSE 0 END), 0),
+                    COALESCE(SUM(opening_amount_cents), 0),
+                    COALESCE(SUM(CASE WHEN closing_amount_cents IS NOT NULL THEN closing_amount_cents ELSE 0 END), 0)
+                FROM register_sessions
+                WHERE COALESCE(closed_at, opened_at) >= @start_utc
+                  AND COALESCE(closed_at, opened_at) < @end_utc;";
+            sessionCommand.Parameters.AddWithValue("@start_utc", startUtc);
+            sessionCommand.Parameters.AddWithValue("@end_utc", endUtc);
+
+            using var reader = sessionCommand.ExecuteReader();
+            if (reader.Read())
+            {
+                report.SessionCount = Convert.ToInt32(Convert.ToInt64(reader.GetValue(0)));
+                report.OpenSessionCount = Convert.ToInt32(Convert.ToInt64(reader.GetValue(1)));
+                report.ClosedSessionCount = Convert.ToInt32(Convert.ToInt64(reader.GetValue(2)));
+                report.OpeningFloatCents = Convert.ToInt64(reader.GetValue(3));
+                report.CountedCashCents = Convert.ToInt64(reader.GetValue(4));
+            }
+        }
+
+        using (var salesCommand = connection.CreateCommand())
+        {
+            salesCommand.CommandText = @"
+                SELECT
+                    COUNT(*),
+                    COALESCE(SUM(total_cents), 0),
+                    COALESCE(SUM(tax_cents), 0),
+                    COALESCE(SUM(CASE WHEN UPPER(payment_type) = 'CASH' THEN total_cents ELSE 0 END), 0),
+                    COALESCE(SUM(CASE WHEN UPPER(payment_type) IN ('CARD', 'CREDIT', 'DEBIT') THEN total_cents ELSE 0 END), 0)
+                FROM sales
+                WHERE created_at >= @start_utc
+                  AND created_at < @end_utc;";
+            salesCommand.Parameters.AddWithValue("@start_utc", startUtc);
+            salesCommand.Parameters.AddWithValue("@end_utc", endUtc);
+
+            using var reader = salesCommand.ExecuteReader();
+            if (reader.Read())
+            {
+                report.SaleCount = Convert.ToInt32(Convert.ToInt64(reader.GetValue(0)));
+                report.GrossSalesCents = Convert.ToInt64(reader.GetValue(1));
+                report.TaxCents = Convert.ToInt64(reader.GetValue(2));
+                report.CashSalesCents = Convert.ToInt64(reader.GetValue(3));
+                report.CardSalesCents = Convert.ToInt64(reader.GetValue(4));
+            }
+        }
+
+        using (var adjustmentCommand = connection.CreateCommand())
+        {
+            adjustmentCommand.CommandText = @"
+                SELECT COALESCE(SUM(CASE WHEN adjustment_type = @cash_in THEN amount_cents ELSE -amount_cents END), 0)
+                FROM register_cash_adjustments
+                WHERE created_at >= @start_utc
+                  AND created_at < @end_utc;";
+            adjustmentCommand.Parameters.AddWithValue("@cash_in", CashAdjustmentTypeIn);
+            adjustmentCommand.Parameters.AddWithValue("@start_utc", startUtc);
+            adjustmentCommand.Parameters.AddWithValue("@end_utc", endUtc);
+            report.NetCashAdjustmentCents = Convert.ToInt64(adjustmentCommand.ExecuteScalar() ?? 0);
+        }
+
+        report.ExpectedCashCents = report.OpeningFloatCents + report.CashSalesCents + report.NetCashAdjustmentCents;
+        report.CashVarianceCents = report.CountedCashCents - report.ExpectedCashCents;
+        report.CashierSummaries = GetPeriodCashierSummaries(connection, startUtc, endUtc);
+        return report;
     }
 
     public RegisterSessionReport? GetSessionReport(long sessionId)
@@ -174,11 +264,11 @@ public sealed class RegisterSessionRepository
             using var reader = totalsCommand.ExecuteReader();
             if (reader.Read())
             {
-                report.SaleCount = reader.GetInt32(0);
-                report.GrossSalesCents = reader.GetInt64(1);
-                report.TaxCents = reader.GetInt64(2);
-                report.CashSalesCents = reader.GetInt64(3);
-                report.CardSalesCents = reader.GetInt64(4);
+                report.SaleCount = Convert.ToInt32(Convert.ToInt64(reader.GetValue(0)));
+                report.GrossSalesCents = Convert.ToInt64(reader.GetValue(1));
+                report.TaxCents = Convert.ToInt64(reader.GetValue(2));
+                report.CashSalesCents = Convert.ToInt64(reader.GetValue(3));
+                report.CardSalesCents = Convert.ToInt64(reader.GetValue(4));
             }
         }
 
@@ -213,7 +303,7 @@ public sealed class RegisterSessionRepository
             {
                 report.CashierIntervals.Add(new RegisterSessionCashierInterval
                 {
-                    UserId = intervalReader.GetInt64(0),
+                    UserId = Convert.ToInt64(intervalReader.GetValue(0)),
                     StartedAt = intervalReader.GetString(1),
                     EndedAt = intervalReader.IsDBNull(2) ? null : intervalReader.GetString(2),
                     Note = intervalReader.IsDBNull(3) ? null : intervalReader.GetString(3)
@@ -242,12 +332,12 @@ public sealed class RegisterSessionRepository
             {
                 report.CashierSummaries.Add(new RegisterSessionCashierSummary
                 {
-                    CashierUserId = cashierReader.IsDBNull(0) ? null : cashierReader.GetInt64(0),
+                    CashierUserId = cashierReader.IsDBNull(0) ? null : Convert.ToInt64(cashierReader.GetValue(0)),
                     CashierName = cashierReader.IsDBNull(1) ? string.Empty : cashierReader.GetString(1),
-                    SaleCount = cashierReader.GetInt32(2),
-                    GrossSalesCents = cashierReader.GetInt64(3),
-                    CashSalesCents = cashierReader.GetInt64(4),
-                    CardSalesCents = cashierReader.GetInt64(5)
+                    SaleCount = Convert.ToInt32(cashierReader.GetValue(2)),
+                    GrossSalesCents = Convert.ToInt64(cashierReader.GetValue(3)),
+                    CashSalesCents = Convert.ToInt64(cashierReader.GetValue(4)),
+                    CardSalesCents = Convert.ToInt64(cashierReader.GetValue(5))
                 });
             }
         }
@@ -266,9 +356,9 @@ public sealed class RegisterSessionRepository
             {
                 report.CashAdjustments.Add(new RegisterSessionAdjustmentEntry
                 {
-                    UserId = adjustmentReader.IsDBNull(0) ? null : adjustmentReader.GetInt64(0),
+                    UserId = adjustmentReader.IsDBNull(0) ? null : Convert.ToInt64(adjustmentReader.GetValue(0)),
                     IsCashIn = string.Equals(adjustmentReader.GetString(1), CashAdjustmentTypeIn, StringComparison.OrdinalIgnoreCase),
-                    AmountCents = adjustmentReader.GetInt64(2),
+                    AmountCents = Convert.ToInt64(adjustmentReader.GetValue(2)),
                     Reason = adjustmentReader.IsDBNull(3) ? string.Empty : adjustmentReader.GetString(3),
                     CreatedAt = adjustmentReader.GetString(4)
                 });
@@ -347,8 +437,8 @@ public sealed class RegisterSessionRepository
         {
             if (summaryReader.Read())
             {
-                orderCount = summaryReader.GetInt32(0);
-                sessionTotal = summaryReader.GetInt64(1);
+                orderCount = Convert.ToInt32(summaryReader.GetValue(0));
+                sessionTotal = Convert.ToInt64(summaryReader.GetValue(1));
             }
         }
 
@@ -392,7 +482,7 @@ public sealed class RegisterSessionRepository
                         adjustmentReader.GetString(0),
                         CashAdjustmentTypeIn,
                         StringComparison.OrdinalIgnoreCase),
-                    AmountCents = adjustmentReader.GetInt64(1),
+                    AmountCents = Convert.ToInt64(adjustmentReader.GetValue(1)),
                     Reason = adjustmentReader.IsDBNull(2) ? string.Empty : adjustmentReader.GetString(2)
                 });
             }
@@ -598,15 +688,15 @@ public sealed class RegisterSessionRepository
 
         return new RegisterSession
         {
-            Id = reader.GetInt64(0),
-            UserId = reader.GetInt64(1),
-            OpeningAmountCents = reader.GetInt64(2),
+            Id = Convert.ToInt64(reader.GetValue(0)),
+            UserId = Convert.ToInt64(reader.GetValue(1)),
+            OpeningAmountCents = Convert.ToInt64(reader.GetValue(2)),
             OpeningNote = reader.IsDBNull(3) ? null : reader.GetString(3),
             OpenedAt = reader.GetString(4),
             ClosedAt = reader.IsDBNull(5) ? null : reader.GetString(5),
-            ClosingAmountCents = reader.IsDBNull(6) ? null : reader.GetInt64(6),
+            ClosingAmountCents = reader.IsDBNull(6) ? null : Convert.ToInt64(reader.GetValue(6)),
             ClosingNote = reader.IsDBNull(7) ? null : reader.GetString(7),
-            ClosedByUserId = hasClosedByUserId && !reader.IsDBNull(8) ? reader.GetInt64(8) : null
+            ClosedByUserId = hasClosedByUserId && !reader.IsDBNull(8) ? Convert.ToInt64(reader.GetValue(8)) : null
         };
     }
 
@@ -628,8 +718,8 @@ public sealed class RegisterSessionRepository
         long grossSalesCents = 0;
         if (reader.Read())
         {
-            saleCount = reader.GetInt32(0);
-            grossSalesCents = reader.GetInt64(1);
+            saleCount = Convert.ToInt32(Convert.ToInt64(reader.GetValue(0)));
+            grossSalesCents = Convert.ToInt64(reader.GetValue(1));
         }
 
         return new RegisterSessionHistoryEntry
@@ -644,6 +734,43 @@ public sealed class RegisterSessionRepository
             SaleCount = saleCount,
             GrossSalesCents = grossSalesCents
         };
+    }
+
+    private static List<RegisterSessionCashierSummary> GetPeriodCashierSummaries(SqliteConnection connection, string startUtc, string endUtc)
+    {
+        using var command = connection.CreateCommand();
+        command.CommandText = @"
+            SELECT
+                cashier_user_id,
+                cashier_name,
+                COUNT(*),
+                COALESCE(SUM(total_cents), 0),
+                COALESCE(SUM(CASE WHEN UPPER(payment_type) = 'CASH' THEN total_cents ELSE 0 END), 0),
+                COALESCE(SUM(CASE WHEN UPPER(payment_type) IN ('CARD', 'CREDIT', 'DEBIT') THEN total_cents ELSE 0 END), 0)
+            FROM sales
+            WHERE created_at >= @start_utc
+              AND created_at < @end_utc
+            GROUP BY cashier_user_id, cashier_name
+            ORDER BY COALESCE(SUM(total_cents), 0) DESC;";
+        command.Parameters.AddWithValue("@start_utc", startUtc);
+        command.Parameters.AddWithValue("@end_utc", endUtc);
+
+        using var reader = command.ExecuteReader();
+        var results = new List<RegisterSessionCashierSummary>();
+        while (reader.Read())
+        {
+            results.Add(new RegisterSessionCashierSummary
+            {
+                CashierUserId = reader.IsDBNull(0) ? null : Convert.ToInt64(reader.GetValue(0)),
+                CashierName = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                SaleCount = Convert.ToInt32(Convert.ToInt64(reader.GetValue(2))),
+                GrossSalesCents = Convert.ToInt64(reader.GetValue(3)),
+                CashSalesCents = Convert.ToInt64(reader.GetValue(4)),
+                CardSalesCents = Convert.ToInt64(reader.GetValue(5))
+            });
+        }
+
+        return results;
     }
 
     private static string BuildSessionSalesClause(SqliteConnection connection, RegisterSession session)
@@ -708,7 +835,7 @@ public sealed class RegisterSessionRepository
         using var reader = activeAssignmentCommand.ExecuteReader();
         if (reader.Read())
         {
-            var currentUserId = reader.GetInt64(1);
+            var currentUserId = Convert.ToInt64(reader.GetValue(1));
             if (currentUserId == userId.Value)
             {
                 return;

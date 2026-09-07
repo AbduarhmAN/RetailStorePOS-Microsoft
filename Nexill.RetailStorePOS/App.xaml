@@ -12,7 +12,7 @@
             </ResourceDictionary.MergedDictionaries>
 
             <common:UserRoleConverter x:Key="UserRoleConverter" />
-            
+
             <!-- Force all controls, flyouts, and borders to be completely square -->
             <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
             <CornerRadius x:Key="OverlayCornerRadius">2</CornerRadius>
@@ -69,20 +69,24 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                            <Border x:Name="TemplateRoot"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal" />
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource HoverState}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource BorderDivider}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
@@ -99,11 +103,8 @@
                                                   ContentTemplate="{TemplateBinding ContentTemplate}"
                                                   Padding="{TemplateBinding Padding}"
                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                  BorderThickness="{TemplateBinding BorderThickness}"
-                                                  BorderBrush="{TemplateBinding BorderBrush}"
-                                                  CornerRadius="{TemplateBinding CornerRadius}" />
-                            </Grid>
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -120,7 +121,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="TemplateRoot" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualStateGroup.Transitions>
@@ -129,7 +130,7 @@
                                         <VisualState x:Name="Normal" />
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0">
                                                         <DiscreteObjectKeyFrame.Value>
                                                             <SolidColorBrush Color="#1565C0" />
@@ -140,7 +141,7 @@
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0">
                                                         <DiscreteObjectKeyFrame.Value>
                                                             <SolidColorBrush Color="#0D47A1" />
@@ -162,11 +163,13 @@
                                                   Padding="{TemplateBinding Padding}"
                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            </Grid>
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
             </Style>
+
+            <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentBlueButtonStyle}" />
 
             <!-- Outline Blue Button (for secondary dialog actions) -->
             <Style x:Key="OutlineBlueButtonStyle" TargetType="Button">
@@ -180,9 +183,9 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" 
-                                  BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
-                                  CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="TemplateRoot" Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="{TemplateBinding CornerRadius}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualStateGroup.Transitions>
@@ -191,7 +194,7 @@
                                         <VisualState x:Name="Normal" />
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0">
                                                         <DiscreteObjectKeyFrame.Value>
                                                             <SolidColorBrush Color="#E3F2FD" />
@@ -202,7 +205,7 @@
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0">
                                                         <DiscreteObjectKeyFrame.Value>
                                                             <SolidColorBrush Color="#BBDEFB" />
@@ -224,7 +227,7 @@
                                                   Padding="{TemplateBinding Padding}"
                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            </Grid>
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -241,7 +244,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="Button">
-                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+                            <Border x:Name="TemplateRoot" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualStateGroup.Transitions>
@@ -250,7 +253,7 @@
                                         <VisualState x:Name="Normal" />
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0">
                                                         <DiscreteObjectKeyFrame.Value>
                                                             <SolidColorBrush Color="#BDBDBD" />
@@ -261,7 +264,7 @@
                                         </VisualState>
                                         <VisualState x:Name="Pressed">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0">
                                                         <DiscreteObjectKeyFrame.Value>
                                                             <SolidColorBrush Color="#9E9E9E" />
@@ -278,7 +281,7 @@
                                                   Padding="{TemplateBinding Padding}"
                                                   HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                                   VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            </Grid>
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
@@ -295,13 +298,13 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="ListViewItem">
-                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Margin="{TemplateBinding Margin}">
+                            <Border x:Name="TemplateRoot" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Margin="{TemplateBinding Margin}">
                                 <VisualStateManager.VisualStateGroups>
                                     <VisualStateGroup x:Name="CommonStates">
                                         <VisualState x:Name="Normal" />
                                         <VisualState x:Name="PointerOver">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource HoverState}" />
                                                 </ObjectAnimationUsingKeyFrames>
                                             </Storyboard>
@@ -309,7 +312,7 @@
                                         <VisualState x:Name="Pressed" />
                                         <VisualState x:Name="Selected">
                                             <Storyboard>
-                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="TemplateRoot" Storyboard.TargetProperty="Background">
                                                     <DiscreteObjectKeyFrame KeyTime="0" Value="#E8E8E6" />
                                                 </ObjectAnimationUsingKeyFrames>
                                                 <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
@@ -325,7 +328,7 @@
                                                   Padding="{TemplateBinding Padding}"
                                                   HorizontalContentAlignment="Left"
                                                   VerticalContentAlignment="Center" />
-                            </Grid>
+                            </Border>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>

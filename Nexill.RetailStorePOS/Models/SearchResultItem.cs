@@ -2,13 +2,13 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
-using RetailStorePOS.App.Services;
+using RetailStorePOS.UI.Common.Services;
 using RetailStorePOS.Data.Modules.Products;
 using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.WinUiLogin.Models;
 
-public sealed class SearchResultItem : ObservableObject
+public sealed partial class SearchResultItem : ObservableObject
 {
     private static readonly ProductImageService ImageService = new();
     private static readonly SolidColorBrush DefaultBackgroundBrush = new(ColorHelper.FromArgb(255, 250, 250, 252));

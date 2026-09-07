@@ -1,0 +1,420 @@
+Retail Store POS by Nexill
+Terms of Use and Privacy Policy
+
+Version: {{APP_VERSION}}
+Effective date: {{POLICY_EFFECTIVE_DATE}}
+Last updated: {{POLICY_LAST_UPDATED_DATE}}
+
+Contact & Support:
+- Support email: {{SUPPORT_EMAIL}}
+- Privacy contact email: {{PRIVACY_CONTACT_EMAIL}}
+
+Part I. Terms of Use
+
+1. Overview
+These Terms of Use ("Terms") govern your installation, access to, and use of Retail Store POS (the "App"), a Windows desktop point-of-sale application offered by Nexill ("Nexill," "we," "us," or "our").
+
+By installing, accessing, or using the App, you agree to these Terms. If you do not agree, do not install or use the App.
+
+These Terms apply to the current version of the App and to related support, update notifications, licensing controls, and other product services that Nexill may provide in connection with the App.
+
+2. Intended Users and Eligibility
+The App is intended primarily for business and commercial use, including use by merchants, store owners, managers, and authorized staff.
+
+You may use the App only if:
+- you are at least the age of legal majority in your place of residence;
+- you have the legal capacity to enter into a binding agreement; and
+- if you use the App on behalf of a business or other organization, you have authority to bind that business or organization to these Terms.
+
+If Nexill later offers a consumer, educational, or trial edition under separate conditions, Nexill may publish additional or different terms for that use.
+
+3. License Grant
+Subject to these Terms, Nexill grants you a limited, non-exclusive, non-transferable, non-sublicensable, revocable license to install and use the App on compatible Windows devices for your internal business operations and lawful use.
+
+This license is granted only for the App as provided by Nexill and does not transfer any ownership rights.
+
+4. License Restrictions
+Except to the extent applicable law permits despite this restriction, you may not:
+- copy, distribute, sell, rent, lease, sublicense, or publicly make available the App;
+- modify, adapt, translate, reverse engineer, decompile, or disassemble the App;
+- remove or alter proprietary notices, branding, license keys, or technical protection measures;
+- use the App in a way that interferes with, disrupts, or compromises the integrity, security, or performance of the App or related services;
+- use the App to violate law, infringe rights, or process data in an unlawful way; or
+- use the App beyond any plan, feature, device, user, or activation limits that Nexill may apply.
+
+5. Product Scope
+Retail Store POS is designed as an offline-first Windows desktop application for retail operations. Depending on the version and enabled features, the App may support functions such as:
+- checkout and sales workflows;
+- inventory and product management;
+- user roles, permissions, and access controls;
+- tax configuration and percentage-based tax calculation tools;
+- receipt, invoice, and address-related business record fields; and
+- update notification, limited telemetry, diagnostics, activation, or licensing-related functionality.
+
+Some features may be free, and others may later be offered as paid or subscription-based features.
+
+6. Updates and Versioning
+Nexill may release patches, bug fixes, compatibility changes, feature updates, or security improvements from time to time.
+
+At the current stage, the App may use an update notification / check model rather than silent or forced installation. This means the App may check whether a newer version is available and notify you, but Nexill does not guarantee automatic installation of updates unless expressly stated in the product.
+
+You are responsible for reviewing and applying updates where appropriate, especially where they affect security, compatibility, or regulatory compliance.
+
+7. Telemetry, Diagnostics, and Product Operations
+To operate, maintain, support, secure, and improve the App, Nexill may collect limited technical and operational information from the App or device.
+
+In normal operation, this may include information such as:
+- installation or device-linked identifiers created by the App;
+- app version, build number, release channel, and feature flags;
+- Windows version, language, locale, or regional settings;
+- basic runtime, performance, compatibility, and crash information;
+- update-check status, activation status, or licensing-related status; and
+- limited usage timing or feature interaction information needed for product analytics, diagnostics, security, or improvement.
+
+Nexill uses this information to:
+- check whether a newer version is available;
+- diagnose crashes, bugs, performance issues, and compatibility issues;
+- maintain product integrity, prevent abuse, and support licensing or activation controls;
+- understand product usage at a high level to improve the App; and
+- plan future features, quality improvements, and support priorities.
+
+Additional detail about personal information processing appears in the Privacy Policy below.
+
+8. Accounts, Activation, and Licensing
+Some App functions may require activation, licensing, registration, or account-related controls now or in the future.
+
+If Nexill provides license keys, account credentials, activation mechanisms, or device limits, you agree to use them only as authorized and not to circumvent or misuse them.
+
+Nexill may refuse, suspend, or limit activation or access where reasonably necessary to:
+- investigate fraud, abuse, or unauthorized use;
+- enforce plan, user, or device limits;
+- protect the App, users, or Nexill systems; or
+- comply with law.
+
+Where reasonably possible, and except where restricted by law, urgent security needs, or abuse concerns, Nexill will try to provide notice before or promptly after a suspension affecting legitimate use.
+
+9. Third-Party Services and Dependencies
+The App may interact with or rely on third-party components, libraries, operating-system services, hosting providers, analytics tools, error-reporting tools, geolocation services, update infrastructure, or other service providers.
+
+For example, the App may use a third-party country or regional lookup service to infer regional settings or country-level information.
+
+Third-party providers may process limited technical information as needed to provide their services. Nexill does not control third-party services in every respect, but Nexill remains responsible for its own disclosures, vendor selection, and its own use of personal information.
+
+10. Tax Features and Merchant Responsibility
+The App may allow you to configure tax percentages, tax labels, categories, or related settings for transactions, receipts, or invoices.
+
+These features are provided as configuration and calculation tools only. They are not legal, tax, accounting, or regulatory advice.
+
+You are responsible for:
+- choosing the correct tax settings for your business;
+- reviewing calculations and outputs before relying on them;
+- determining whether receipts, invoices, tax treatment, and records comply with applicable law; and
+- consulting professional advisers where needed.
+
+Nexill does not guarantee that tax calculations, tax labels, or document outputs are correct for every jurisdiction, product type, transaction, or legal requirement.
+
+11. Local Storage and Merchant Responsibility
+Retail Store POS is designed so that operational business data may be stored locally on the merchant's device.
+
+This may include, depending on the features you use:
+- product and inventory records;
+- transaction or sales records;
+- receipts, invoice fields, or address information;
+- user accounts, permissions, or staff-related settings; and
+- business configuration data, including tax settings.
+
+You are responsible for your local environment and operational controls, including:
+- device access management;
+- Windows account security;
+- local backups;
+- antivirus, endpoint protection, and operating-system security;
+- secure disposal or transfer of devices; and
+- internal staff controls and permission review.
+
+Unless the App clearly states otherwise, such operational business data is generally stored locally and is controlled by you or your business, not by Nexill.
+
+12. User Roles, Permissions, and Access Controls
+The App may support multiple internal roles and permissions, such as owner, manager, cashier, or other authorized user types.
+
+These controls are intended to help merchants apply least-privilege access and internal separation of duties. You are responsible for:
+- assigning appropriate roles;
+- revoking access when staff change;
+- reviewing permissions regularly; and
+- monitoring your own internal use of the App.
+
+13. Payment Card Data
+The App does not currently support storing payment card or cardholder data.
+
+You must not use the App as a system for storing payment card numbers, card verification values, full magnetic-stripe data, EMV secrets, PIN data, or similar cardholder information.
+
+If Nexill later adds payment-related integrations or card-related features, Nexill may publish additional terms, security requirements, and compliance information before those features are made available.
+
+14. Support and Availability
+Nexill may offer documentation, email-based support, issue triage, or other support channels, but Nexill does not promise any guaranteed response time, uptime, resolution time, maintenance level, or support scope unless expressly stated in a separate written offering.
+
+The App may evolve over time. Nexill may improve, modify, replace, add, remove, or discontinue features. If Nexill later offers paid features or subscriptions, Nexill may publish separate commercial terms, billing terms, cancellation terms, and service commitments.
+
+15. Distribution, Authenticity, and Code-Signing Status
+The App is intended to be distributed only through channels that Nexill identifies as official.
+
+At some stages of development or launch, the App may not yet be code-signed or platform-verified. That may affect trust prompts, warnings, or install experience on Windows or in browsers.
+
+You should obtain the App only from official Nexill sources and verify release information where provided. Nexill does not represent that the App is signed, certified, or approved by Microsoft or any platform operator unless Nexill expressly states that status.
+
+16. Intellectual Property
+The App, including its software, structure, user interface, branding, content, documentation, and related materials, is owned by Nexill or its licensors and is protected by applicable intellectual-property laws.
+
+Except for the limited license granted in these Terms, Nexill reserves all rights.
+
+17. Feedback
+If you send Nexill suggestions, ideas, comments, bug reports, or other feedback about the App, Nexill may use that feedback without compensation to improve its products and services.
+
+This does not transfer ownership of your personal data, confidential information, or intellectual property except to the limited extent necessary for Nexill to use the feedback for those purposes.
+
+18. Acceptable Use
+You must not use the App:
+- for unlawful activity;
+- to violate the privacy, data-protection, employment, tax, consumer, or other legal rights of others;
+- to store or process data that the App is not designed to handle safely or lawfully;
+- to bypass license restrictions or internal access controls; or
+- in a way that creates material security or operational risk for Nexill, other users, or your own business.
+
+19. Disclaimers
+To the maximum extent permitted by applicable law, and except as expressly stated otherwise, the App is provided on an "as available" basis.
+
+Nexill does not guarantee that the App will always be uninterrupted, error-free, compatible with every device or environment, or suitable for every business, jurisdiction, or regulatory use case.
+
+Nothing in these Terms excludes, limits, or overrides rights or remedies that cannot lawfully be excluded or limited under applicable law, including any mandatory rights relating to digital content, consumer protection, fraud, willful misconduct, gross negligence, or death or personal injury caused by negligence.
+
+20. Limitation of Liability
+To the maximum extent permitted by applicable law, Nexill will not be liable for indirect, incidental, consequential, special, exemplary, or punitive damages, including loss of profits, revenue, goodwill, business opportunity, or data, arising out of or related to the App.
+
+To the maximum extent permitted by applicable law, Nexill's aggregate liability arising out of or relating to the App or these Terms will not exceed:
+- for a free version of the App, the greater of USD $50 or the amount you paid Nexill for the App in the 12 months before the event giving rise to the claim; or
+- for a paid plan or subscription, the total amount you paid Nexill for the relevant paid offering in the 12 months before the event giving rise to the claim.
+
+This section does not limit liability to the extent such limitation is prohibited by applicable law.
+
+21. Indemnity
+If you use the App on behalf of a business or organization, that business or organization agrees, to the extent permitted by law, to indemnify and hold harmless Nexill from third-party claims arising from:
+- your unlawful use of the App;
+- your breach of these Terms; or
+- your violation of applicable law or third-party rights in connection with your use of the App.
+
+22. Governing Law and Disputes
+Until Nexill finalizes its long-term legal and commercial structure, these Terms are intended to apply in a way that preserves any mandatory consumer, privacy, and local-law protections that apply to you.
+
+Nothing in these Terms is intended to deprive you of protections that cannot lawfully be waived under applicable law.
+
+Once Nexill finalizes its governing-law and dispute framework, Nexill may update these Terms to specify a governing law, forum, or dispute process, subject to applicable law.
+
+23. Changes to These Terms
+Nexill may update these Terms from time to time.
+
+If a change materially affects your rights or obligations, Nexill will provide reasonable notice by appropriate means. Material changes will apply prospectively unless a shorter period is required for legal, regulatory, or security reasons.
+
+If Nexill later offers paid services, Nexill may apply additional rules for material contract changes where required by law, including notice periods, renewal-based changes, or explicit acceptance.
+
+24. Contact
+For questions about these Terms, contact:
+
+Nexill
+{{SUPPORT_EMAIL}}
+
+Part II. Privacy Policy
+
+1. Overview
+This Privacy Policy explains how Nexill processes personal information in connection with Retail Store POS.
+
+It is designed to explain, in a practical way:
+- what information Nexill collects or receives;
+- what information generally stays local on your device;
+- why Nexill uses information;
+- how long Nexill keeps information;
+- when Nexill shares information;
+- what rights may apply to you under privacy law; and
+- how to contact Nexill.
+
+2. Who Controls What Data
+2.1 Data generally controlled by you or your business
+Retail Store POS is designed as an offline-first desktop application. Business records that you create or maintain in the App are generally stored locally on your device and controlled by you or your business unless the App clearly states otherwise.
+
+This may include information such as:
+- product and inventory records;
+- transaction records;
+- receipt, invoice, and address fields;
+- employee, cashier, manager, or user-role records maintained by the merchant; and
+- business settings, including tax settings.
+
+2.2 Data generally controlled by Nexill
+Nexill generally controls the technical, support, licensing, account, billing, and security-related information that Nexill collects for its own operation of the App and related services.
+
+If you send information to Nexill for support, bug investigation, or future cloud or account features, Nexill may also control that information as described at the time of collection.
+
+3. What Nexill Collects
+In connection with the App, Nexill may collect or receive the following categories of information.
+
+3.1 Technical and device-related information
+This may include:
+- installation identifiers or app-generated IDs;
+- app version, build, release channel, or configuration state;
+- Windows version, locale, language, region, or time-zone related settings;
+- basic device or runtime characteristics relevant to compatibility, performance, or troubleshooting;
+- crash reports, error events, logs, or diagnostics; and
+- update-check, activation, or licensing status information.
+
+3.2 Usage and product-improvement information
+This may include limited information about how the App is used at a feature or event level, such as:
+- whether a feature was used;
+- timing or frequency information;
+- app state around a crash or failure; and
+- product-analytics signals needed to understand adoption, stability, or performance.
+
+3.3 Support and communications information
+If you contact Nexill, Nexill may collect information such as:
+- your name;
+- your email address;
+- the content of your message;
+- attachments or screenshots you send; and
+- troubleshooting details you choose to provide.
+
+3.4 Account, licensing, and billing information
+If Nexill later introduces accounts, paid plans, or activation controls, Nexill may collect information necessary to create, administer, secure, and support those functions, such as:
+- account identifiers;
+- login credentials or credential-related records;
+- plan information;
+- billing contact details; and
+- transaction or subscription status records.
+
+Nexill will provide additional notices or updated terms if those features materially change how personal information is processed.
+
+4. Information Nexill Does Not Collect in Normal Telemetry Flows
+In normal telemetry, update-check, and product-diagnostics flows, Nexill does not collect:
+- the content of your local database, files, or business records;
+- keystrokes or clipboard contents;
+- full hardware serial numbers or MAC addresses;
+- payment card or cardholder data; or
+- your name or email address unless you voluntarily contact Nexill or use a feature that requires that information.
+
+5. Country or Regional Lookup
+The App may use a third-party geolocation or country-lookup service to infer country or regional information from the device's network connection or IP-related input.
+
+If that occurs, the third-party provider may process the device's IP address to provide the result, even if Nexill does not retain the raw IP address in its ordinary telemetry records.
+
+Nexill may receive only the resulting country or regional information, unless the applicable service flow clearly states otherwise.
+
+6. Why Nexill Uses Information
+Nexill may use personal information to:
+- provide, operate, maintain, and support the App;
+- check for available updates or release information;
+- diagnose bugs, crashes, compatibility problems, and performance issues;
+- maintain product security, integrity, and anti-abuse controls;
+- administer activation, licensing, account, or subscription functions;
+- communicate with you about support, product notices, important changes, or service matters;
+- improve the App and plan future features; and
+- comply with legal obligations and protect rights, safety, or property.
+
+7. Legal Bases for EEA and UK Users
+If EEA or UK data-protection law applies, Nexill generally relies on the following legal bases:
+- performance of a contract where processing is necessary to provide the App, support, activation, account, or paid-service functions;
+- legitimate interests where processing is necessary to operate, secure, diagnose, maintain, and improve the App using proportionate technical information;
+- legal obligation where Nexill must process information to comply with law; and
+- consent where Nexill specifically asks for it.
+
+Where Nexill relies on legitimate interests, those interests generally include operating, securing, improving, and supporting Retail Store POS in a proportionate way.
+
+8. California and Similar U.S. Privacy Disclosures
+If California law or similar U.S. state privacy law applies, Nexill provides notice at or before collection of the categories of personal information collected and the purposes for which those categories are used.
+
+Based on the App's current design, Nexill does not sell personal information for money and does not share personal information for cross-context behavioral advertising unless Nexill clearly states otherwise before doing so.
+
+Nexill may retain personal information for as long as reasonably necessary for the purposes described in this Policy, including legal, security, support, fraud-prevention, and record-keeping needs.
+
+Users with applicable privacy rights may contact Nexill using the details below to exercise those rights, subject to verification and applicable law.
+
+9. How Long Nexill Keeps Information
+Nexill keeps information only for as long as reasonably necessary for the purposes described in this Policy, unless a longer period is required or permitted by law.
+
+Examples:
+- telemetry, update-check, and routine diagnostics records may be kept for short operational periods;
+- support communications may be kept as long as needed to resolve the issue and maintain a support record;
+- licensing, billing, or transaction records may be kept as needed for contract administration, accounting, tax, fraud-prevention, or legal compliance; and
+- security logs may be kept for as long as reasonably necessary to investigate abuse, protect systems, and satisfy legal or evidentiary needs.
+
+Because data categories, environments, and legal requirements differ, retention periods may vary.
+
+10. How Nexill Shares Information
+Nexill may share personal information only where reasonably necessary, including with:
+- hosting, infrastructure, analytics, diagnostics, support, security, communications, or payment service providers;
+- professional advisers such as lawyers, auditors, accountants, or insurers;
+- law enforcement, courts, regulators, or government authorities where required by law or reasonably necessary to protect rights, safety, or property;
+- counterparties involved in a merger, acquisition, financing, asset sale, or similar corporate transaction, subject to appropriate confidentiality measures; and
+- other parties where you direct Nexill to share information or where Nexill obtains your consent.
+
+Nexill does not disclose your personal information to third parties for their own unrelated marketing use unless Nexill clearly states that practice and has a lawful basis to do so.
+
+11. International Transfers
+Your information may be processed in countries other than your own.
+
+Where required by applicable law, Nexill will use recognized transfer mechanisms or other appropriate safeguards for international transfers of personal information.
+
+You may contact Nexill for additional information about the safeguards relevant to your data where applicable.
+
+12. Security
+Nexill uses reasonable technical and organizational measures designed to protect personal information that Nexill processes.
+
+No method of storage, transmission, or processing is completely secure, and Nexill cannot guarantee absolute security.
+
+Because the App is designed to store important business information locally on your own device, your own device security, backup practices, operating-system security, user-access controls, and local environment remain important parts of overall protection.
+
+13. Your Privacy Rights
+Depending on where you are located, you may have rights such as the right to:
+- request access to personal information Nexill holds about you;
+- request correction of inaccurate information;
+- request deletion of information, subject to legal exceptions;
+- object to or restrict certain processing in some cases;
+- withdraw consent where processing is based on consent;
+- request portability of certain information where applicable; and
+- complain to a supervisory or regulatory authority where applicable.
+
+Nexill may need to verify your identity before acting on a request. Some rights are limited by law and may not apply in every situation.
+
+14. Children
+Retail Store POS is not directed to children. Nexill does not knowingly collect personal information from children in connection with the App.
+
+15. Changes to This Privacy Policy
+Nexill may update this Privacy Policy from time to time.
+
+If changes materially affect how Nexill processes personal information, Nexill will provide notice by appropriate means where required by law.
+
+16. Contact
+For privacy questions or rights requests, contact:
+
+Nexill
+{{PRIVACY_CONTACT_EMAIL}}
+
+If EEA or UK representative details are required, Nexill will publish them here.
+
+Part III. Product-Specific Notes for Retail Store POS
+
+1. Receipts, Invoices, and Address Fields
+The App may allow merchants to enter or print business names, store addresses, customer-facing details, or other receipt and invoice-related information.
+
+Merchants are responsible for deciding what information appears on receipts, invoices, and related documents, and for ensuring those outputs comply with local law.
+
+2. Local Data Management
+Because the App may store operational information locally, merchants should implement appropriate local controls, including:
+- strong device passwords;
+- separate staff accounts where possible;
+- role-based access within the App;
+- regular backups;
+- operating-system and antivirus updates; and
+- secure device retirement or transfer procedures.
+
+3. Cardholder Data Boundary
+The App is not designed as a payment card data vault or processor. Merchants should use appropriate third-party payment systems for card acceptance and should not attempt to use the App to store cardholder data.
+
+4. Reading This Document
+This document is written to be practical and readable, but it does not reduce any rights or obligations that apply under mandatory law.
+
+If a part of this document is found unenforceable, the remainder will continue to apply to the extent permitted by law.

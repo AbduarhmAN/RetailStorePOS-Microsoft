@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization.Metadata;
 
 namespace RetailStorePOS.Data.Modules.Reporting;
 
@@ -55,4 +56,7 @@ public sealed class OperationsSnapshotStore : SignedSnapshotStore<OperationsSnap
     protected override string FilePrefix => "operations-";
 
     protected override int CurrentSchemaVersion => OperationsSnapshot.CurrentSchemaVersion;
+
+    protected override JsonTypeInfo<OperationsSnapshot> SnapshotJsonTypeInfo =>
+        ReportingSignedSnapshotJsonContext.Default.OperationsSnapshot;
 }

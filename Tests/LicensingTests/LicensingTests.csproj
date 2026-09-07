@@ -16,7 +16,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Fixtures\device-challenge-v2.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\Nexill.RetailStorePOS\Nexill.RetailStorePOS.csproj" />
+    <ProjectReference Include="..\..\RetailStorePOS.UI.Common\RetailStorePOS.UI.Common.csproj" />
   </ItemGroup>
 
 </Project>

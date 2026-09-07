@@ -68,7 +68,7 @@ SELECT last_insert_rowid();";
     {
         return new TaxAuthority
         {
-            Id = reader.GetInt64(0),
+            Id = Convert.ToInt64(reader.GetValue(0)),
             Name = reader.GetString(1),
             AuthorityCode = reader.GetString(2),
             RegistrationNumber = reader.IsDBNull(3) ? null : reader.GetString(3),

@@ -1,0 +1,616 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="RetailStorePOS.UI.Login.Views.LoginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+    xmlns:viewModels="using:RetailStorePOS.UI.Login.ViewModels"
+    xmlns:commonModels="using:RetailStorePOS.UI.Common.Models"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid Background="#F9FAFB">
+        <Grid.Resources>
+            <ImageBrush x:Key="HeroBackgroundBrush"
+                        ImageSource="ms-appx:///Assets/LoginBackground.png"
+                        Stretch="UniformToFill"
+                        AlignmentX="Center"
+                        AlignmentY="Center" />
+
+            <!-- Operational Blue: the single action color across the app. Used by the mode indicator and primary buttons. -->
+            <SolidColorBrush x:Key="PrimaryActionBrush" Color="#1976D2" />
+
+            <!-- Mode tab buttons sit on top of a sliding colored indicator; their text/icon brush is swapped from code-behind. -->
+            <Style x:Key="ModeTabButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="9" />
+                <Setter Property="Padding" Value="12,8" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                <Setter Property="VerticalAlignment" Value="Stretch" />
+                <Setter Property="UseSystemFocusVisuals" Value="False" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid Background="Transparent">
+                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Margin="{TemplateBinding Padding}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Cashier card frame: a button shell that contains a Border whose colors come from LoginStaffOption. -->
+            <Style x:Key="CashierCardButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="BorderBrush" Value="Transparent" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="12" />
+                <Setter Property="Padding" Value="0" />
+                <Setter Property="HorizontalAlignment" Value="Stretch" />
+            </Style>
+
+            <!-- Inputs: 6px radius, 44px height (touch-friendly), 15px text. -->
+            <Style x:Key="RoundedTextBoxStyle" TargetType="TextBox">
+                <Setter Property="MinHeight" Value="44" />
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="Padding" Value="12,0" />
+                <Setter Property="BorderBrush" Value="#E8EAF0" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="FontSize" Value="15" />
+            </Style>
+
+            <Style x:Key="RoundedPasswordBoxStyle" TargetType="PasswordBox">
+                <Setter Property="MinHeight" Value="44" />
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="Padding" Value="12,0" />
+                <Setter Property="BorderBrush" Value="#E8EAF0" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="FontSize" Value="15" />
+            </Style>
+
+            <!-- Primary action button: solid Operational Blue, 6px radius, 44px height. -->
+            <Style x:Key="LoginPrimaryButtonStyle"
+                   TargetType="Button"
+                   BasedOn="{StaticResource AccentButtonStyle}">
+                <Setter Property="Background" Value="{StaticResource PrimaryActionBrush}" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="Height" Value="44" />
+                <Setter Property="CornerRadius" Value="6" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+
+            <!-- Field label: the tracked-uppercase metadata signature shared with the rest of the app. -->
+            <Style x:Key="LoginFieldLabel" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="Foreground" Value="#5F6775" />
+                <Setter Property="CharacterSpacing" Value="40" />
+            </Style>
+        </Grid.Resources>
+
+        <Grid ColumnSpacing="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="0.60*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- ─── HERO PANEL: brand moment, Nexill Purple background. Lives only on splash and login. ─── -->
+            <Border Grid.Column="0"
+                    CornerRadius="0"
+                    Background="{StaticResource HeroBackgroundBrush}"
+                    Padding="42,52"
+                    BorderThickness="0">
+                <Grid RowSpacing="18">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="16"
+                                HorizontalAlignment="Left">
+                        <Border Width="68"
+                                Height="68"
+                                CornerRadius="14"
+                                Background="#FFFFFF"
+                                BorderThickness="0"
+                                Padding="8">
+                            <Image Source="ms-appx:///Assets/Logo.png"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   Stretch="Uniform" />
+                        </Border>
+
+                        <StackPanel VerticalAlignment="Center"
+                                    Spacing="2">
+                            <TextBlock Text="{x:Bind ViewModel.HeroBrandTitleText, Mode=OneWay}"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="#F8FAFC" />
+                            <TextBlock Text="{x:Bind ViewModel.HeroBrandSubtitleText, Mode=OneWay}"
+                                       FontSize="14"
+                                       Foreground="#E0E7FF" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1"
+                                MaxWidth="440"
+                                Spacing="12"
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center">
+                        <TextBlock Text="{x:Bind ViewModel.HeroHeadlineText, Mode=OneWay}"
+                                   FontSize="30"
+                                   FontWeight="SemiBold"
+                                   TextAlignment="Left"
+                                   TextWrapping="Wrap"
+                                   Foreground="#FFFFFF" />
+                        <TextBlock Text="{x:Bind ViewModel.HeroBodyText, Mode=OneWay}"
+                                   FontSize="14"
+                                   LineHeight="22"
+                                   TextAlignment="Left"
+                                   TextWrapping="Wrap"
+                                   Foreground="#E2E8F0" />
+                        <TextBlock Text="{x:Bind ViewModel.HeroSupportText, Mode=OneWay}"
+                                   FontSize="13"
+                                   TextAlignment="Left"
+                                   TextWrapping="Wrap"
+                                   Foreground="#CBD5E1" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ─── FORM PANEL: matches the rest-of-app aesthetic. ─── -->
+            <Border Grid.Column="1"
+                    Padding="0,3,3,3"
+                    VerticalAlignment="Stretch">
+                <Border Background="#FFFFFF"
+                        BorderBrush="#E8EAF0"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Padding="26"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Stretch">
+                    <Grid RowSpacing="18"
+                          HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- HEADER: page-title style, mode tabs, status -->
+                        <StackPanel Grid.Row="0"
+                                    Spacing="14"
+                                    HorizontalAlignment="Stretch">
+
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="{x:Bind ViewModel.WelcomeText, Mode=OneWay}"
+                                           FontSize="13"
+                                           Foreground="#5F6775" />
+                                <TextBlock Text="{x:Bind ViewModel.ModeTitle, Mode=OneWay}"
+                                           FontSize="28"
+                                           FontWeight="SemiBold"
+                                           Foreground="#1A1D23" />
+                                <TextBlock x:Name="ModeSubtitleText"
+                                           Text="{x:Bind ViewModel.ModeSubtitle, Mode=OneWay}"
+                                           FontSize="13"
+                                           LineHeight="18"
+                                           TextWrapping="Wrap"
+                                           Visibility="Collapsed"
+                                           Foreground="#8F96A3" />
+                            </StackPanel>
+
+                            <!-- Mode tabs: indicator slides between halves; tab text/icon brush is swapped from code-behind -->
+                            <Border x:Name="ModeTabStrip"
+                                    Background="#FAFBFC"
+                                    BorderBrush="#E8EAF0"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="3"
+                                    Height="52"
+                                    SizeChanged="ModeTabStrip_SizeChanged">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <Border x:Name="ModeIndicator"
+                                            Width="0"
+                                            Height="52"
+                                            Background="{StaticResource PrimaryActionBrush}"
+                                            CornerRadius="6"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center">
+                                        <Border.RenderTransform>
+                                            <TranslateTransform x:Name="ModeIndicatorTransform" />
+                                        </Border.RenderTransform>
+                                    </Border>
+
+                                    <Button x:Name="CashierTabButton"
+                                            Click="CashierTabButton_Click"
+                                            Style="{StaticResource ModeTabButtonStyle}">
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+                                            <SymbolIcon x:Name="CashierTabIcon"
+                                                        Symbol="Contact" />
+                                            <TextBlock x:Name="CashierTabText"
+                                                       Text="{x:Bind ViewModel.CashierTabText, Mode=OneWay}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </Button>
+
+                                    <Button x:Name="AdminTabButton"
+                                            Grid.Column="1"
+                                            Click="AdminTabButton_Click"
+                                            Style="{StaticResource ModeTabButtonStyle}">
+                                        <StackPanel Orientation="Horizontal"
+                                                    Spacing="8"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center">
+                                            <SymbolIcon x:Name="AdminTabIcon"
+                                                        Symbol="Setting" />
+                                            <TextBlock x:Name="AdminTabText"
+                                                       Text="{x:Bind ViewModel.AdminTabText, Mode=OneWay}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+                            </Border>
+
+                            <InfoBar x:Name="StatusInfoBar"
+                                     Title="{x:Bind ViewModel.StatusTitle, Mode=OneWay}"
+                                     IsOpen="False"
+                                     IsClosable="False"
+                                     Severity="Informational"
+                                     Visibility="Collapsed"
+                                     Message="" />
+                        </StackPanel>
+
+                        <!-- BODY: scrolls between the two mode panels -->
+                        <ScrollViewer Grid.Row="1"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled"
+                                      VerticalContentAlignment="Top"
+                                      HorizontalContentAlignment="Stretch">
+                            <Grid VerticalAlignment="Top">
+
+                                <!-- ─── CASHIER MODE ─── -->
+                                <Border x:Name="CashierLoginPanel"
+                                        Background="Transparent">
+                                    <Border.Transitions>
+                                        <TransitionCollection>
+                                            <EntranceThemeTransition FromVerticalOffset="16"
+                                                                     IsStaggeringEnabled="False" />
+                                        </TransitionCollection>
+                                    </Border.Transitions>
+
+                                    <StackPanel Spacing="14">
+                                        <Grid Visibility="Collapsed">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{x:Bind ViewModel.CashierPanelTitle, Mode=OneWay}"
+                                                           FontSize="15"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#1A1D23" />
+                                                <TextBlock x:Name="CashierHelperText"
+                                                           Text="{x:Bind ViewModel.CashierHelperText, Mode=OneWay}"
+                                                           TextWrapping="Wrap"
+                                                           FontSize="12"
+                                                           Foreground="#8F96A3" />
+                                            </StackPanel>
+
+                                            <Border Grid.Column="1"
+                                                    Background="#EFF6FF"
+                                                    BorderBrush="#BFDBFE"
+                                                    BorderThickness="1"
+                                                    CornerRadius="6"
+                                                    Padding="8,3"
+                                                    VerticalAlignment="Top">
+                                                <TextBlock x:Name="CashierCountBadgeText"
+                                                           Text="{x:Bind ViewModel.CashierBadgeText, Mode=OneWay}"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="#1D4ED8" />
+                                            </Border>
+                                        </Grid>
+
+                                        <!-- Empty state: design-system pattern, max-width 380, no decorative chrome -->
+                                        <StackPanel x:Name="CashierEmptyState"
+                                                    HorizontalAlignment="Center"
+                                                    Spacing="6"
+                                                    Padding="0,32,0,0"
+                                                    MaxWidth="380"
+                                                    Visibility="Collapsed">
+                                            <TextBlock Text="{x:Bind ViewModel.CashierEmptyStateTitle, Mode=OneWay}"
+                                                       FontSize="15"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#1A1D23"
+                                                       HorizontalAlignment="Center" />
+                                            <TextBlock Text="{x:Bind ViewModel.CashierEmptyStateBody, Mode=OneWay}"
+                                                       TextWrapping="Wrap"
+                                                       FontSize="12"
+                                                       Foreground="#8F96A3"
+                                                       TextAlignment="Center" />
+                                        </StackPanel>
+
+                                        <!-- ItemsSource is populated from code-behind (SyncStaffItemsSource):
+                                             x:Bind of a .NET collection to ItemsControl.ItemsSource crashes in the
+                                             CsWinRT ABI layer (IItemsControlMethods.set_ItemsSource). Same fix as
+                                             CheckoutPage.ReceiptItemsControl. -->
+                                        <ItemsControl x:Name="StaffListView"
+                                                      ScrollViewer.HorizontalScrollMode="Disabled"
+                                                      ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                                      ScrollViewer.VerticalScrollMode="Disabled"
+                                                      ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <VariableSizedWrapGrid Orientation="Horizontal"
+                                                                           MaximumRowsOrColumns="2" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="commonModels:LoginStaffOption">
+                                                    <Button Click="CashierCardButton_Click"
+                                                            Tag="{x:Bind}"
+                                                            Margin="0,0,12,12"
+                                                            Style="{StaticResource CashierCardButtonStyle}">
+                                                        <Border Width="276"
+                                                                Height="96"
+                                                                Padding="14,12"
+                                                                Background="{x:Bind CardBackgroundBrush, Mode=OneWay}"
+                                                                BorderBrush="{x:Bind CardBorderBrush, Mode=OneWay}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="10">
+                                                            <Grid ColumnSpacing="14">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <Border Width="48"
+                                                                        Height="48"
+                                                                        CornerRadius="24"
+                                                                        Background="{x:Bind BadgeBackgroundBrush, Mode=OneWay}"
+                                                                        VerticalAlignment="Center">
+                                                                    <TextBlock Text="{x:Bind Initial}"
+                                                                               FontSize="22"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{x:Bind InitialForegroundBrush, Mode=OneWay}"
+                                                                               HorizontalAlignment="Center"
+                                                                               VerticalAlignment="Center" />
+                                                                </Border>
+
+                                                                <StackPanel Grid.Column="1"
+                                                                            Spacing="3"
+                                                                            VerticalAlignment="Center">
+                                                                    <TextBlock Text="{x:Bind DisplayName}"
+                                                                               FontSize="14"
+                                                                               TextWrapping="Wrap"
+                                                                               MaxLines="1"
+                                                                               TextTrimming="CharacterEllipsis"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{x:Bind NameForegroundBrush, Mode=OneWay}" />
+                                                                    <TextBlock Text="{x:Bind RoleLabel, Mode=OneWay}"
+                                                                               FontSize="11"
+                                                                               Foreground="#8F96A3" />
+                                                                    <Border HorizontalAlignment="Left"
+                                                                            Padding="6,2"
+                                                                            CornerRadius="4"
+                                                                            Background="{x:Bind PinStatusBackgroundBrush, Mode=OneWay}">
+                                                                        <StackPanel Orientation="Horizontal"
+                                                                                    Spacing="4">
+                                                                            <FontIcon Glyph="&#xE72E;"
+                                                                                      FontFamily="Segoe Fluent Icons"
+                                                                                      FontSize="10"
+                                                                                      Foreground="{x:Bind PinStatusForegroundBrush, Mode=OneWay}" />
+                                                                            <TextBlock Text="{x:Bind PinStatusText, Mode=OneWay}"
+                                                                                       FontSize="10"
+                                                                                       FontWeight="SemiBold"
+                                                                                       Foreground="{x:Bind PinStatusForegroundBrush, Mode=OneWay}" />
+                                                                        </StackPanel>
+                                                                    </Border>
+                                                                </StackPanel>
+
+                                                                <Border Grid.Column="2"
+                                                                        Width="24"
+                                                                        Height="24"
+                                                                        CornerRadius="12"
+                                                                        Background="#1976D2"
+                                                                        Visibility="{x:Bind SelectionGlyphVisibility, Mode=OneWay}">
+                                                                    <FontIcon Glyph="&#xE73E;"
+                                                                              FontFamily="Segoe Fluent Icons"
+                                                                              FontSize="12"
+                                                                              Foreground="White"
+                                                                              HorizontalAlignment="Center"
+                                                                              VerticalAlignment="Center" />
+                                                                </Border>
+                                                            </Grid>
+                                                        </Border>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- ─── ADMIN MODE ─── -->
+                                <Border x:Name="AdminLoginPanel"
+                                        Background="Transparent"
+                                        Visibility="Collapsed">
+                                    <Border.Transitions>
+                                        <TransitionCollection>
+                                            <EntranceThemeTransition FromVerticalOffset="16"
+                                                                     IsStaggeringEnabled="False" />
+                                        </TransitionCollection>
+                                    </Border.Transitions>
+
+                                    <StackPanel Spacing="16">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="{x:Bind ViewModel.AdminPanelTitle, Mode=OneWay}"
+                                                       FontSize="15"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#1A1D23" />
+                                            <TextBlock x:Name="AdminHelperText"
+                                                       Text="{x:Bind ViewModel.AdminHelperText, Mode=OneWay}"
+                                                       TextWrapping="Wrap"
+                                                       FontSize="12"
+                                                       Foreground="#8F96A3" />
+                                        </StackPanel>
+
+                                        <!-- First-run setup callout: design-system info palette -->
+                                        <Border x:Name="SetupCallout"
+                                                Visibility="{x:Bind ViewModel.SetupCalloutVisibility, Mode=OneWay}"
+                                                Background="#EFF6FF"
+                                                BorderBrush="#BFDBFE"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="14,12">
+                                            <Grid ColumnSpacing="12">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+
+                                                <FontIcon Glyph="&#xE946;"
+                                                          FontFamily="Segoe Fluent Icons"
+                                                          FontSize="16"
+                                                          Foreground="#1D4ED8"
+                                                          VerticalAlignment="Top"
+                                                          Margin="0,2,0,0" />
+
+                                                <StackPanel Grid.Column="1"
+                                                            Spacing="2">
+                                                    <TextBlock Text="{x:Bind ViewModel.SetupCalloutTitle, Mode=OneWay}"
+                                                               FontSize="13"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#1D4ED8" />
+                                                    <TextBlock x:Name="SetupCalloutText"
+                                                               Text="{x:Bind ViewModel.SetupCalloutText, Mode=OneWay}"
+                                                               TextWrapping="Wrap"
+                                                               FontSize="12"
+                                                               Foreground="#1E40AF" />
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="{x:Bind ViewModel.UsernameLabel, Mode=OneWay}"
+                                                       Style="{StaticResource LoginFieldLabel}" />
+                                            <TextBox x:Name="UsernameBox"
+                                                     PlaceholderText="{x:Bind ViewModel.UsernameBoxPlaceholder, Mode=OneWay}"
+                                                     HorizontalAlignment="Stretch"
+                                                     Style="{StaticResource RoundedTextBoxStyle}"
+                                                     AutomationProperties.Name="Username"
+                                                     KeyDown="AdminCredentialBox_KeyDown" />
+                                        </StackPanel>
+
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="{x:Bind ViewModel.PasswordLabel, Mode=OneWay}"
+                                                       Style="{StaticResource LoginFieldLabel}" />
+                                            <PasswordBox x:Name="AdminPasswordBox"
+                                                         PlaceholderText="{x:Bind ViewModel.AdminPasswordBoxPlaceholder, Mode=OneWay}"
+                                                         HorizontalAlignment="Stretch"
+                                                         Style="{StaticResource RoundedPasswordBoxStyle}"
+                                                         PasswordRevealMode="Peek"
+                                                         AutomationProperties.Name="Password"
+                                                         KeyDown="AdminCredentialBox_KeyDown" />
+                                        </StackPanel>
+
+                                        <!-- Onboarding hint: design-system danger palette + icon -->
+                                        <Border x:Name="AdminOnboardingHintPanel"
+                                                Visibility="Collapsed"
+                                                Background="#FEF2F2"
+                                                BorderBrush="#FCA5A5"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Padding="12,10"
+                                                Margin="0,4,0,0">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon Glyph="&#xEA39;"
+                                                          FontFamily="Segoe Fluent Icons"
+                                                          FontSize="14"
+                                                          Foreground="#991B1B"
+                                                          VerticalAlignment="Top"
+                                                          Margin="0,2,0,0" />
+                                                <StackPanel Spacing="2">
+                                                    <TextBlock Text="{x:Bind ViewModel.OnboardingHintTitle, Mode=OneWay}"
+                                                               FontSize="12"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="#991B1B" />
+                                                    <TextBlock Text="{x:Bind ViewModel.OnboardingHintBody, Mode=OneWay}"
+                                                               FontSize="12"
+                                                               TextWrapping="Wrap"
+                                                               Foreground="#7F1D1D" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
+
+                        <!-- FOOTER: PIN entry + sign-in. Sticky at bottom of card. -->
+                        <Grid Grid.Row="2"
+                              HorizontalAlignment="Stretch">
+                            <StackPanel x:Name="CashierActionPanel"
+                                        Spacing="8"
+                                        HorizontalAlignment="Stretch">
+                                <TextBlock Text="{x:Bind ViewModel.PinLabel, Mode=OneWay}"
+                                           Style="{StaticResource LoginFieldLabel}" />
+
+                                <PasswordBox x:Name="PinPasswordBox"
+                                             PlaceholderText="{x:Bind ViewModel.PinPasswordBoxPlaceholder, Mode=OneWay}"
+                                             MaxLength="4"
+                                             Style="{StaticResource RoundedPasswordBoxStyle}"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Center"
+                                             FontFamily="Consolas"
+                                             KeyDown="PinPasswordBox_KeyDown"
+                                             AutomationProperties.Name="Cashier PIN"
+                                             PasswordRevealMode="Peek" />
+
+                                <Button x:Name="CashierActionButton"
+                                        Content="{x:Bind ViewModel.LoginButtonContent, Mode=OneWay}"
+                                        Click="CashierSignInButton_Click"
+                                        HorizontalAlignment="Stretch"
+                                        Margin="0,4,0,0"
+                                        Style="{StaticResource LoginPrimaryButtonStyle}" />
+                            </StackPanel>
+
+                            <StackPanel x:Name="AdminActionPanel"
+                                        Visibility="Collapsed"
+                                        HorizontalAlignment="Stretch">
+                                <Button x:Name="AdminActionButton"
+                                        Content="{x:Bind ViewModel.LoginButtonContent, Mode=OneWay}"
+                                        Click="AdminSignInButton_Click"
+                                        HorizontalAlignment="Stretch"
+                                        Style="{StaticResource LoginPrimaryButtonStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Border>
+            </Border>
+        </Grid>
+    </Grid>
+</Page>

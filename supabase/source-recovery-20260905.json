@@ -1,0 +1,64 @@
+{
+  "recoveredOn": "2026-09-05",
+  "source": "Supabase deployed-function source download using CLI 2.98.2 --use-api",
+  "functions": [
+    {
+      "slug": "license-api",
+      "version": 27,
+      "verify_jwt": false
+    },
+    {
+      "slug": "activate-install",
+      "version": 2,
+      "verify_jwt": false
+    }
+  ],
+  "deployedByThisRecovery": false,
+  "sharedDependenciesMatch": true,
+  "files": [
+    {
+      "Path": "supabase/functions/license-api/deno.json",
+      "SHA256": "FC9FC38C21441B7F67A91280ED28B8CA4AD67FC69D713DB441F5C0FD9A6ABF9F"
+    },
+    {
+      "Path": "supabase/functions/license-api/index.ts",
+      "SHA256": "254BAAB11392EFEA6B8BD8079352069EDC3EDBABA5AF22D54A8826E47D90A2AA"
+    },
+    {
+      "Path": "supabase/functions/license-api/router.ts",
+      "SHA256": "F8DC1BB115ED27562469AE163F9FC5E0752B4B40F32A8D30762BF9EE6186CC35"
+    },
+    {
+      "Path": "supabase/functions/license-api/handlers/reissue-by-install.ts",
+      "SHA256": "1BC4CD5A8C02DCF441E3E8293D67E16643D2F949E00BF0A9EDE0A982877B437B"
+    },
+    {
+      "Path": "supabase/functions/license-api/handlers/shared.ts",
+      "SHA256": "50A56EB7D3CE1CF2A98F02C6A7BB00AB67960E0C31D414918B2FA90E19ED996F"
+    },
+    {
+      "Path": "supabase/functions/license-api/handlers/verify-license.ts",
+      "SHA256": "1C4111C7E9D870F30E2673BB22E0A556DD63E0D914677B2C02AF2FD16C6C1E09"
+    },
+    {
+      "Path": "supabase/functions/license-api/utils/crypto.ts",
+      "SHA256": "CA4DAAEEA96EC6E5B3D89D15497D2ECEF1DF7E76119E658799C6F877B00D1BF0"
+    },
+    {
+      "Path": "supabase/functions/license-api/utils/envelope.ts",
+      "SHA256": "D467C340C463A0C5A4290E8AC0AEBDAF38DBF9520471A063ED034C3F1EB638E8"
+    },
+    {
+      "Path": "supabase/functions/license-api/utils/http.ts",
+      "SHA256": "118617ED0081D0D437AA2E7D24B1788C903146C5B5927505A6E02AEE7117E116"
+    },
+    {
+      "Path": "supabase/functions/license-api/utils/rate-limit.ts",
+      "SHA256": "B634628BFAD0ABFFE1BA825EEB4E8ABF61F1E05D88A3ECD0AF35FF8865BEA1B9"
+    },
+    {
+      "Path": "supabase/functions/activate-install/index.ts",
+      "SHA256": "698A53E49D38B020C7D6740C1B0266BF8B6F2C1577BB99C64B6762EEBD737954"
+    }
+  ]
+}

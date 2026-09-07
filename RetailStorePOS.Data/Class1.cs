@@ -84,6 +84,28 @@ CREATE TABLE IF NOT EXISTS sale_items (
     FOREIGN KEY (sale_id) REFERENCES sales(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS x_report_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    preset_code TEXT NOT NULL,
+    period_start_local TEXT NOT NULL,
+    period_end_local TEXT NOT NULL,
+    generated_at_utc TEXT NOT NULL,
+    generated_by_user_id INTEGER,
+    FOREIGN KEY (generated_by_user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS x_report_run_sales (
+    run_id INTEGER NOT NULL,
+    sale_id INTEGER NOT NULL,
+    PRIMARY KEY (run_id, sale_id),
+    FOREIGN KEY (run_id) REFERENCES x_report_runs(id) ON DELETE CASCADE,
+    FOREIGN KEY (sale_id) REFERENCES sales(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_x_report_runs_period ON x_report_runs (period_start_local, period_end_local, generated_at_utc);
+CREATE INDEX IF NOT EXISTS idx_x_report_runs_generated ON x_report_runs (generated_at_utc);
+CREATE INDEX IF NOT EXISTS idx_x_report_run_sales_sale ON x_report_run_sales (sale_id);
+
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -933,7 +955,7 @@ CREATE INDEX IF NOT EXISTS idx_register_cash_adjustments_user ON register_cash_a
                     var updates = new List<(long Id, string Dna)>();
                     while (reader.Read())
                     {
-                        var id = reader.GetInt64(0);
+                        var id = Convert.ToInt64(reader.GetValue(0));
                         var name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
                         var createdAtStr = reader.IsDBNull(2) ? null : reader.GetString(2);
 
@@ -1153,6 +1175,63 @@ CREATE TABLE IF NOT EXISTS register_session_assignments (
                         assignmentsOpenIndexCmd.ExecuteNonQuery();
                     }
                 }
+            },
+            new MigrationStep
+            {
+                Version = 25,
+                Description = "Add database-backed X report run history",
+                Category = MigrationCategory.StartupSafe,
+                Execute = conn =>
+                {
+                    using (var runTableCmd = conn.CreateCommand())
+                    {
+                        runTableCmd.CommandText = @"
+CREATE TABLE IF NOT EXISTS x_report_runs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    preset_code TEXT NOT NULL,
+    period_start_local TEXT NOT NULL,
+    period_end_local TEXT NOT NULL,
+    generated_at_utc TEXT NOT NULL,
+    generated_by_user_id INTEGER,
+    FOREIGN KEY (generated_by_user_id) REFERENCES users(id)
+);";
+                        runTableCmd.ExecuteNonQuery();
+                    }
+
+                    using (var runSalesTableCmd = conn.CreateCommand())
+                    {
+                        runSalesTableCmd.CommandText = @"
+CREATE TABLE IF NOT EXISTS x_report_run_sales (
+    run_id INTEGER NOT NULL,
+    sale_id INTEGER NOT NULL,
+    PRIMARY KEY (run_id, sale_id),
+    FOREIGN KEY (run_id) REFERENCES x_report_runs(id) ON DELETE CASCADE,
+    FOREIGN KEY (sale_id) REFERENCES sales(id)
+);";
+                        runSalesTableCmd.ExecuteNonQuery();
+                    }
+
+                    using (var periodIndexCmd = conn.CreateCommand())
+                    {
+                        periodIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_x_report_runs_period ON x_report_runs (period_start_local, period_end_local, generated_at_utc);";
+                        periodIndexCmd.ExecuteNonQuery();
+                    }
+
+                    using (var generatedIndexCmd = conn.CreateCommand())
+                    {
+                        generatedIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_x_report_runs_generated ON x_report_runs (generated_at_utc);";
+                        generatedIndexCmd.ExecuteNonQuery();
+                    }
+
+                    using (var saleIndexCmd = conn.CreateCommand())
+                    {
+                        saleIndexCmd.CommandText =
+                            "CREATE INDEX IF NOT EXISTS idx_x_report_run_sales_sale ON x_report_run_sales (sale_id);";
+                        saleIndexCmd.ExecuteNonQuery();
+                    }
+                }
             }
         };
     }
@@ -1344,7 +1423,7 @@ ON CONFLICT(key) DO UPDATE SET
     /// The highest migration version this build of the app understands.
     /// Must be updated whenever a new MigrationStep is added to GetMigrationSteps().
     /// </summary>
-    private const int MaxKnownSchemaVersion = 24;
+    private const int MaxKnownSchemaVersion = 25;
 
     private static string GetCurrentAppVersion()
     {

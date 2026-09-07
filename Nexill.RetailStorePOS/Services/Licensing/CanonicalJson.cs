@@ -1,7 +1,7 @@
 using System;
-using System.Buffers;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 namespace RetailStorePOS.App.Services.Licensing;
@@ -13,9 +13,8 @@ namespace RetailStorePOS.App.Services.Licensing;
 ///
 /// The contract must stay identical to the TypeScript implementation:
 /// <list type="bullet">
-///   <item>Primitives are emitted via <c>JsonSerializer.Serialize</c>, which matches
-///         JavaScript's <c>JSON.stringify</c> for ASCII content (numbers, booleans,
-///         strings, null).</item>
+///   <item>String primitives are escaped with <see cref="Utf8JsonWriter"/>;
+///         numbers, booleans, and nulls are emitted in their canonical JSON form.</item>
 ///   <item>Arrays preserve element order and concatenate with commas, no whitespace.</item>
 ///   <item>Objects drop entries whose value is <c>undefined</c> in JS terms — in
 ///         <see cref="JsonValueKind.Undefined"/> here — but keep <c>null</c>. Keys
@@ -50,7 +49,7 @@ internal static class CanonicalJson
                 WriteArray(writer, element);
                 break;
             case JsonValueKind.String:
-                writer.Write(JsonSerializer.Serialize(element.GetString()));
+                writer.Write(EscapeJsonString(element.GetString() ?? string.Empty));
                 break;
             case JsonValueKind.Number:
                 // Preserve the exact textual form the backend emitted. JSON.stringify
@@ -91,7 +90,7 @@ internal static class CanonicalJson
         for (var i = 0; i < entries.Length; i++)
         {
             if (i > 0) writer.Write(',');
-            writer.Write(JsonSerializer.Serialize(entries[i].Name));
+            writer.Write(EscapeJsonString(entries[i].Name));
             writer.Write(':');
             WriteValue(writer, entries[i].Value);
         }
@@ -109,5 +108,16 @@ internal static class CanonicalJson
             WriteValue(writer, item);
         }
         writer.Write(']');
+    }
+
+    private static string EscapeJsonString(string value)
+    {
+        using var stream = new MemoryStream();
+        using (var jsonWriter = new Utf8JsonWriter(stream))
+        {
+            jsonWriter.WriteStringValue(value);
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
     }
 }

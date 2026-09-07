@@ -36,6 +36,26 @@ public sealed class RegisterSessionReport
     public List<RegisterSessionAdjustmentEntry> CashAdjustments { get; set; } = [];
 }
 
+public sealed class RegisterPeriodReport
+{
+    public DateTime PeriodStartLocal { get; set; }
+    public DateTime PeriodEndLocal { get; set; }
+    public int SessionCount { get; set; }
+    public int OpenSessionCount { get; set; }
+    public int ClosedSessionCount { get; set; }
+    public int SaleCount { get; set; }
+    public long GrossSalesCents { get; set; }
+    public long TaxCents { get; set; }
+    public long CashSalesCents { get; set; }
+    public long CardSalesCents { get; set; }
+    public long OpeningFloatCents { get; set; }
+    public long CountedCashCents { get; set; }
+    public long NetCashAdjustmentCents { get; set; }
+    public long ExpectedCashCents { get; set; }
+    public long CashVarianceCents { get; set; }
+    public List<RegisterSessionCashierSummary> CashierSummaries { get; set; } = [];
+}
+
 public sealed class RegisterSessionCashierInterval
 {
     public long UserId { get; set; }

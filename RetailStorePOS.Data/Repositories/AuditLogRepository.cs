@@ -40,8 +40,8 @@ VALUES (@user_id, @action, @details, @created_at);";
         {
             logs.Add(new AuditLog
             {
-                Id = reader.GetInt32(0),
-                UserId = reader.IsDBNull(1) ? null : reader.GetInt32(1),
+                Id = Convert.ToInt32(reader.GetValue(0)),
+                UserId = reader.IsDBNull(1) ? null : Convert.ToInt32(reader.GetValue(1)),
                 Action = reader.GetString(2),
                 Details = reader.IsDBNull(3) ? null : reader.GetString(3),
                 CreatedAt = reader.IsDBNull(4) ? default : DateTime.Parse(reader.GetString(4)).ToUniversalTime()

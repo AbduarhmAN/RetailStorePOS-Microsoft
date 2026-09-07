@@ -1,17 +1,12 @@
 namespace RetailStorePOS.Data.Modules.Reporting;
 
-using System.Text.Json;
-
 public class DashboardSnapshotStore
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true
-    };
-
     public void SaveSnapshot(DashboardSnapshot snapshot)
     {
-        var json = JsonSerializer.Serialize(snapshot, JsonOptions);
+        var json = System.Text.Json.JsonSerializer.Serialize(
+            snapshot,
+            ReportingFileJsonContext.Default.DashboardSnapshot);
         var path = ReadinessPaths.GetSnapshotPath();
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
@@ -26,6 +21,8 @@ public class DashboardSnapshotStore
         var path = ReadinessPaths.GetSnapshotPath();
         if (!File.Exists(path)) return null;
         var json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<DashboardSnapshot>(json);
+        return System.Text.Json.JsonSerializer.Deserialize(
+            json,
+            ReportingFileJsonContext.Default.DashboardSnapshot);
     }
 }

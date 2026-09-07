@@ -1,0 +1,423 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Application
+    x:Class="TestRunner.Settings.App.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:TestRunner.Settings.App"
+    xmlns:common="using:RetailStorePOS.UI.Common">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <common:UserRoleConverter x:Key="UserRoleConverter" />
+
+            <!-- Force all controls, flyouts, and borders to be completely square -->
+            <CornerRadius x:Key="ControlCornerRadius">0</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">2</CornerRadius>
+
+            <!-- Notion Style Brushes -->
+            <SolidColorBrush x:Key="PrimaryText" Color="#37352F" />
+            <SolidColorBrush x:Key="MutedText" Color="#787774" />
+            <SolidColorBrush x:Key="BackgroundMain" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="BackgroundSidebar" Color="#F7F7F5" />
+            <SolidColorBrush x:Key="HoverState" Color="#EFEFED" />
+            <SolidColorBrush x:Key="BorderDivider" Color="#EDEDEB" />
+
+            <SolidColorBrush x:Key="TagPurpleBackground" Color="#F4F0FA" />
+            <SolidColorBrush x:Key="TagPurpleForeground" Color="#9A6DD7" />
+
+            <!-- Notion Typography Styles -->
+            <Style x:Key="NotionPageTitleStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="FontSize" Value="36" />
+                <Setter Property="Foreground" Value="{StaticResource PrimaryText}" />
+                <Setter Property="Margin" Value="0,0,0,24" />
+            </Style>
+
+            <Style x:Key="NotionSectionHeaderStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+                <Setter Property="FontSize" Value="20" />
+                <Setter Property="Foreground" Value="{StaticResource PrimaryText}" />
+                <Setter Property="Margin" Value="0,16,0,8" />
+            </Style>
+
+            <Style x:Key="NotionBodyTextStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="FontSize" Value="15" />
+                <Setter Property="Foreground" Value="{StaticResource PrimaryText}" />
+                <Setter Property="LineHeight" Value="24" />
+            </Style>
+
+            <Style x:Key="NotionMetaTextStyle" TargetType="TextBlock">
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Foreground" Value="{StaticResource MutedText}" />
+            </Style>
+
+            <!-- Flat Notion Buttons -->
+            <Style x:Key="NotionButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource PrimaryText}" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="Padding" Value="8,4" />
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource HoverState}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource BorderDivider}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Opacity" To="0.5" Duration="0" />
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                  BorderThickness="{TemplateBinding BorderThickness}"
+                                                  BorderBrush="{TemplateBinding BorderBrush}"
+                                                  CornerRadius="{TemplateBinding CornerRadius}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Accent Blue Action Button (darker on hover, instant transition) -->
+            <Style x:Key="AccentBlueButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="#1976D2" />
+                <Setter Property="Foreground" Value="White" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="Padding" Value="14,6" />
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualStateGroup.Transitions>
+                                            <VisualTransition GeneratedDuration="0:0:0.08" />
+                                        </VisualStateGroup.Transitions>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <SolidColorBrush Color="#1565C0" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <SolidColorBrush Color="#0D47A1" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style x:Key="AccentButtonStyle" TargetType="Button" BasedOn="{StaticResource AccentBlueButtonStyle}" />
+
+            <!-- Outline Blue Button (for secondary dialog actions) -->
+            <Style x:Key="OutlineBlueButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="#1976D2" />
+                <Setter Property="BorderBrush" Value="#1976D2" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="Padding" Value="14,6" />
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}"
+                                  BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                                  CornerRadius="{TemplateBinding CornerRadius}">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualStateGroup.Transitions>
+                                            <VisualTransition GeneratedDuration="0:0:0.08" />
+                                        </VisualStateGroup.Transitions>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <SolidColorBrush Color="#E3F2FD" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <SolidColorBrush Color="#BBDEFB" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Disabled">
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Opacity" To="0.4" Duration="0" />
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Flat Close/Cancel Button -->
+            <Style x:Key="FlatCloseButtonStyle" TargetType="Button">
+                <Setter Property="Background" Value="#E0E0E0" />
+                <Setter Property="Foreground" Value="#424242" />
+                <Setter Property="BorderThickness" Value="0" />
+                <Setter Property="CornerRadius" Value="3" />
+                <Setter Property="Padding" Value="14,6" />
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualStateGroup.Transitions>
+                                            <VisualTransition GeneratedDuration="0:0:0.08" />
+                                        </VisualStateGroup.Transitions>
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <SolidColorBrush Color="#BDBDBD" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0">
+                                                        <DiscreteObjectKeyFrame.Value>
+                                                            <SolidColorBrush Color="#9E9E9E" />
+                                                        </DiscreteObjectKeyFrame.Value>
+                                                    </DiscreteObjectKeyFrame>
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                  VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Notion Sidebar Item Style -->
+            <Style x:Key="NotionSidebarItemStyle" TargetType="ListViewItem">
+                <Setter Property="Background" Value="Transparent" />
+                <Setter Property="Foreground" Value="{StaticResource MutedText}" />
+                <Setter Property="Padding" Value="12,8" />
+                <Setter Property="CornerRadius" Value="4" />
+                <Setter Property="Margin" Value="4,2" />
+                <Setter Property="FontFamily" Value="Segoe UI Variable, Inter, Segoe UI, sans-serif" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ListViewItem">
+                            <Grid x:Name="RootGrid" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}" Margin="{TemplateBinding Margin}">
+                                <VisualStateManager.VisualStateGroups>
+                                    <VisualStateGroup x:Name="CommonStates">
+                                        <VisualState x:Name="Normal" />
+                                        <VisualState x:Name="PointerOver">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource HoverState}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                        <VisualState x:Name="Pressed" />
+                                        <VisualState x:Name="Selected">
+                                            <Storyboard>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="Background">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="#E8E8E6" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                                <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ContentPresenter" Storyboard.TargetProperty="Foreground">
+                                                    <DiscreteObjectKeyFrame KeyTime="0" Value="{StaticResource PrimaryText}" />
+                                                </ObjectAnimationUsingKeyFrames>
+                                            </Storyboard>
+                                        </VisualState>
+                                    </VisualStateGroup>
+                                </VisualStateManager.VisualStateGroups>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Content="{TemplateBinding Content}"
+                                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                                  Padding="{TemplateBinding Padding}"
+                                                  HorizontalContentAlignment="Left"
+                                                  VerticalContentAlignment="Center" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- App-wide Status Banner system (DESIGN.md semantic palette).      -->
+            <!-- One Border style per severity. Always pair with an icon and text -->
+            <!-- ("color is never the only signal"). 8px radius, 12,10 padding.   -->
+            <!-- Use with the App_BannerIconBase + App_BannerTextBase styles or   -->
+            <!-- inline for one-off messages.                                     -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+
+            <Style x:Key="App_BannerInfo" TargetType="Border">
+                <Setter Property="Background" Value="#EFF6FF" />
+                <Setter Property="BorderBrush" Value="#BFDBFE" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="12,10" />
+            </Style>
+
+            <Style x:Key="App_BannerSuccess" TargetType="Border">
+                <Setter Property="Background" Value="#ECFDF5" />
+                <Setter Property="BorderBrush" Value="#A7F3D0" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="12,10" />
+            </Style>
+
+            <Style x:Key="App_BannerWarning" TargetType="Border">
+                <Setter Property="Background" Value="#FFFBEB" />
+                <Setter Property="BorderBrush" Value="#FDE68A" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="12,10" />
+            </Style>
+
+            <Style x:Key="App_BannerDanger" TargetType="Border">
+                <Setter Property="Background" Value="#FEF2F2" />
+                <Setter Property="BorderBrush" Value="#FCA5A5" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="CornerRadius" Value="8" />
+                <Setter Property="Padding" Value="12,10" />
+            </Style>
+
+            <!-- Banner foreground brushes (for icon and text inside each variant). -->
+            <SolidColorBrush x:Key="App_BannerInfoForeground" Color="#1D4ED8" />
+            <SolidColorBrush x:Key="App_BannerSuccessForeground" Color="#065F46" />
+            <SolidColorBrush x:Key="App_BannerWarningForeground" Color="#92400E" />
+            <SolidColorBrush x:Key="App_BannerDangerForeground" Color="#991B1B" />
+
+            <!-- Banner text style: 13px, wraps, vertically centered next to leading icon. -->
+            <Style x:Key="App_BannerText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="App_BannerTitle" TargetType="TextBlock" BasedOn="{StaticResource App_BannerText}">
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Style>
+
+            <!-- Banner leading icon: 14px, vertically centered, color matches foreground. -->
+            <Style x:Key="App_BannerIcon" TargetType="FontIcon">
+                <Setter Property="FontFamily" Value="Segoe Fluent Icons" />
+                <Setter Property="FontSize" Value="14" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <!-- Floating-on-page banner: same Severity styling but with subtle drop shadow -->
+            <!-- so it lifts above page content. Combine via BasedOn at use-site.            -->
+            <!-- Translation is not a DependencyProperty in WinUI 3, so set it inline on    -->
+            <!-- each banner instance (e.g. Translation="0,0,32") to engage the shadow.     -->
+            <Style x:Key="App_FloatingBanner" TargetType="Border">
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="Padding" Value="14,12" />
+                <Setter Property="MinWidth" Value="280" />
+                <Setter Property="MaxWidth" Value="520" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Setter Property="Margin" Value="0,16,0,0" />
+                <Setter Property="Shadow">
+                    <Setter.Value>
+                        <ThemeShadow />
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
+
+

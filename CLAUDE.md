@@ -115,5 +115,5 @@ C# on .NET 9+ / WinUI 3: Follow standard conventions
 <!-- MANUAL ADDITIONS START -->
 ## Absolute Rules
 
-- **NEVER run `dotnet build`, `dotnet restore`, or any full build/compile command.** This project takes too long to build. Verify changes through code inspection only.
+- **NEVER run `dotnet build`, `dotnet restore`, or any full build/compile command.** This applies universally to ALL projects, subprojects, sandbox apps, and folders without exception. Do not run any build commands under any circumstances. Verify changes through code inspection only.
 <!-- MANUAL ADDITIONS END -->

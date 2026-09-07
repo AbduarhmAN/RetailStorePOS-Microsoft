@@ -1,6 +1,6 @@
 namespace RetailStorePOS.Data.Modules.Tax;
 
-public class TaxAuthority
+public partial class TaxAuthority
 {
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;

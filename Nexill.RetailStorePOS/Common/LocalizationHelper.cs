@@ -62,7 +62,6 @@ public static class LocalizationHelper
     [
         ("en-US", "English", "English", false),
         ("ar-SA", "العربية", "Arabic", true),
-        ("fr-FR", "Français", "French", false),
     ];
 
     public static string GetString(string key)
@@ -93,12 +92,12 @@ public static class LocalizationHelper
             }
 
             StartupTrace.Write($"LocalizationHelper.GetString: [NOT FOUND] {key}");
-            return string.Empty;
+            return key;
         }
         catch (Exception ex)
         {
             StartupTrace.Write($"LocalizationHelper.GetString: ERROR for {key}: {ex.Message}");
-            return string.Empty;
+            return key;
         }
     }
 
@@ -169,7 +168,14 @@ public static class LocalizationHelper
         StartupTrace.Write($"LocalizationHelper: SetRuntimeLanguage to {tag}");
         
         // 1. Set the OS-level override (best effort)
-        try { ApplicationLanguages.PrimaryLanguageOverride = tag; } catch { }
+        try
+        {
+            ApplicationLanguages.PrimaryLanguageOverride = tag;
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"LocalizationHelper: PrimaryLanguageOverride failed for {tag}: {ex.Message}");
+        }
 
         // 2. Set our internal context (reliable for unpackaged apps)
         if (_manager == null) GetResourceSystem();
@@ -191,7 +197,7 @@ public static class LocalizationHelper
     public static string GetString(string key, string fallback)
     {
         var resolved = GetString(key);
-        return string.IsNullOrEmpty(resolved) ? fallback : resolved;
+        return string.IsNullOrEmpty(resolved) || string.Equals(resolved, key, StringComparison.Ordinal) ? fallback : resolved;
     }
 
     public static string GetEffectiveLanguageTag()
@@ -257,13 +263,12 @@ public static class LocalizationHelper
         var mapped = normalized switch
         {
             "ar" or "ar-sa" => "ar-SA",
-            "fr" or "fr-fr" => "fr-FR",
             "arabic" or "العربية" => "ar-SA",
-            "french" or "francais" or "français" => "fr-FR",
             "english" => DefaultLanguage,
             "en" or "en-us" => DefaultLanguage,
             var value when value.StartsWith("ar-", StringComparison.Ordinal) => "ar-SA",
-            var value when value.StartsWith("fr-", StringComparison.Ordinal) => "fr-FR",
+            "fr" or "fr-fr" or "french" or "francais" or "français" => DefaultLanguage,
+            var value when value.StartsWith("fr-", StringComparison.Ordinal) => DefaultLanguage,
             var value when value.StartsWith("en-", StringComparison.Ordinal) => DefaultLanguage,
             _ => DefaultLanguage
         };

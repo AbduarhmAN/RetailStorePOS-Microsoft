@@ -1,14 +1,7 @@
 namespace RetailStorePOS.Data.Modules.Reporting;
 
-using System.Text.Json;
-
 public class ReadinessReportStore
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = true
-    };
-
     public void SaveReport(ReadinessRun run, List<ScenarioResult> results)
     {
         var reportData = new ReadinessReportData
@@ -17,7 +10,9 @@ public class ReadinessReportStore
             Results = results
         };
 
-        var json = JsonSerializer.Serialize(reportData, JsonOptions);
+        var json = System.Text.Json.JsonSerializer.Serialize(
+            reportData,
+            ReportingFileJsonContext.Default.ReadinessReportData);
         var path = run.ReportPath;
         var directory = Path.GetDirectoryName(path);
         if (!string.IsNullOrEmpty(directory))
@@ -31,7 +26,9 @@ public class ReadinessReportStore
     {
         if (!File.Exists(path)) return null;
         var json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<ReadinessReportData>(json);
+        return System.Text.Json.JsonSerializer.Deserialize(
+            json,
+            ReportingFileJsonContext.Default.ReadinessReportData);
     }
 }
 

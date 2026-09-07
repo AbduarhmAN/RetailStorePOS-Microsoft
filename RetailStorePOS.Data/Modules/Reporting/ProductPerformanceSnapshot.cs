@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization.Metadata;
 
 namespace RetailStorePOS.Data.Modules.Reporting;
 
@@ -50,4 +51,7 @@ public sealed class ProductPerformanceSnapshotStore : SignedSnapshotStore<Produc
     protected override string FilePrefix => "product-performance-";
 
     protected override int CurrentSchemaVersion => ProductPerformanceSnapshot.CurrentSchemaVersion;
+
+    protected override JsonTypeInfo<ProductPerformanceSnapshot> SnapshotJsonTypeInfo =>
+        ReportingSignedSnapshotJsonContext.Default.ProductPerformanceSnapshot;
 }

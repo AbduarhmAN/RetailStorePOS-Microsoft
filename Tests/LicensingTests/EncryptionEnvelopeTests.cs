@@ -1,8 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using RetailStorePOS.App.Services;
-using RetailStorePOS.App.Services.Licensing;
+using RetailStorePOS.UI.Common.Services;
 
 namespace LicensingTests;
 

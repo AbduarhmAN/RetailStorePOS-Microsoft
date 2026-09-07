@@ -39,7 +39,27 @@
     <AppxFilterOutUnusedLanguagesResourceFileMaps>false</AppxFilterOutUnusedLanguagesResourceFileMaps>
     <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
     <AppxGenerateResourcePack>Never</AppxGenerateResourcePack>
+    <PublishAot>true</PublishAot>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <DisableXbfLineInfo Condition="'$(Configuration)' != 'Debug'">true</DisableXbfLineInfo>
+    <Use64BitCompiler>true</Use64BitCompiler>
+    <XamlCompilerUse64Bit>true</XamlCompilerUse64Bit>
+    <DefaultItemExcludes>$(DefaultItemExcludes);scratch\**\*;Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw;ViewModels\LoginWindowViewModel_recovered.cs</DefaultItemExcludes>
   </PropertyGroup>
+
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       Native AOT runtime feature-switch overrides.
+       PublishAot=true injects IsDynamicCodeSupported=false into
+       runtimeconfig.json, which breaks WinUI 3 ItemsControl WinRT
+       interop marshalling (ArgumentException on set_ItemsSource).
+       These overrides keep dynamic code enabled so WinUI works
+       while still preparing the project for AOT publishing.
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported"
+                                    Value="true" Trim="true" />
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
@@ -47,6 +67,7 @@
     <AppxBundlePlatforms>x64</AppxBundlePlatforms>
     <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
     <GenerateTemporaryStoreCertificate>false</GenerateTemporaryStoreCertificate>
+    <DisableXbfLineInfo>false</DisableXbfLineInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -59,7 +80,48 @@
   </ItemGroup>
 
   <ItemGroup>
+    <TrimmerRootAssembly Include="Microsoft.WinUI" />
+    <TrimmerRootAssembly Include="WinRT.Runtime" />
+    <TrimmerRootAssembly Include="Microsoft.Windows.SDK.NET" />
+    <TrimmerRootAssembly Include="LiveChartsCore" />
+    <TrimmerRootAssembly Include="LiveChartsCore.SkiaSharpView" />
+    <TrimmerRootAssembly Include="LiveChartsCore.SkiaSharpView.WinUI" />
+    <TrimmerRootAssembly Include="Microsoft.Data.Sqlite" />
+    <TrimmerRootAssembly Include="System.Security.Cryptography.ProtectedData" />
+    <TrimmerRootAssembly Include="System.Management" />
+    <TrimmerRootAssembly Include="RetailStorePOS.Data" />
+    <TrimmerRootAssembly Include="RetailStorePOS.UI.Common" />
+    <TrimmerRootAssembly Include="RetailStorePOS.UI.Login" />
+    <TrimmerRootAssembly Include="RetailStorePOS.UI.Platform" />
+    <TrimmerRootAssembly Include="RetailStorePOS.UI.Sales" />
+    <TrimmerRootAssembly Include="RetailStorePOS.UI.Settings" />
+    <TrimmerRootAssembly Include="Nexill.RetailStorePOS" />
+    <TrimmerRootAssembly Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PRIResource Remove="Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw" />
+    <Content Remove="Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw" />
+    <Compile Remove="ViewModels\LoginWindowViewModel_recovered.cs" />
+    <Compile Remove="Views\CrashFeedbackDialog.xaml.cs" />
+    <Compile Remove="Views\TimeSyncDialog.xaml.cs" />
+    <Compile Remove="Services\Licensing\**\*.cs" />
+    <Compile Remove="Services\AuthorizationGuard.cs" />
+    <Compile Remove="Services\AuthorizedAdvancedReportsService.cs" />
+    <Page Remove="Views\CrashFeedbackDialog.xaml" />
+    <Page Remove="Views\TimeSyncDialog.xaml" />
+    <None Remove="scratch\**\*;Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw;ViewModels\LoginWindowViewModel_recovered.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\RetailStorePOS.Data\RetailStorePOS.Data.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Common\RetailStorePOS.UI.Common.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Settings\RetailStorePOS.UI.Settings.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Platform\RetailStorePOS.UI.Platform.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Reporting\RetailStorePOS.UI.Reporting.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Products\RetailStorePOS.UI.Products.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Sales\RetailStorePOS.UI.Sales.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Login\RetailStorePOS.UI.Login.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="RetailStorePOS.UI.Settings.Views.LicensePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Padding="24" Spacing="16" MaxWidth="680" HorizontalAlignment="Stretch">
+            <TextBlock x:Name="TitleText" FontSize="28" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock x:Name="DescriptionText" TextWrapping="Wrap"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            <TextBlock x:Name="StatusText" TextWrapping="Wrap" />
+            <TextBlock x:Name="AccessText" TextWrapping="Wrap" />
+            <PasswordBox x:Name="LicenseKeyBox" MaxLength="512" PasswordRevealMode="Hidden"
+                         PasswordChanged="LicenseKeyBox_PasswordChanged" />
+            <Button x:Name="ActivateButton" Click="ActivateButton_Click"
+                    Style="{StaticResource AccentButtonStyle}" />
+            <ProgressRing x:Name="ActivationProgress" Width="24" Height="24"
+                          HorizontalAlignment="Left" IsActive="False" Visibility="Collapsed" />
+            <InfoBar x:Name="ResultInfo" IsOpen="False" IsClosable="False" />
+        </StackPanel>
+    </ScrollViewer>
+</Page>

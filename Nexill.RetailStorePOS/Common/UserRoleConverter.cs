@@ -1,6 +1,6 @@
 using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
-using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.WinUiLogin.Common;
 
@@ -25,5 +25,6 @@ public class UserRoleConverter : IValueConverter
         return value ?? string.Empty;
     }
 
-    public object ConvertBack(object value, Type targetType, object parameter, string language) => throw new NotImplementedException();
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => DependencyProperty.UnsetValue;
 }

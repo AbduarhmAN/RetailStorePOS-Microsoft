@@ -1,0 +1,213 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(BuildingForLiveUnitTesting)' == 'true'">
+    <UseWinUI>false</UseWinUI>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <RootNamespace>TestRunner.Sales.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>$(RetailStorePOSWinUiAssemblyName)</AssemblyName>
+    <TargetName>$(RetailStorePOSWinUiTargetName)</TargetName>
+    <AssemblyTitle>$(RetailStorePOSWinUiTitle)</AssemblyTitle>
+    <Product>$(RetailStorePOSWinUiProductName)</Product>
+    <Description>$(RetailStorePOSDescription)</Description>
+    <ApplicationIcon>$(RetailStorePOSAppIcon)</ApplicationIcon>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <EnableMsixTooling Condition="'$(WindowsPackageType)' != 'None'">true</EnableMsixTooling>
+    <AppxPackage Condition="'$(WindowsPackageType)' != 'None'">true</AppxPackage>
+    <WindowsPackageType>MSIX</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+    <PackageCertificateThumbprint>6F9820672293A31028DDF6FF6B328633ECAA01DD</PackageCertificateThumbprint>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
+    <WinUISDKReferences>false</WinUISDKReferences>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Version>$(RetailStorePOSVersion)</Version>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <ResourceLanguages>en-US;ar-SA</ResourceLanguages>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>False</GenerateTestArtifacts>
+    <SelfContained>true</SelfContained>
+    <AppxFilterOutUnusedLanguagesResourceFileMaps>false</AppxFilterOutUnusedLanguagesResourceFileMaps>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+    <AppxGenerateResourcePack>Never</AppxGenerateResourcePack>
+    <PublishAot>true</PublishAot>
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+    <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    <DisableXbfLineInfo>true</DisableXbfLineInfo>
+    <Use64BitCompiler>true</Use64BitCompiler>
+    <XamlCompilerUse64Bit>true</XamlCompilerUse64Bit>
+    <DefaultItemExcludes>$(DefaultItemExcludes);scratch\**\*;Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw;ViewModels\LoginWindowViewModel_recovered.cs</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <!-- â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+       Native AOT runtime feature-switch overrides.
+       PublishAot=true injects IsDynamicCodeSupported=false into
+       runtimeconfig.json, which breaks WinUI 3 ItemsControl WinRT
+       interop marshalling (ArgumentException on set_ItemsSource).
+       These overrides keep dynamic code enabled so WinUI works
+       while still preparing the project for AOT publishing.
+       â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported"
+                                    Value="true" Trim="true" />
+  </ItemGroup>
+  <ItemGroup>
+
+    <ProjectReference Include="..\RetailStorePOS.Contracts\RetailStorePOS.Contracts.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.Data\RetailStorePOS.Data.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Common\RetailStorePOS.UI.Common.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Sales\RetailStorePOS.UI.Sales.csproj" />
+
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <AppxBundle>Never</AppxBundle>
+    <AppxBundlePlatforms>x64</AppxBundlePlatforms>
+    <WindowsAppSDKSelfContained>false</WindowsAppSDKSelfContained>
+    <GenerateTemporaryStoreCertificate>false</GenerateTemporaryStoreCertificate>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LiveChartsCore.SkiaSharpView.WinUI" Version="2.0.2" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.4" />
+    <PackageReference Include="System.Management" Version="9.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Microsoft.WinUI" />
+    <TrimmerRootAssembly Include="WinRT.Runtime" />
+    <TrimmerRootAssembly Include="Microsoft.Windows.SDK.NET" />
+    <TrimmerRootAssembly Include="LiveChartsCore" />
+    <TrimmerRootAssembly Include="LiveChartsCore.SkiaSharpView" />
+    <TrimmerRootAssembly Include="LiveChartsCore.SkiaSharpView.WinUI" />
+    <TrimmerRootAssembly Include="Microsoft.Data.Sqlite" />
+    <TrimmerRootAssembly Include="System.Security.Cryptography.ProtectedData" />
+    <TrimmerRootAssembly Include="System.Management" />
+    <TrimmerRootAssembly Include="RetailStorePOS.UI.Common" />
+    <TrimmerRootAssembly Include="RetailStorePOS.UI.Sales" />
+    <TrimmerRootAssembly Include="RetailStorePOS.Data" />
+    <TrimmerRootAssembly Include="TestRunner.Sales.App" />
+    <TrimmerRootAssembly Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PRIResource Include="..\Nexill.RetailStorePOS\Strings\**\*.resw">
+      <Link>Strings\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </PRIResource>
+    <PRIResource Remove="Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw" />
+    <Content Remove="Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw" />
+    <Compile Remove="ViewModels\LoginWindowViewModel_recovered.cs" />
+    <Compile Remove="Views\CrashFeedbackDialog.xaml.cs" />
+    <Compile Remove="Views\TimeSyncDialog.xaml.cs" />
+    <Page Remove="Views\CrashFeedbackDialog.xaml" />
+    <Page Remove="Views\TimeSyncDialog.xaml" />
+    <None Remove="scratch\**\*;Strings\fr-FR.bake\**\*;Strings\**\Resources_BACKUP.resw;ViewModels\LoginWindowViewModel_recovered.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    
+    
+    
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Core Services have been migrated locally to the Services/ folder -->
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\SplashScreen.scale-200.png" />
+    <Content Include="Assets\LoginBackground.png" />
+    <Content Include="Assets\LockScreenLogo.scale-200.png" />
+    <Content Include="Assets\Square150x150Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.scale-200.png" />
+    <Content Include="Assets\Square44x44Logo.targetsize-24_altform-unplated.png" />
+    <Content Include="Assets\BrandLogo.webp" />
+    <Content Include="Assets\StoreLogo.png" />
+    <Content Include="Assets\Logo.png" />
+    <Content Include="Assets\Wide310x150Logo.scale-200.png" />
+    <Content Include="Assets\app_icon.ico" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Assets\**\*;Resources\Policies\retail_store_pos_terms_and_privacy_policy.txt">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(WindowsPackageType)'!='None'">
+    <AppxManifest Include="Package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectCapability Remove="TestContainer" />
+  </ItemGroup>
+
+  <Target Name="CopyWinUiPriToPublishDirectory" AfterTargets="Publish" Condition="'$(PublishDir)' != '' and '$(PublishSingleFile)' != 'true'">
+    <ItemGroup>
+      <_GeneratedAppPri Include="$(TargetDir)$(AssemblyName).pri" Condition="Exists('$(TargetDir)$(AssemblyName).pri')" />
+      <_GeneratedRootXbf Include="$(TargetDir)*.xbf" />
+      <_GeneratedViewXbf Include="$(TargetDir)Views\**\*.xbf" />
+      <_GeneratedRuntimeAsset Include="$(MSBuildProjectDirectory)\Assets\**\*" Condition="Exists('$(MSBuildProjectDirectory)\Assets')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_GeneratedAppPri)" DestinationFiles="@(_GeneratedAppPri->'$(PublishDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="'@(_GeneratedAppPri)' != ''" />
+    <Copy SourceFiles="@(_GeneratedAppPri)" DestinationFiles="@(_GeneratedAppPri->'$(PublishDir)resources.pri')" SkipUnchangedFiles="true" Condition="'@(_GeneratedAppPri)' != ''" />
+
+    <Copy SourceFiles="@(_GeneratedRootXbf)" DestinationFiles="@(_GeneratedRootXbf->'$(PublishDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="'@(_GeneratedRootXbf)' != ''" />
+
+    <Copy SourceFiles="@(_GeneratedViewXbf)" DestinationFiles="@(_GeneratedViewXbf->'$(PublishDir)Views\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="'@(_GeneratedViewXbf)' != ''" />
+
+    <Copy SourceFiles="@(_GeneratedRuntimeAsset)" DestinationFiles="@(_GeneratedRuntimeAsset->'$(PublishDir)Assets\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" Condition="'@(_GeneratedRuntimeAsset)' != ''" />
+  </Target>
+
+  <Target Name="RenamePriFile" AfterTargets="Build">
+    <PropertyGroup>
+      <GeneratedPriFile>$(TargetDir)$(AssemblyName).pri</GeneratedPriFile>
+      <RequiredPriFile>$(TargetDir)resources.pri</RequiredPriFile>
+    </PropertyGroup>
+    <Copy SourceFiles="$(GeneratedPriFile)" 
+          DestinationFiles="$(RequiredPriFile)" 
+          Condition="Exists('$(GeneratedPriFile)') AND '$(GeneratedPriFile)' != '$(RequiredPriFile)'" 
+          SkipUnchangedFiles="true" />
+  </Target>
+
+
+
+
+
+  <ItemGroup>
+    <Using Include="RetailStorePOS.UI.Common" />
+    <Using Include="RetailStorePOS.Data.Models" />
+    <Using Include="RetailStorePOS.Data.Repositories" />
+    <Using Include="RetailStorePOS.Data.Modules.Tax" />
+    <Using Include="RetailStorePOS.Data.Modules.Sales" />
+    <Using Include="RetailStorePOS.Data.Modules.Products" />
+    
+    
+    <Using Include="RetailStorePOS.Data.Modules.Inventory" />
+    <Using Include="RetailStorePOS.Data.Modules.Reporting" />
+  </ItemGroup>
+</Project>
+
+

@@ -1,0 +1,36 @@
+using System;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Data;
+
+namespace RetailStorePOS.UI.Common;
+
+public sealed class UserRoleConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool isAdmin)
+        {
+            return isAdmin
+                ? LocalizationHelper.GetString("Users_Role_AdminLabel")
+                : LocalizationHelper.GetString("Users_Role_CashierLabel");
+        }
+
+        if (value is string role)
+        {
+            if (role == "Administrator")
+            {
+                return LocalizationHelper.GetString("Users_Role_AdminLabel");
+            }
+
+            if (role == "Cashier")
+            {
+                return LocalizationHelper.GetString("Users_Role_CashierLabel");
+            }
+        }
+
+        return value ?? string.Empty;
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+        => DependencyProperty.UnsetValue;
+}

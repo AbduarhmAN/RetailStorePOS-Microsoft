@@ -1,4 +1,4 @@
-using RetailStorePOS.App.Services;
+using RetailStorePOS.UI.Common.Services;
 using RetailStorePOS.Data;
 using RetailStorePOS.Data.Models;
 using RetailStorePOS.Data.Modules.Migrations;

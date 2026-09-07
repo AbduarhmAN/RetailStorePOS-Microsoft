@@ -23,7 +23,12 @@ public sealed class XReportPrintHelper : IDisposable
     /// </summary>
     public void PrintXReport(IEnumerable<Sale> sales, DateTime date, string storeName, string? preferredPrinterName = null)
     {
-        _lines = BuildReportLines(sales, date, storeName).ToList();
+        PrintXReport(sales, date, date, "Today", storeName, preferredPrinterName);
+    }
+
+    public void PrintXReport(IEnumerable<Sale> sales, DateTime fromDate, DateTime toDate, string periodLabel, string storeName, string? preferredPrinterName = null)
+    {
+        _lines = BuildReportLines(sales, fromDate.Date, toDate.Date, periodLabel, storeName).ToList();
         _currentLineIndex = 0;
 
         if (_lines.Count == 0) return;
@@ -31,7 +36,9 @@ public sealed class XReportPrintHelper : IDisposable
         try
         {
             using var printDoc = new PrintDocument();
-            printDoc.DocumentName = $"XReport_{date:yyyyMMdd}";
+            printDoc.DocumentName = fromDate.Date == toDate.Date
+                ? $"XReport_{fromDate:yyyyMMdd}"
+                : $"XReport_{fromDate:yyyyMMdd}_{toDate:yyyyMMdd}";
             printDoc.PrinterSettings.PrintToFile = false;
             ApplyPreferredPrinter(printDoc, preferredPrinterName);
             printDoc.PrintPage += PrintDoc_PrintPage;
@@ -145,12 +152,20 @@ public sealed class XReportPrintHelper : IDisposable
 
     private static IEnumerable<ReportLine> BuildReportLines(IEnumerable<Sale> sales, DateTime date, string storeName)
     {
+        return BuildReportLines(sales, date, date, "Today", storeName);
+    }
+
+    private static IEnumerable<ReportLine> BuildReportLines(IEnumerable<Sale> sales, DateTime fromDate, DateTime toDate, string periodLabel, string storeName)
+    {
         var salesList = sales.OrderBy(s => s.CreatedAt).ToList();
 
         yield return new(LineStyle.Separator);
         yield return new(LineStyle.TitleBold, storeName);
-        yield return new(LineStyle.Centered, "X REPORT (DAILY READ)");
-        yield return new(LineStyle.Centered, $"Date: {date:MM/dd/yyyy}");
+        yield return new(LineStyle.Centered, "X REPORT");
+        yield return new(LineStyle.Centered, string.IsNullOrWhiteSpace(periodLabel) ? "Period Report" : periodLabel.Trim());
+        yield return new(LineStyle.Centered, fromDate.Date == toDate.Date
+            ? $"Date: {fromDate:MM/dd/yyyy}"
+            : $"Period: {fromDate:MM/dd/yyyy} - {toDate:MM/dd/yyyy}");
         yield return new(LineStyle.Separator);
         yield return new(LineStyle.Empty);
 
@@ -159,26 +174,28 @@ public sealed class XReportPrintHelper : IDisposable
 
         decimal totalGross = 0;
         decimal totalNet = 0;
+        decimal totalTax = 0;
         decimal totalCash = 0;
+        decimal totalCard = 0;
+        int transactionCount = 0;
 
         foreach (var sale in salesList)
         {
             yield return new(LineStyle.TwoColumn, sale.ReceiptNumber.ToString("D6"),
                 CurrencyDisplayHelper.FormatConfiguredAmount(sale.Total));
 
-            decimal saleGross = 0;
-            foreach (var item in sale.Items)
-            {
-                saleGross += (item.Price * item.Quantity);
-            }
-            if (saleGross < sale.Subtotal) saleGross = sale.Subtotal;
-
-            totalGross += saleGross;
+            totalGross += sale.Total;
             totalNet += sale.Subtotal;
+            totalTax += sale.Tax;
+            transactionCount++;
 
-            if (sale.PaymentType != null && sale.PaymentType.Equals("Cash", StringComparison.OrdinalIgnoreCase))
+            if (IsCashPayment(sale.PaymentType))
             {
                 totalCash += sale.Total;
+            }
+            else if (IsCardPayment(sale.PaymentType))
+            {
+                totalCard += sale.Total;
             }
         }
 
@@ -191,12 +208,28 @@ public sealed class XReportPrintHelper : IDisposable
         yield return new(LineStyle.Empty);
         yield return new(LineStyle.Bold, "SUMMARY");
         yield return new(LineStyle.Separator);
+        yield return new(LineStyle.TwoColumn, "Transactions", transactionCount.ToString());
         yield return new(LineStyle.TwoColumn, "Total Gross Sales", CurrencyDisplayHelper.FormatConfiguredAmount(totalGross));
         yield return new(LineStyle.TwoColumn, "Total Net Sales", CurrencyDisplayHelper.FormatConfiguredAmount(totalNet));
-        yield return new(LineStyle.TwoColumn, "Total Cash in Drawer", CurrencyDisplayHelper.FormatConfiguredAmount(totalCash));
+        yield return new(LineStyle.TwoColumn, "Total Tax Collected", CurrencyDisplayHelper.FormatConfiguredAmount(totalTax));
+        yield return new(LineStyle.Separator);
+        yield return new(LineStyle.TwoColumn, "Cash Payments", CurrencyDisplayHelper.FormatConfiguredAmount(totalCash));
+        yield return new(LineStyle.TwoColumn, "Card Payments", CurrencyDisplayHelper.FormatConfiguredAmount(totalCard));
         yield return new(LineStyle.Separator);
         yield return new(LineStyle.Empty);
         yield return new(LineStyle.Centered, "End of Report");
+    }
+
+    private static bool IsCashPayment(string? paymentType)
+    {
+        return string.Equals(paymentType, "Cash", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsCardPayment(string? paymentType)
+    {
+        return string.Equals(paymentType, "Card", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(paymentType, "Credit", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(paymentType, "Debit", StringComparison.OrdinalIgnoreCase);
     }
 
     // ──── Drawing Helpers (matching ReceiptPrintHelper) ────

@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup Condition="'$(BuildingForLiveUnitTesting)' == 'true'">
+    <UseWinUI>false</UseWinUI>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <RootNamespace>TestRunner.Login.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>TestRunner.Login.App</AssemblyName>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <UseWinUI>true</UseWinUI>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PublishAot>false</PublishAot>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <ResourceLanguages>en-US;ar-SA</ResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RetailStorePOS.Contracts\RetailStorePOS.Contracts.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.Data\RetailStorePOS.Data.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Common\RetailStorePOS.UI.Common.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Login\RetailStorePOS.UI.Login.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PRIResource Include="..\Nexill.RetailStorePOS\Strings\**\*.resw">
+      <Link>Strings\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </PRIResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Nexill.RetailStorePOS\Assets\**\*.*">
+      <Link>Assets\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="RenamePriFile" AfterTargets="Build">
+    <PropertyGroup>
+      <GeneratedPriFile>$(TargetDir)$(AssemblyName).pri</GeneratedPriFile>
+      <RequiredPriFile>$(TargetDir)resources.pri</RequiredPriFile>
+    </PropertyGroup>
+    <Copy SourceFiles="$(GeneratedPriFile)" 
+          DestinationFiles="$(RequiredPriFile)" 
+          Condition="Exists('$(GeneratedPriFile)') AND '$(GeneratedPriFile)' != '$(RequiredPriFile)'" 
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>

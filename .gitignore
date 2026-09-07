@@ -93,3 +93,69 @@ opencode.json
 
 ## Test certificates with private keys
 Deployment/Certification/*.pfx
+
+## --- CLEAN WORKSPACE RULES ---
+## Exclude everything in the root by default
+/*
+
+## Allow core Git files
+!/.gitignore
+!/.gitattributes
+
+## Allow Solution and Build Config
+!/Nexill.RetailStorePOS.slnx
+!/Directory.Build.props
+
+## Allow Documentation & Specs
+!/AGENTS.md
+!/CLAUDE.md
+!/GEMINI.md
+!/PROJECT.md
+!/PRODUCT.md
+!/DESIGN.md
+!/specs/
+
+## Allow Core C# Code Projects
+!/Nexill.RetailStorePOS/
+!/RetailStorePOS.Contracts/
+!/RetailStorePOS.Data/
+!/RetailStorePOS.UI.Common/
+!/RetailStorePOS.UI.Login/
+!/RetailStorePOS.UI.Platform/
+!/RetailStorePOS.UI.Products/
+!/RetailStorePOS.UI.Reporting/
+!/RetailStorePOS.UI.Sales/
+!/RetailStorePOS.UI.Settings/
+!/RetailStorePOS.UI.Tax/
+!/Tests/
+!/TestRunner.Login.App/
+!/TestRunner.Products.App/
+!/TestRunner.Reporting.App/
+!/TestRunner.Sales.App/
+!/TestRunner.Settings.App/
+
+## Allow Tooling & Deployment
+!/LicenseKeyGen/
+!/DeviceIdentityRunner/
+!/Deployment/
+!/supabase/
+
+## Re-apply standard build ignores (since we overrode them)
+[Bb]in/
+[Oo]bj/
+.vs/
+*.db
+__pycache__/
+*.exe
+*.dll
+*.pdb
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+AppPackages/
+BundleArtifacts/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/

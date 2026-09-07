@@ -1,0 +1,26 @@
+{
+  "publicKey": {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "axfR8uEsQkf4vOblY6RA8ncDfYEt6zOg9KE5RdiYwpY",
+    "y": "T-NC4v4af5uO5-tKfA-eFivOM1drMV7Oy7ZAaDe_UfU"
+  },
+  "thumbprint": "xx0BcA-wMohw8atYDJOe6peGModklG2wRHBlXHMvl0M",
+  "now": "2026-09-05T12:00:30.000Z",
+  "challenge": {
+    "audience": "nexill-license-device-v2",
+    "challengeId": "11111111-2222-4333-8444-555555555555",
+    "devicePublicKeyThumbprint": "xx0BcA-wMohw8atYDJOe6peGModklG2wRHBlXHMvl0M",
+    "expiresAtUtc": "2026-09-05T12:02:00.000Z",
+    "installId": "INSTALL-1",
+    "issuedAtUtc": "2026-09-05T12:00:00.000Z",
+    "messageType": "license_device_challenge",
+    "mode": "enroll",
+    "nonce": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "productCode": "RETAILSTOREPOS",
+    "protocolVersion": 2,
+    "requestNonce": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "requestSequence": 42
+  },
+  "canonicalChallenge": "{\"audience\":\"nexill-license-device-v2\",\"challengeId\":\"11111111-2222-4333-8444-555555555555\",\"devicePublicKeyThumbprint\":\"xx0BcA-wMohw8atYDJOe6peGModklG2wRHBlXHMvl0M\",\"expiresAtUtc\":\"2026-09-05T12:02:00.000Z\",\"installId\":\"INSTALL-1\",\"issuedAtUtc\":\"2026-09-05T12:00:00.000Z\",\"messageType\":\"license_device_challenge\",\"mode\":\"enroll\",\"nonce\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"productCode\":\"RETAILSTOREPOS\",\"protocolVersion\":2,\"requestNonce\":\"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",\"requestSequence\":42}"
+}

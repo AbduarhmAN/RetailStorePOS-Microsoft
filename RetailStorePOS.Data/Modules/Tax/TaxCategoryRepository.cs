@@ -121,10 +121,10 @@ WHERE id = @id;";
     {
         return new TaxCategory
         {
-            Id = reader.GetInt64(0),
+            Id = Convert.ToInt64(reader.GetValue(0)),
             Name = reader.GetString(1),
-            RatePercent = (decimal)reader.GetDouble(2),
-            IsDefault = reader.GetInt32(3) == 1
+            RatePercent = (decimal)Convert.ToDouble(reader.GetValue(2)),
+            IsDefault = Convert.ToInt32(reader.GetValue(3)) == 1
         };
     }
 

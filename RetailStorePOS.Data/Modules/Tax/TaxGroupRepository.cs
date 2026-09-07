@@ -39,9 +39,9 @@ ORDER BY is_default DESC, name;";
 
         while (juncReader.Read())
         {
-            long groupId = juncReader.GetInt64(0);
-            long ruleId = juncReader.GetInt64(1);
-            int seqOrder = juncReader.GetInt32(2);
+            long groupId = Convert.ToInt64(juncReader.GetValue(0));
+            long ruleId = Convert.ToInt64(juncReader.GetValue(1));
+            int seqOrder = Convert.ToInt32(juncReader.GetValue(2));
 
             var group = results.FirstOrDefault(g => g.Id == groupId);
             if (group != null && allRules.TryGetValue(ruleId, out var rule))
@@ -228,12 +228,12 @@ VALUES (@groupId, @ruleId, 1);";
     {
         return new TaxGroup
         {
-            Id = reader.GetInt64(0),
+            Id = Convert.ToInt64(reader.GetValue(0)),
             Name = reader.GetString(1),
-            IsDefault = reader.GetInt32(2) == 1,
-            IsActive = reader.GetInt32(3) == 1,
+            IsDefault = Convert.ToInt32(reader.GetValue(2)) == 1,
+            IsActive = Convert.ToInt32(reader.GetValue(3)) == 1,
             CreatedAt = reader.GetString(4),
-            IsAutoManaged = reader.FieldCount > 5 && !reader.IsDBNull(5) && reader.GetInt32(5) == 1
+            IsAutoManaged = reader.FieldCount > 5 && !reader.IsDBNull(5) && Convert.ToInt32(reader.GetValue(5)) == 1
         };
     }
 }

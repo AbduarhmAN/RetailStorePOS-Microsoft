@@ -50,6 +50,8 @@ Deno.serve(async (req) => {
 
 function statusForErrorCode(errorCode: string) {
   switch (errorCode) {
+    case "device_proof_not_enabled":
+      return 503;
     case "method_not_allowed":
       return 405;
     case "rate_limited":
@@ -69,6 +71,10 @@ function statusForErrorCode(errorCode: string) {
     case "activation_create_failed":
     case "activation_seat_claim_failed":
     case "feature_lookup_failed":
+    case "device_challenge_creation_failed":
+    case "device_challenge_lookup_failed":
+    case "device_challenge_completion_failed":
+    case "invalid_activation_certificate":
       return 500;
     default:
       // Most envelope-related errors (envelope_*) and validation failures are

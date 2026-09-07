@@ -30,15 +30,22 @@ public class LocalizationService : ObservableObject
     public FlowDirection FlowDirection => LocalizationHelper.IsRtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
 
     /// <summary>
+    /// The current effective language tag.
+    /// </summary>
+    public string CurrentLanguage => LocalizationHelper.GetEffectiveLanguageTag();
+
+    /// <summary>
     /// Swaps the language and notifies all listeners to refresh their strings.
     /// </summary>
     /// <param name="languageTag">e.g., "ar-SA" or "en-US"</param>
     public void SetLanguage(string languageTag)
     {
         LocalizationHelper.SetRuntimeLanguage(languageTag);
-        
+
         // Notify that 'this' (the indexer) and 'FlowDirection' have changed.
         // In XAML, Binding to Loc[key] will re-evaluate when we notify property change for an empty string or the indexer name.
+        OnPropertyChanged(nameof(CurrentLanguage));
+        OnPropertyChanged(nameof(FlowDirection));
         OnPropertyChanged(string.Empty); // Special case: notifies that ALL properties have changed.
         OnPropertyChanged("Item[]");    // Specifically notifies the indexer.
     }

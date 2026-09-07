@@ -858,24 +858,24 @@ ORDER BY is_default DESC, id ASC;";
     {
         return new Product
         {
-            Id = reader.GetInt64(0),
+            Id = Convert.ToInt64(reader.GetValue(0)),
             Sku = reader.IsDBNull(1) ? null : reader.GetString(1),
             Name = reader.GetString(2),
             Barcode = reader.IsDBNull(3) ? null : reader.GetString(3),
             Unit = reader.IsDBNull(4) ? null : reader.GetString(4),
-            Price = MoneyUtils.FromCents(reader.GetInt64(5)),
-            CostPrice = MoneyUtils.FromCents(reader.GetInt64(6)),
-            TaxCategoryId = reader.IsDBNull(7) ? 1 : reader.GetInt64(7),
-            QuantityStore = reader.IsDBNull(8) ? 0m : (decimal)reader.GetDouble(8),
-            QuantityWarehouse = reader.IsDBNull(9) ? 0m : (decimal)reader.GetDouble(9),
-            MinThresholdStore = reader.IsDBNull(10) ? 5m : (decimal)reader.GetDouble(10),
-            MinThresholdWarehouse = reader.IsDBNull(11) ? 10m : (decimal)reader.GetDouble(11),
+            Price = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(5))),
+            CostPrice = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(6))),
+            TaxCategoryId = reader.IsDBNull(7) ? 1 : Convert.ToInt64(reader.GetValue(7)),
+            QuantityStore = reader.IsDBNull(8) ? 0m : (decimal)Convert.ToDouble(reader.GetValue(8)),
+            QuantityWarehouse = reader.IsDBNull(9) ? 0m : (decimal)Convert.ToDouble(reader.GetValue(9)),
+            MinThresholdStore = reader.IsDBNull(10) ? 5m : (decimal)Convert.ToDouble(reader.GetValue(10)),
+            MinThresholdWarehouse = reader.IsDBNull(11) ? 10m : (decimal)Convert.ToDouble(reader.GetValue(11)),
             PurchasedAt = reader.IsDBNull(12) ? null : DateTime.Parse(reader.GetString(12), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
             LastSaleAt = reader.IsDBNull(13) ? null : DateTime.Parse(reader.GetString(13), CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind),
             CashierName = reader.IsDBNull(14) ? string.Empty : reader.GetString(14),
             ThumbnailPath = reader.IsDBNull(15) ? null : reader.GetString(15),
-            TaxRatePercent = reader.IsDBNull(16) ? 0m : (decimal)reader.GetDouble(16),
-            TaxGroupId = reader.IsDBNull(17) ? 1 : reader.GetInt64(17),
+            TaxRatePercent = reader.IsDBNull(16) ? 0m : (decimal)Convert.ToDouble(reader.GetValue(16)),
+            TaxGroupId = reader.IsDBNull(17) ? 1 : Convert.ToInt64(reader.GetValue(17)),
             ProductDna = reader.IsDBNull(18) ? null : reader.GetString(18)
         };
     }

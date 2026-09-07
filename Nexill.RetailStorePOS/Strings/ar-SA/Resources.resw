@@ -687,9 +687,6 @@
   <data name="Checkout_Receipt_CompleteTitle.Text" xml:space="preserve">
     <value>عملية ناجحة</value>
   </data>
-  <data name="Checkout_Receipt_NumberLabel" xml:space="preserve">
-    <value>رقم الفاتورة # </value>
-  </data>
   <data name="Checkout_Receipt_ChangeDueLabel.Text" xml:space="preserve">
     <value>الباقي المستحق</value>
   </data>
@@ -1141,7 +1138,7 @@
     <value>قائمة تقارير X</value>
   </data>
   <data name="ReportsReceipts_XReportHistory_Description" xml:space="preserve">
-    <value>استعرض ملفات PDF لتقارير X المحفوظة على هذا الجهاز. اختر أي تقرير لفتحه.</value>
+    <value>استعرض تقارير X المحفوظة في قاعدة البيانات. اختر أي تقرير لتصديره أو فتحه.</value>
   </data>
   <data name="ReportsReceipts_XReportHistory_Empty" xml:space="preserve">
     <value>لم يتم العثور على تقارير X محفوظة.</value>
@@ -1162,13 +1159,40 @@
     <value>تقرير X • {0}</value>
   </data>
   <data name="ReportsReceipts_XReportHistory_SubtitleFormat" xml:space="preserve">
-    <value>آخر تحديث {0}</value>
+    <value>تم الإنشاء {0}</value>
   </data>
   <data name="ReportsReceipts_XReportHistory_MetaFormat" xml:space="preserve">
-    <value>الملف {0}</value>
+    <value>{0} معاملة • الإجمالي {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_Button" xml:space="preserve">
+    <value>ملخص اليومية</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSessions_Button" xml:space="preserve">
+    <value>جلسات اليومية</value>
   </data>
   <data name="ReportsReceipts_RegisterReport_Button" xml:space="preserve">
-    <value>تقرير اليومية</value>
+    <value>جلسات اليومية</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_Dialog_Title" xml:space="preserve">
+    <value>ملخص اليومية</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_HeadlineFormat" xml:space="preserve">
+    <value>ملخص اليومية • {0}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_PeriodFormat" xml:space="preserve">
+    <value>{0} - {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_SalesCaptionFormat" xml:space="preserve">
+    <value>{0} عملية بيع • الضريبة {1}</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_SessionsCaptionFormat" xml:space="preserve">
+    <value>{0} مغلقة • {1} مفتوحة</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_ExpectedCashCaption" xml:space="preserve">
+    <value>عهد الافتتاح + مبيعات النقد + صافي التعديلات</value>
+  </data>
+  <data name="ReportsReceipts_RegisterSummary_CountedCashCaptionFormat" xml:space="preserve">
+    <value>الفرق {0}</value>
   </data>
   <data name="ReportsReceipts_RegisterReport_HistoryDialog_Title" xml:space="preserve">
     <value>جلسات اليومية</value>
@@ -2904,16 +2928,10 @@
   </data>
 
   <!-- Regular dashboard freshness -->
-  <data name="ReportsDashboard_Stale_Tag" xml:space="preserve">
-    <value>مخزن • فشل التحديث</value>
-  </data>
 
   <!-- CSV column-mapping dialog -->
   <data name="ImportMapping_DialogTitle" xml:space="preserve">
     <value>تطابق أعمدة CSV</value>
-  </data>
-  <data name="ImportMapping_Subtitle" xml:space="preserve">
-    <value>اختر العمود في ملفك المطابق لكل حقل منتج. الاسم مطلوب. السعر والباركود مستحسنان.</value>
   </data>
   <data name="ImportMapping_Field_Name" xml:space="preserve">
     <value>الاسم *</value>
@@ -3005,12 +3023,6 @@
   <data name="ImportMapping_FieldOption_Skip" xml:space="preserve">
     <value>لا تستورد هذا العمود</value>
   </data>
-  <data name="ImportMapping_RowHeader_CsvColumn" xml:space="preserve">
-    <value>عمود CSV</value>
-  </data>
-  <data name="ImportMapping_RowHeader_ProductField" xml:space="preserve">
-    <value>حقل المنتج</value>
-  </data>
   <data name="ImportMapping_Validation_Duplicates" xml:space="preserve">
     <value>تم ربط أكثر من عمود CSV بنفس حقل المنتج. سيتم استيراد الأخير فقط.</value>
   </data>
@@ -3020,4 +3032,53 @@
   <data name="ImportMapping_Required_NameMissing" xml:space="preserve">
     <value>اختر عمود CSV لحقل "الاسم" قبل الاستيراد.</value>
   </data>
+  <data name="AppDisplayName" xml:space="preserve">
+    <value>Retail Store POS</value>
+  </data>
+  <data name="AboutPage_PrivacyPolicy_Title" xml:space="preserve">
+    <value>سياسة الخصوصية</value>
+  </data>
+  <data name="AboutPage_Version_Label" xml:space="preserve">
+    <value>الإصدار</value>
+  </data>
+  <data name="AboutPage_FileNotFound" xml:space="preserve">
+    <value>لم يتم العثور على ملف سياسة الخصوصية.</value>
+  </data>
+  <data name="Splash_Version_Format" xml:space="preserve">
+    <value>v{0}</value>
+  </data>
+  <data name="Splash_Copyright_Default" xml:space="preserve">
+    <value>© Nexill</value>
+  </data>
+  <data name="Checkout_Receipt_NumberLabel.Text" xml:space="preserve">
+    <value>رقم الفاتورة # </value>
+  </data>
+  <data name="ReportsDashboard_Stale_Tag.Text" xml:space="preserve">
+    <value>مخزن • فشل التحديث</value>
+  </data>
+  <data name="ImportMapping_Subtitle.Text" xml:space="preserve">
+    <value>اختر العمود في ملفك المطابق لكل حقل منتج. الاسم مطلوب. السعر والباركود مستحسنان.</value>
+  </data>
+  <data name="ImportMapping_RowHeader_CsvColumn.Text" xml:space="preserve">
+    <value>عمود CSV</value>
+  </data>
+  <data name="ImportMapping_RowHeader_ProductField.Text" xml:space="preserve">
+    <value>حقل المنتج</value>
+  </data>
+  <data name="LicensePage_Title" xml:space="preserve"><value>الترخيص</value></data>
+  <data name="LicensePage_Description" xml:space="preserve"><value>أدخل مفتاح الترخيص لتفعيل هذا التثبيت. يتطلب التفعيل اتصالا بالإنترنت.</value></data>
+  <data name="LicensePage_KeyLabel" xml:space="preserve"><value>مفتاح الترخيص</value></data>
+  <data name="LicensePage_KeyPlaceholder" xml:space="preserve"><value>أدخل مفتاح الترخيص</value></data>
+  <data name="LicensePage_Activate" xml:space="preserve"><value>تفعيل الترخيص</value></data>
+  <data name="LicensePage_AdminRequired" xml:space="preserve"><value>سجل الدخول كمسؤول وأكمل أي تغيير مطلوب لكلمة المرور لإدارة هذا الترخيص.</value></data>
+  <data name="LicensePage_ActiveStatus" xml:space="preserve"><value>نشط: {0}. الشهادة الحالية صالحة حتى {1}.</value></data>
+  <data name="LicensePage_InactiveStatus" xml:space="preserve"><value>لا توجد شهادة ترخيص صالحة حاليا.</value></data>
+  <data name="LicensePage_KeyRequired" xml:space="preserve"><value>أدخل مفتاح الترخيص.</value></data>
+  <data name="LicensePage_Success" xml:space="preserve"><value>تم التحقق من الترخيص وحفظه على هذا الجهاز.</value></data>
+  <data name="LicensePage_SaveFailed" xml:space="preserve"><value>تم التحقق من الترخيص، لكن تعذر حفظ بعض بيانات التفعيل. تحقق من إمكانية الوصول إلى بيانات التطبيق المحلية وحاول مجددا قبل إغلاق التطبيق.</value></data>
+  <data name="LicensePage_NetworkFailed" xml:space="preserve"><value>تعذر الاتصال بخادم الترخيص. تحقق من اتصالك بالإنترنت وحاول مجددا.</value></data>
+  <data name="LicensePage_NotConfigured" xml:space="preserve"><value>لم يتم إعداد التحقق من الترخيص أو تعذر تحديد هوية الجهاز. تواصل مع الدعم.</value></data>
+  <data name="LicensePage_Rejected" xml:space="preserve"><value>لم يوافق الخادم على التفعيل. تحقق من مفتاح الترخيص وحالته وعدد الأجهزة المسموح به، أو تواصل مع الدعم.</value></data>
+  <data name="LicensePage_VerificationFailed" xml:space="preserve"><value>تعذر التحقق من استجابة الخادم. لم يتم قبول التفعيل المطلوب. حاول مجددا أو تواصل مع الدعم.</value></data>
+  <data name="LicensePage_UnexpectedFailure" xml:space="preserve"><value>تعذر إكمال التفعيل. حاول مجددا أو تواصل مع الدعم.</value></data>
 </root>

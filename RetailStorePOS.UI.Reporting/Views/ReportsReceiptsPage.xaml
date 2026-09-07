@@ -1,0 +1,908 @@
+<Page
+    x:Name="PageRoot"
+    x:Class="RetailStorePOS.UI.Reporting.Views.ReportsReceiptsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:RetailStorePOS.Data.Modules.Sales"
+    xmlns:reportModels="using:RetailStorePOS.UI.Reporting.Models"
+    xmlns:views="using:RetailStorePOS.UI.Reporting.Views"
+    mc:Ignorable="d"
+    Background="Transparent">
+
+    <Grid>
+        <!-- Removed the outer ScrollViewer! It was breaking the UI Virtualization by giving the ListView infinite height -->
+        <Grid Padding="24" RowSpacing="{x:Bind ViewModel.PageRowSpacing, Mode=OneTime}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Inline Tools -->
+            <Border Grid.Row="0"
+                Visibility="{x:Bind ViewModel.ReportChromeVisibility, Mode=OneTime}"
+                Padding="16"
+                Background="#FCFDFD"
+                BorderBrush="{StaticResource BorderDivider}"
+                BorderThickness="1"
+                CornerRadius="14">
+                <Grid RowSpacing="16">
+                    <Grid.RowDefinitions>
+                        <!-- Row 0: Grouped Report History Border -->
+                        <RowDefinition Height="Auto" />
+                        <!-- Row 1: Transaction Filters Header -->
+                        <RowDefinition Height="Auto" />
+                        <!-- Row 2: Transaction Filters Inputs -->
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Report History Section Grouped in Border -->
+                    <Border Grid.Row="0"
+                            Padding="16"
+                            Background="#FAFBFC"
+                            BorderBrush="{StaticResource BorderDivider}"
+                            BorderThickness="1"
+                            CornerRadius="10">
+                        <Grid RowSpacing="12">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Spacing="2">
+                                    <TextBlock x:Name="ReportHistoryTitleText"
+                                               Text="Report History"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryText}" />
+                                    <TextBlock x:Name="ReportHistorySubtitleText"
+                                               Text="Receipts stay unrestricted. These filters apply only to X report history and register sessions."
+                                               Style="{StaticResource NotionMetaTextStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1"
+                                            Spacing="2"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center">
+                                    <TextBlock x:Name="ReportHistoryRangeText"
+                                               Text="History range: Last 3 Days"
+                                               Style="{StaticResource NotionMetaTextStyle}"
+                                               HorizontalAlignment="Right" />
+                                    <TextBlock x:Name="ReportHistoryAccessText"
+                                               Text="Free tier: Today and Last 3 Days only"
+                                               Style="{StaticResource NotionMetaTextStyle}"
+                                               HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Grid Grid.Row="1" ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock x:Name="ReportHistoryQuickRangeLabelText"
+                                               Text="History Range"
+                                               Style="{StaticResource NotionMetaTextStyle}"
+                                               Margin="0,0,0,8" />
+                                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                        <Button x:Name="ReportHistoryTodayButton"
+                                                Style="{StaticResource NotionButtonStyle}"
+                                                Click="ReportHistoryTodayButton_Click">
+                                            <TextBlock x:Name="ReportHistoryTodayButtonText"
+                                                       Text="Today"
+                                                       FontSize="13" />
+                                        </Button>
+                                        <Button x:Name="ReportHistoryLast3DaysButton"
+                                                Style="{StaticResource NotionButtonStyle}"
+                                                Click="ReportHistoryLast3DaysButton_Click">
+                                            <TextBlock x:Name="ReportHistoryLast3DaysButtonText"
+                                                       Text="Last 3 Days"
+                                                       FontSize="13" />
+                                        </Button>
+                                        <Button x:Name="ReportHistoryMoreRangesButton"
+                                                Style="{StaticResource NotionButtonStyle}"
+                                                Click="ReportHistoryMoreRangesButton_Click">
+                                            <Button.ContextFlyout>
+                                                <MenuFlyout x:Name="ReportHistoryMoreRangesFlyout">
+                                                    <MenuFlyoutItem x:Name="ReportHistoryLast7DaysMenuItem"
+                                                                    Text="Last 7 Days"
+                                                                    Tag="Last7Days"
+                                                                    Click="ReportHistoryPresetMenuItem_Click" />
+                                                    <MenuFlyoutItem x:Name="ReportHistoryWeekToDateMenuItem"
+                                                                    Text="Week to Date"
+                                                                    Tag="WeekToDate"
+                                                                    Click="ReportHistoryPresetMenuItem_Click" />
+                                                    <MenuFlyoutItem x:Name="ReportHistoryLast30DaysMenuItem"
+                                                                    Text="Last 30 Days"
+                                                                    Tag="Last30Days"
+                                                                    Click="ReportHistoryPresetMenuItem_Click" />
+                                                    <MenuFlyoutItem x:Name="ReportHistoryMonthToDateMenuItem"
+                                                                    Text="Month to Date"
+                                                                    Tag="MonthToDate"
+                                                                    Click="ReportHistoryPresetMenuItem_Click" />
+                                                </MenuFlyout>
+                                            </Button.ContextFlyout>
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <FontIcon Glyph="&#xE70D;" FontSize="12" />
+                                                <TextBlock x:Name="ReportHistoryMoreRangesButtonText"
+                                                           Text="More Ranges"
+                                                           FontSize="13" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+
+                                <StackPanel Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            Spacing="8"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Bottom">
+                                    <Button Style="{StaticResource AccentBlueButtonStyle}"
+                                            Click="GenerateXReportButton_Click"
+                                            Translation="0,0,8">
+                                        <Button.Shadow>
+                                            <ThemeShadow />
+                                        </Button.Shadow>
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Glyph="&#xE9F9;" FontSize="13" Foreground="White" />
+                                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_XReport_Button, Mode=OneTime}" FontSize="13" Foreground="White" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource NotionButtonStyle}"
+                                            Click="RegisterSummaryButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Glyph="&#xE9D2;" FontSize="13" Foreground="{StaticResource PrimaryText}" />
+                                            <TextBlock x:Name="RegisterSummaryButtonText"
+                                                       Text="Register Summary"
+                                                       FontSize="13"
+                                                       Foreground="{StaticResource PrimaryText}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource NotionButtonStyle}"
+                                            Click="XReportHistoryButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Glyph="&#xE14C;" FontSize="13" Foreground="{StaticResource PrimaryText}" />
+                                            <TextBlock x:Name="XReportHistoryButtonText"
+                                                       Text="X Report List"
+                                                       FontSize="13"
+                                                       Foreground="{StaticResource PrimaryText}" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Button Style="{StaticResource NotionButtonStyle}"
+                                            Click="RegisterReportButton_Click">
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <FontIcon Glyph="&#xE8A5;" FontSize="13" Foreground="{StaticResource PrimaryText}" />
+                                            <TextBlock x:Name="RegisterReportButtonText"
+                                                       Text="Register Sessions"
+                                                       FontSize="13"
+                                                       Foreground="{StaticResource PrimaryText}" />
+                                        </StackPanel>
+                                    </Button>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <!-- Row 1: Transaction Filters Header -->
+                    <Grid Grid.Row="1" ColumnSpacing="16" Margin="0,4,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Filters_Title, Mode=OneTime}"
+                                   FontSize="13"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource PrimaryText}" />
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Filters_Subtitle, Mode=OneTime}"
+                                   Style="{StaticResource NotionMetaTextStyle}" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBlock Text="{x:Bind ViewModel.RangeLabel, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" />
+                            <TextBlock Text="|" Style="{StaticResource NotionMetaTextStyle}" />
+                            <TextBlock Text="{x:Bind ViewModel.VisibleTransactionsCount, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" />
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_ShownLabel, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Row 2: Transaction Filters Inputs -->
+                    <Grid Grid.Row="2" ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Quick Range Buttons -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_QuickRange_Label, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Button Content="{x:Bind ViewModel.ReportsReceipts_QuickRange_Today, Mode=OneTime}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetTodayRangeCommand}" Background="{x:Bind ViewModel.TodayPresetBackground, Mode=OneWay}" />
+                                <Button Content="{x:Bind ViewModel.ReportsReceipts_QuickRange_7Days, Mode=OneTime}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast7DaysRangeCommand}" Background="{x:Bind ViewModel.Last7PresetBackground, Mode=OneWay}" />
+                                <Button Content="{x:Bind ViewModel.ReportsReceipts_QuickRange_30Days, Mode=OneTime}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.SetLast30DaysRangeCommand}" Background="{x:Bind ViewModel.Last30PresetBackground, Mode=OneWay}" />
+                            </StackPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Date_From, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <CalendarDatePicker Date="{x:Bind ViewModel.FromDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Date_To, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <CalendarDatePicker Date="{x:Bind ViewModel.ToDate, Mode=TwoWay}" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="3">
+                            <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_Search_Label, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" Margin="0,0,0,8" />
+                            <Grid ColumnSpacing="4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBox PlaceholderText="{x:Bind ViewModel.ReportsReceipts_Search_Box, Mode=OneTime}" CornerRadius="4" Text="{x:Bind ViewModel.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" BorderThickness="1" BorderBrush="{StaticResource BorderDivider}" Background="Transparent" />
+                                <Button Grid.Column="1" ToolTipService.ToolTip="{x:Bind ViewModel.ReportsReceipts_Search_ClearTooltip, Mode=OneTime}" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ClearSearchCommand}">
+                                    <SymbolIcon Symbol="Clear" Foreground="{StaticResource MutedText}" />
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Transaction Grid -->
+            <Border Grid.Row="1"
+                    Background="White"
+                    BorderBrush="{StaticResource BorderDivider}"
+                    BorderThickness="1"
+                    CornerRadius="14"
+                    Padding="0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid Grid.Row="0" Padding="20,16,20,12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="0,0,0,1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{x:Bind ViewModel.RangeLabel, Mode=OneWay}" Style="{StaticResource NotionSectionHeaderStyle}" Margin="0" />
+                            <TextBlock Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.VisibleTransactionsCount, Mode=OneWay}" Style="{StaticResource NotionMetaTextStyle}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                        <Button Grid.Column="2" Style="{StaticResource NotionButtonStyle}" Command="{x:Bind ViewModel.ToggleTransactionsViewCommand, Mode=OneWay}" ToolTipService.ToolTip="{x:Bind ViewModel.TransactionToggleTooltip, Mode=OneWay}" VerticalAlignment="Center">
+                            <SymbolIcon Symbol="{x:Bind ViewModel.TransactionToggleSymbol, Mode=OneWay}" Foreground="{StaticResource MutedText}" />
+                        </Button>
+                    </Grid>
+
+                    <ListView Grid.Row="1"
+                          x:Name="SalesListView"
+                          SelectionMode="None"
+                          ShowsScrollingPlaceholders="True"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.VerticalScrollMode="Auto"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.HorizontalScrollMode="Disabled">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                <Setter Property="Padding" Value="0"/>
+                                <Setter Property="MinHeight" Value="0"/>
+                                <Setter Property="Margin" Value="0"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+                        <ListView.Header>
+                            <Grid Padding="20,10" BorderBrush="{StaticResource BorderDivider}" BorderThickness="0,0,0,1" Background="#FAFBFC">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="120" />
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="100" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="120" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Receipt, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Left" />
+                                <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Date, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Left" />
+                                <TextBlock Grid.Column="2" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Time, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Left" />
+                                <TextBlock Grid.Column="3" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Type, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Left" />
+                                <TextBlock Grid.Column="4" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Subtotal, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="5" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Tax, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="6" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Total, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Right" />
+                                <TextBlock Grid.Column="7" Text="{x:Bind ViewModel.ReportsReceipts_List_Header_Action, Mode=OneTime}" Style="{StaticResource NotionMetaTextStyle}" HorizontalAlignment="Center" />
+                            </Grid>
+                        </ListView.Header>
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Sale">
+                                <Grid Padding="20,12" BorderBrush="#F1F4F9" BorderThickness="0,0,0,1">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="120" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="120" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="{x:Bind ReceiptNumber}" Foreground="{StaticResource MutedText}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" FontFamily="Consolas, Courier New, monospace" />
+                                    <TextBlock Grid.Column="1" Text="{x:Bind views:ReportsReceiptsPage.FormatDate(CreatedAt)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                    <TextBlock Grid.Column="2" Text="{x:Bind views:ReportsReceiptsPage.FormatTime(CreatedAt)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                    <TextBlock Grid.Column="3" Text="{x:Bind PaymentType}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Left" />
+                                    <TextBlock Grid.Column="4" Text="{x:Bind views:ReportsReceiptsPage.FormatCurrency(Subtotal)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                    <TextBlock Grid.Column="5" Text="{x:Bind views:ReportsReceiptsPage.FormatCurrency(Tax)}" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                    <TextBlock Grid.Column="6" Text="{x:Bind views:ReportsReceiptsPage.FormatCurrency(Total)}" FontWeight="SemiBold" Style="{StaticResource NotionBodyTextStyle}" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                                    <Button Grid.Column="7"
+                                        HorizontalAlignment="Center"
+                                        Style="{StaticResource NotionButtonStyle}"
+                                        Click="ReprintButton_Click"
+                                        Tag="{x:Bind}"
+                                        ToolTipService.ToolTip="{x:Bind views:ReportsReceiptsPage.GetLoc('ReportsReceipts_List_ReprintButton'), Mode=OneTime}">
+                                        <SymbolIcon Symbol="Print" Foreground="{StaticResource MutedText}" />
+                                    </Button>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <ContentDialog x:Name="XReportDialog"
+                       Title="{x:Bind ViewModel.ReportsReceipts_XReport_Dialog_Title, Mode=OneTime}"
+                       PrimaryButtonText="{x:Bind ViewModel.ReportsReceipts_XReport_Dialog_Primary, Mode=OneTime}"
+                       SecondaryButtonText="{x:Bind ViewModel.ReportsReceipts_XReport_Dialog_Secondary, Mode=OneTime}"
+                       CloseButtonText="{x:Bind ViewModel.ReportsReceipts_XReport_Dialog_Close, Mode=OneTime}"
+                       PrimaryButtonClick="XReportDialog_PrintClick"
+                       SecondaryButtonClick="XReportDialog_OpenPdfClick"
+                       CloseButtonClick="XReportDialog_CloseClick"
+                       PrimaryButtonStyle="{StaticResource AccentBlueButtonStyle}"
+                       SecondaryButtonStyle="{StaticResource AccentBlueButtonStyle}"
+                       CloseButtonStyle="{StaticResource FlatCloseButtonStyle}">
+            <StackPanel Spacing="16" MinWidth="360">
+
+                <!-- Success Banner -->
+                <Border Background="#F0FFF4" Padding="12" CornerRadius="4">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <FontIcon Glyph="&#xE73E;" FontSize="16" Foreground="#2E7D32" />
+                        <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_XReport_Dialog_Success, Mode=OneTime}" FontSize="14" Foreground="#2E7D32" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+
+                <!-- File path -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_XReport_Dialog_SavedTo, Mode=OneTime}" FontSize="12" Foreground="{StaticResource MutedText}" />
+                    <TextBlock x:Name="XReportStatusText" FontSize="12" Foreground="{StaticResource PrimaryText}" TextWrapping="Wrap"
+                               IsTextSelectionEnabled="True" />
+                </StackPanel>
+
+                <!-- Hint -->
+                <TextBlock Text="{x:Bind ViewModel.ReportsReceipts_XReport_Dialog_Hint, Mode=OneTime}" 
+                           FontSize="12" Foreground="{StaticResource MutedText}" TextWrapping="Wrap" />
+
+            </StackPanel>
+        </ContentDialog>
+
+        <ContentDialog x:Name="XReportHistoryDialog"
+                       CornerRadius="12"
+                       Title="X Report List"
+                       CloseButtonText="Close"
+                       CloseButtonStyle="{StaticResource FlatCloseButtonStyle}"
+                       DefaultButton="Close">
+            <ScrollViewer MaxHeight="520"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14" MaxWidth="500">
+                <TextBlock x:Name="XReportHistoryDescriptionText"
+                           Text="Browse X reports saved in the database. Select any report to export or open it."
+                           Style="{StaticResource NotionMetaTextStyle}"
+                           TextWrapping="Wrap" />
+                <TextBlock x:Name="XReportHistoryEmptyText"
+                           Text="No saved X reports were found."
+                           Style="{StaticResource NotionMetaTextStyle}"
+                           Visibility="Collapsed" />
+                <ListView x:Name="XReportHistoryList"
+                          MaxHeight="540"
+                          SelectionMode="None"
+                          IsItemClickEnabled="True"
+                          ItemClick="XReportHistoryList_ItemClick"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="reportModels:XReportHistoryRow">
+                            <Border Margin="0,0,0,8"
+                                    Padding="14"
+                                    CornerRadius="12"
+                                    BorderBrush="{StaticResource BorderDivider}"
+                                    BorderThickness="1"
+                                    Background="White">
+                                <StackPanel Spacing="4">
+                                    <TextBlock Text="{x:Bind TitleText, Mode=OneTime}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource PrimaryText}" />
+                                    <TextBlock Text="{x:Bind SubtitleText, Mode=OneTime}"
+                                               Style="{StaticResource NotionMetaTextStyle}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{x:Bind MetaText, Mode=OneTime}"
+                                               Style="{StaticResource NotionMetaTextStyle}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog x:Name="RegisterPeriodReportDialog"
+                       CornerRadius="12"
+                       Title="Register Summary"
+                       CloseButtonText="Close"
+                       CloseButtonStyle="{StaticResource FlatCloseButtonStyle}"
+                       DefaultButton="Close">
+            <ScrollViewer MaxHeight="520"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="16" MaxWidth="540">
+                    <Border Background="#F7FAFC"
+                            BorderBrush="{StaticResource BorderDivider}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="14">
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="RegisterPeriodHeadlineText"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryText}" />
+                            <TextBlock x:Name="RegisterPeriodMetaText"
+                                       Style="{StaticResource NotionMetaTextStyle}"
+                                       TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Grid ColumnSpacing="12" RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Sales" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterPeriodSalesValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterPeriodSalesCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Sessions" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterPeriodSessionsValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterPeriodSessionsCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Cash" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterPeriodCashValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterPeriodCashCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Card" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterPeriodCardValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterPeriodCardCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="0" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Expected Cash" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterPeriodExpectedCashValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterPeriodExpectedCashCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="1" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Counted Cash" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterPeriodCountedCashValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterPeriodCountedCashCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Cashier Summary"
+                                   Style="{StaticResource NotionSectionHeaderStyle}"
+                                   Margin="0" />
+                        <TextBlock x:Name="RegisterPeriodCashierSummaryEmptyText"
+                                   Text="No cashier sales were found for this period."
+                                   Style="{StaticResource NotionMetaTextStyle}"
+                                   Visibility="Collapsed" />
+                        <ListView x:Name="RegisterPeriodCashierSummaryList"
+                                  SelectionMode="None"
+                                  MaxHeight="220"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="reportModels:RegisterReportCashierSummaryRow">
+                                    <Border Margin="0,0,0,8"
+                                            Padding="12"
+                                            CornerRadius="12"
+                                            BorderBrush="{StaticResource BorderDivider}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="180" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Spacing="3">
+                                                <TextBlock Text="{x:Bind CashierName, Mode=OneTime}"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource PrimaryText}" />
+                                                <TextBlock Text="{x:Bind SaleCountText, Mode=OneTime}"
+                                                           Style="{StaticResource NotionMetaTextStyle}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1"
+                                                        HorizontalAlignment="Right"
+                                                        Spacing="3">
+                                                <TextBlock Text="{x:Bind GrossSalesText, Mode=OneTime}"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource PrimaryText}"
+                                                           HorizontalAlignment="Right"
+                                                           TextWrapping="NoWrap" />
+                                                <TextBlock Text="{x:Bind BreakdownText, Mode=OneTime}"
+                                                           Style="{StaticResource NotionMetaTextStyle}"
+                                                           TextWrapping="WrapWholeWords"
+                                                           TextAlignment="Right" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog x:Name="RegisterSessionHistoryDialog"
+                       CornerRadius="12"
+                       Title="Register Sessions"
+                       CloseButtonText="Close"
+                       CloseButtonStyle="{StaticResource FlatCloseButtonStyle}"
+                       DefaultButton="Close">
+            <ScrollViewer MaxHeight="520"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="14" MaxWidth="520">
+                <TextBlock x:Name="RegisterSessionHistoryDescriptionText"
+                           Text="Browse the register sessions already saved in the database. Select any session to open its report details."
+                           Style="{StaticResource NotionMetaTextStyle}"
+                           TextWrapping="Wrap" />
+                <TextBlock x:Name="RegisterSessionHistoryEmptyText"
+                           Text="No register sessions were found."
+                           Style="{StaticResource NotionMetaTextStyle}"
+                           Visibility="Collapsed" />
+                <ListView x:Name="RegisterSessionHistoryList"
+                          MaxHeight="540"
+                          SelectionMode="None"
+                          IsItemClickEnabled="True"
+                          ItemClick="RegisterSessionHistoryList_ItemClick"
+                          Background="Transparent"
+                          BorderThickness="0"
+                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="reportModels:RegisterSessionHistoryRow">
+                            <Border Margin="0,0,0,8"
+                                    Padding="14"
+                                    CornerRadius="12"
+                                    BorderBrush="{StaticResource BorderDivider}"
+                                    BorderThickness="1"
+                                    Background="White">
+                                <Grid ColumnSpacing="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="150" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="{x:Bind TitleText, Mode=OneTime}"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource PrimaryText}" />
+                                        <TextBlock Text="{x:Bind SubtitleText, Mode=OneTime}"
+                                                   Style="{StaticResource NotionMetaTextStyle}"
+                                                   TextWrapping="Wrap" />
+                                        <TextBlock Text="{x:Bind MetaText, Mode=OneTime}"
+                                                   Style="{StaticResource NotionMetaTextStyle}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1"
+                                                HorizontalAlignment="Right"
+                                                VerticalAlignment="Center"
+                                                Spacing="4">
+                                        <TextBlock Text="{x:Bind GrossSalesText, Mode=OneTime}"
+                                                   FontSize="14"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource PrimaryText}"
+                                                   HorizontalAlignment="Right"
+                                                   TextWrapping="NoWrap" />
+                                        <TextBlock Text="{x:Bind StateText, Mode=OneTime}"
+                                                   Style="{StaticResource NotionMetaTextStyle}"
+                                                   HorizontalAlignment="Right"
+                                                   TextWrapping="WrapWholeWords"
+                                                   TextAlignment="Right" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+
+        <ContentDialog x:Name="RegisterReportDialog"
+                       CornerRadius="12"
+                       Title="Register Report"
+                       CloseButtonText="Close"
+                       CloseButtonStyle="{StaticResource FlatCloseButtonStyle}"
+                       DefaultButton="Close">
+            <ScrollViewer MaxHeight="520"
+                          VerticalScrollBarVisibility="Auto"
+                          HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Spacing="18" MaxWidth="540">
+                    <Border Background="#F7FAFC"
+                            BorderBrush="{StaticResource BorderDivider}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="14">
+                        <StackPanel Spacing="6">
+                            <TextBlock x:Name="RegisterReportHeadlineText"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryText}" />
+                            <TextBlock x:Name="RegisterReportSessionMetaText"
+                                       Style="{StaticResource NotionMetaTextStyle}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock x:Name="RegisterReportOwnershipText"
+                                       Style="{StaticResource NotionMetaTextStyle}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock x:Name="RegisterReportNotesText"
+                                       FontSize="12"
+                                       Foreground="{StaticResource PrimaryText}"
+                                       TextWrapping="Wrap"
+                                       Visibility="Collapsed" />
+                        </StackPanel>
+                    </Border>
+
+                    <Grid ColumnSpacing="12" RowSpacing="12">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Row="0" Grid.Column="0" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Sales" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterReportSalesValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterReportSalesCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Cash" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterReportCashValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterReportCashCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Card" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterReportCardValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterReportCardCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Expected Cash" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterReportExpectedCashValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterReportExpectedCashCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="0" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Opening Float" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterReportOpeningValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterReportOpeningCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Row="2" Grid.Column="1" Padding="12" CornerRadius="12" BorderBrush="{StaticResource BorderDivider}" BorderThickness="1" Background="White">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Counted Cash" Style="{StaticResource NotionMetaTextStyle}" />
+                                <TextBlock x:Name="RegisterReportClosingValueText" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource PrimaryText}" />
+                                <TextBlock x:Name="RegisterReportClosingCaptionText" Style="{StaticResource NotionMetaTextStyle}" TextWrapping="WrapWholeWords" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Cashier Summary"
+                                   Style="{StaticResource NotionSectionHeaderStyle}" />
+                        <TextBlock x:Name="RegisterReportCashierSummaryEmptyText"
+                                   Text="No cashier sales have been captured for this session yet."
+                                   Style="{StaticResource NotionMetaTextStyle}"
+                                   Visibility="Collapsed" />
+                        <ItemsControl x:Name="RegisterReportCashierSummaryList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="reportModels:RegisterReportCashierSummaryRow">
+                                    <Border Margin="0,0,0,8"
+                                            Padding="12"
+                                            CornerRadius="12"
+                                            BorderBrush="{StaticResource BorderDivider}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <Grid ColumnSpacing="12" RowSpacing="6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="180" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{x:Bind CashierName, Mode=OneTime}"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource PrimaryText}" />
+                                                <TextBlock Text="{x:Bind SaleCountText, Mode=OneTime}"
+                                                           Style="{StaticResource NotionMetaTextStyle}" />
+                                            </StackPanel>
+                                            <StackPanel Grid.Column="1"
+                                                        HorizontalAlignment="Right"
+                                                        VerticalAlignment="Center"
+                                                        Spacing="2">
+                                                <TextBlock Text="{x:Bind GrossSalesText, Mode=OneTime}"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource PrimaryText}"
+                                                           HorizontalAlignment="Right"
+                                                           TextWrapping="NoWrap" />
+                                                <TextBlock Text="{x:Bind BreakdownText, Mode=OneTime}"
+                                                           Style="{StaticResource NotionMetaTextStyle}"
+                                                           TextWrapping="WrapWholeWords"
+                                                           MaxWidth="180"
+                                                           TextAlignment="Right" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Cashier Timeline"
+                                   Style="{StaticResource NotionSectionHeaderStyle}" />
+                        <TextBlock x:Name="RegisterReportIntervalsEmptyText"
+                                   Text="No cashier handovers have been recorded for this session yet."
+                                   Style="{StaticResource NotionMetaTextStyle}"
+                                   Visibility="Collapsed" />
+                        <ItemsControl x:Name="RegisterReportCashierIntervalList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="reportModels:RegisterReportCashierIntervalRow">
+                                    <Border Margin="0,0,0,8"
+                                            Padding="12"
+                                            CornerRadius="12"
+                                            BorderBrush="{StaticResource BorderDivider}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{x:Bind CashierName, Mode=OneTime}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PrimaryText}" />
+                                            <TextBlock Text="{x:Bind TimeRangeText, Mode=OneTime}"
+                                                       Style="{StaticResource NotionMetaTextStyle}"
+                                                       TextWrapping="WrapWholeWords" />
+                                            <TextBlock Text="{x:Bind NoteText, Mode=OneTime}"
+                                                       Style="{StaticResource NotionMetaTextStyle}"
+                                                       TextWrapping="WrapWholeWords"
+                                                       Visibility="{x:Bind NoteVisibility, Mode=OneTime}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Cash Adjustments"
+                                   Style="{StaticResource NotionSectionHeaderStyle}" />
+                        <TextBlock x:Name="RegisterReportAdjustmentsEmptyText"
+                                   Text="No cash adjustments have been recorded for this session."
+                                   Style="{StaticResource NotionMetaTextStyle}"
+                                   Visibility="Collapsed" />
+                        <ItemsControl x:Name="RegisterReportAdjustmentsList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="reportModels:RegisterReportAdjustmentRow">
+                                    <Border Margin="0,0,0,8"
+                                            Padding="12"
+                                            CornerRadius="12"
+                                            BorderBrush="{StaticResource BorderDivider}"
+                                            BorderThickness="1"
+                                            Background="White">
+                                        <Grid ColumnSpacing="12">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Spacing="2">
+                                                <TextBlock Text="{x:Bind Reason, Mode=OneTime}"
+                                                           FontSize="14"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{StaticResource PrimaryText}" />
+                                                <TextBlock Text="{x:Bind DetailText, Mode=OneTime}"
+                                                           Style="{StaticResource NotionMetaTextStyle}"
+                                                           TextWrapping="WrapWholeWords" />
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{x:Bind AmountText, Mode=OneTime}"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource PrimaryText}"
+                                                       VerticalAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
+    </Grid>
+</Page>

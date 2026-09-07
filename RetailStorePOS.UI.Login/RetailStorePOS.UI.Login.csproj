@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>RetailStorePOS.UI.Login</RootNamespace>
+    <UseWinUI>true</UseWinUI>
+    <!-- Required: emits CsWinRT projection/vtable metadata into this library so the
+         generated Connect() CastExtensions.As<T> calls succeed instead of throwing
+         InvalidCastException (IInspectable -> control) at XAML LoadComponent. -->
+    <CsWinRTAotOptimizerEnabled>true</CsWinRTAotOptimizerEnabled>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <EnableDefaultPageItems>true</EnableDefaultPageItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\RetailStorePOS.Contracts\RetailStorePOS.Contracts.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.UI.Common\RetailStorePOS.UI.Common.csproj" />
+    <ProjectReference Include="..\RetailStorePOS.Data\RetailStorePOS.Data.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260209005" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.4654" />
+  </ItemGroup>
+</Project>

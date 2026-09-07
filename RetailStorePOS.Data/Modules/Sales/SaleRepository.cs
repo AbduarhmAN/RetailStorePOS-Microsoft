@@ -239,7 +239,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         using var itemReader = itemCommand.ExecuteReader();
         while (itemReader.Read())
         {
-            var saleId = itemReader.GetInt64(0);
+            var saleId = Convert.ToInt64(itemReader.GetValue(0));
             if (!salesById.TryGetValue(saleId, out var sale))
             {
                 continue;
@@ -248,16 +248,16 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
             sale.Items.Add(new SaleItem
             {
                 SaleId = saleId,
-                ProductId = itemReader.GetInt64(1),
+                ProductId = Convert.ToInt64(itemReader.GetValue(1)),
                 Name = itemReader.GetString(2),
                 Barcode = itemReader.IsDBNull(3) ? null : itemReader.GetString(3),
-                Price = MoneyUtils.FromCents(itemReader.GetInt64(4)),
-                Quantity = (decimal)itemReader.GetDouble(5),
-                TaxRatePercent = (decimal)itemReader.GetDouble(6),
-                TaxAmount = MoneyUtils.FromCents(itemReader.GetInt64(7)),
-                LineTotal = MoneyUtils.FromCents(itemReader.GetInt64(8)),
-                TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9),
-                ItemCost = MoneyUtils.FromCents(itemReader.GetInt64(10))
+                Price = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(4))),
+                Quantity = (decimal)Convert.ToDouble(itemReader.GetValue(5)),
+                TaxRatePercent = (decimal)Convert.ToDouble(itemReader.GetValue(6)),
+                TaxAmount = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(7))),
+                LineTotal = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(8))),
+                TaxSnapshot = itemReader.IsDBNull(9) ? null : Convert.ToString(itemReader.GetValue(9)),
+                ItemCost = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(10)))
             });
         }
 
@@ -347,7 +347,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
             using var itemReader = itemCommand.ExecuteReader();
             while (itemReader.Read())
             {
-                var saleId = itemReader.GetInt64(0);
+                var saleId = Convert.ToInt64(itemReader.GetValue(0));
                 if (!salesById.TryGetValue(saleId, out var sale))
                 {
                     continue;
@@ -356,16 +356,131 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
                 sale.Items.Add(new SaleItem
                 {
                     SaleId = saleId,
-                    ProductId = itemReader.GetInt64(1),
+                    ProductId = Convert.ToInt64(itemReader.GetValue(1)),
                     Name = itemReader.GetString(2),
                     Barcode = itemReader.IsDBNull(3) ? null : itemReader.GetString(3),
-                    Price = MoneyUtils.FromCents(itemReader.GetInt64(4)),
-                    Quantity = (decimal)itemReader.GetDouble(5),
-                    TaxRatePercent = (decimal)itemReader.GetDouble(6),
-                    TaxAmount = MoneyUtils.FromCents(itemReader.GetInt64(7)),
-                    LineTotal = MoneyUtils.FromCents(itemReader.GetInt64(8)),
+                    Price = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(4))),
+                    Quantity = (decimal)Convert.ToDouble(itemReader.GetValue(5)),
+                    TaxRatePercent = (decimal)Convert.ToDouble(itemReader.GetValue(6)),
+                    TaxAmount = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(7))),
+                    LineTotal = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(8))),
                     TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9),
-                    ItemCost = MoneyUtils.FromCents(itemReader.GetInt64(10))
+                    ItemCost = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(10)))
+                });
+            }
+        }
+
+        foreach (var sale in sales)
+        {
+            if (sale.Items.Count == 0)
+            {
+                continue;
+            }
+
+            var itemTax = Math.Round(sale.Items.Sum(item => item.TaxAmount), 2, MidpointRounding.AwayFromZero);
+            if (itemTax > 0m && sale.Tax != itemTax)
+            {
+                sale.Tax = itemTax;
+            }
+        }
+
+        return sales;
+    }
+
+    public IEnumerable<Sale> GetSalesByIds(IEnumerable<long> saleIds)
+    {
+        var ids = saleIds
+            .Where(id => id > 0)
+            .Distinct()
+            .ToArray();
+
+        if (ids.Length == 0)
+        {
+            return Array.Empty<Sale>();
+        }
+
+        using var connection = _factory.OpenConnection();
+        var chunkSize = Environment.OSVersion.Version.Build >= 22000 ? 15000 : 900;
+        var sales = new List<Sale>();
+
+        foreach (var chunk in ids.Chunk(chunkSize))
+        {
+            var parameters = chunk.Select((_, index) => $"@saleId{index}").ToArray();
+            using var command = connection.CreateCommand();
+            command.CommandText = $@"
+                SELECT {BuildSalesProjection(connection)}
+                FROM sales
+                WHERE id IN ({string.Join(", ", parameters)})
+                ORDER BY created_at DESC;";
+
+            for (var i = 0; i < chunk.Length; i++)
+            {
+                command.Parameters.AddWithValue(parameters[i], chunk[i]);
+            }
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                sales.Add(ReadSale(reader));
+            }
+        }
+
+        if (sales.Count == 0)
+        {
+            return sales;
+        }
+
+        var salesById = sales.ToDictionary(s => s.Id);
+        var loadedSaleIds = sales.Select(s => s.Id).ToArray();
+
+        using var checkCommand = connection.CreateCommand();
+        checkCommand.CommandText = "SELECT COUNT(*) FROM pragma_table_info('sale_items') WHERE name='item_cost_cents';";
+        var hasCostCol = Convert.ToInt64(checkCommand.ExecuteScalar()) > 0;
+
+        if (!hasCostCol)
+        {
+            using var alterCommand = connection.CreateCommand();
+            alterCommand.CommandText = "ALTER TABLE sale_items ADD COLUMN item_cost_cents INTEGER NOT NULL DEFAULT 0;";
+            alterCommand.ExecuteNonQuery();
+        }
+
+        foreach (var chunk in loadedSaleIds.Chunk(chunkSize))
+        {
+            var parameters = chunk.Select((_, index) => $"@saleId{index}").ToArray();
+            using var itemCommand = connection.CreateCommand();
+            itemCommand.CommandText = $@"
+                SELECT sale_id, product_id, name, barcode, price_cents, quantity, tax_rate_percent, tax_cents, total_cents, tax_snapshot, item_cost_cents
+                FROM sale_items
+                WHERE sale_id IN ({string.Join(", ", parameters)})
+                ORDER BY sale_id, id;";
+
+            for (var i = 0; i < chunk.Length; i++)
+            {
+                itemCommand.Parameters.AddWithValue(parameters[i], chunk[i]);
+            }
+
+            using var itemReader = itemCommand.ExecuteReader();
+            while (itemReader.Read())
+            {
+                var saleId = Convert.ToInt64(itemReader.GetValue(0));
+                if (!salesById.TryGetValue(saleId, out var sale))
+                {
+                    continue;
+                }
+
+                sale.Items.Add(new SaleItem
+                {
+                    SaleId = saleId,
+                    ProductId = Convert.ToInt64(itemReader.GetValue(1)),
+                    Name = itemReader.GetString(2),
+                    Barcode = itemReader.IsDBNull(3) ? null : itemReader.GetString(3),
+                    Price = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(4))),
+                    Quantity = (decimal)Convert.ToDouble(itemReader.GetValue(5)),
+                    TaxRatePercent = (decimal)Convert.ToDouble(itemReader.GetValue(6)),
+                    TaxAmount = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(7))),
+                    LineTotal = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(8))),
+                    TaxSnapshot = itemReader.IsDBNull(9) ? null : itemReader.GetString(9),
+                    ItemCost = MoneyUtils.FromCents(Convert.ToInt64(itemReader.GetValue(10)))
                 });
             }
         }
@@ -441,9 +556,9 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         {
             if (reader.Read() && !reader.IsDBNull(0))
             {
-                metrics.Revenue = MoneyUtils.FromCents(reader.GetInt64(0));
-                subtotal = MoneyUtils.FromCents(reader.GetInt64(1));
-                metrics.InvoiceCount = reader.GetInt32(2);
+                metrics.Revenue = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(0)));
+                subtotal = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(1)));
+                metrics.InvoiceCount = Convert.ToInt32(reader.GetValue(2));
             }
         }
 
@@ -451,7 +566,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         using var itemCmd = connection.CreateCommand();
         itemCmd.CommandText = @"
             SELECT 
-                SUM(si.item_cost_cents * si.quantity),
+                CAST(ROUND(COALESCE(SUM(si.item_cost_cents * si.quantity), 0)) AS INTEGER),
                 SUM(CASE WHEN si.product_id = 0 AND si.total_cents < 0 AND si.name LIKE 'Discount%' THEN ABS(si.total_cents) ELSE 0 END),
                 SUM(CASE WHEN si.product_id = 0 AND si.total_cents < 0 AND si.name LIKE 'Discount%' THEN 1 ELSE 0 END)
             FROM sale_items si
@@ -464,10 +579,10 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         {
             if (reader.Read() && !reader.IsDBNull(0))
             {
-                var cogs = MoneyUtils.FromCents(reader.GetInt64(0));
+                var cogs = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(0)));
                 metrics.Profit = subtotal - cogs;
-                metrics.DiscountAmount = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : reader.GetInt64(1));
-                metrics.DiscountCount = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+                metrics.DiscountAmount = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : Convert.ToInt64(reader.GetValue(1)));
+                metrics.DiscountCount = reader.IsDBNull(2) ? 0 : Convert.ToInt32(reader.GetValue(2));
             }
             else
             {
@@ -492,7 +607,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
             {
                 if (!reader.IsDBNull(0))
                 {
-                    totals.Add(reader.GetInt64(0));
+                    totals.Add(Convert.ToInt64(reader.GetValue(0)));
                 }
             }
         }
@@ -549,9 +664,9 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
             result.Add(new DailySparklineData
             {
                 LocalDay = reader.GetString(0),
-                Revenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : reader.GetInt64(1)),
-                Profit = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : reader.GetInt64(2)), // Storing subtotal temporarily
-                InvoiceCount = reader.GetInt32(3)
+                Revenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : Convert.ToInt64(reader.GetValue(1))),
+                Profit = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : Convert.ToInt64(reader.GetValue(2))), // Storing subtotal temporarily
+                InvoiceCount = Convert.ToInt32(reader.GetValue(3))
             });
         }
 
@@ -560,7 +675,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         cogsCmd.CommandText = @"
             SELECT 
                 date(s.created_at, 'localtime') as local_day,
-                SUM(si.item_cost_cents * si.quantity)
+                CAST(ROUND(COALESCE(SUM(si.item_cost_cents * si.quantity), 0)) AS INTEGER)
             FROM sale_items si
             INNER JOIN sales s ON si.sale_id = s.id
             WHERE s.created_at >= @start AND s.created_at < @end
@@ -572,7 +687,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         while (cogsReader.Read())
         {
             var day = cogsReader.GetString(0);
-            var cogs = MoneyUtils.FromCents(cogsReader.IsDBNull(1) ? 0 : cogsReader.GetInt64(1));
+            var cogs = MoneyUtils.FromCents(cogsReader.IsDBNull(1) ? 0 : Convert.ToInt64(cogsReader.GetValue(1)));
             var target = result.FirstOrDefault(r => r.LocalDay == day);
             if (target != null)
             {
@@ -633,9 +748,9 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
                 result.Add(new DailySparklineData
                 {
                     LocalDay = reader.GetString(0),
-                    Revenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : reader.GetInt64(1)),
-                    Profit = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : reader.GetInt64(2)),
-                    InvoiceCount = reader.GetInt32(3)
+                    Revenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : Convert.ToInt64(reader.GetValue(1))),
+                    Profit = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : Convert.ToInt64(reader.GetValue(2))),
+                    InvoiceCount = Convert.ToInt32(reader.GetValue(3))
                 });
             }
         }
@@ -644,7 +759,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         cogsCmd.CommandText = $@"
             SELECT
                 {bucketExpression} as local_bucket,
-                SUM(si.item_cost_cents * si.quantity)
+                CAST(ROUND(COALESCE(SUM(si.item_cost_cents * si.quantity), 0)) AS INTEGER)
             FROM sale_items si
             INNER JOIN sales s ON si.sale_id = s.id
             WHERE s.created_at >= @start AND s.created_at < @end
@@ -656,7 +771,7 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         while (cogsReader.Read())
         {
             var bucketKey = cogsReader.GetString(0);
-            var cogs = MoneyUtils.FromCents(cogsReader.IsDBNull(1) ? 0 : cogsReader.GetInt64(1));
+            var cogs = MoneyUtils.FromCents(cogsReader.IsDBNull(1) ? 0 : Convert.ToInt64(cogsReader.GetValue(1)));
             var target = result.FirstOrDefault(r => r.LocalDay == bucketKey);
             if (target != null)
             {
@@ -699,8 +814,8 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
             result.Add(new TopProductData
             {
                 Name = reader.GetString(0),
-                Revenue = MoneyUtils.FromCents(reader.GetInt64(1)),
-                Quantity = (int)Math.Round(reader.GetDouble(2))
+                Revenue = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(1))),
+                Quantity = (int)Math.Round(Convert.ToDouble(reader.GetValue(2)))
             });
         }
         return result;
@@ -733,11 +848,11 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
             return new DailySummary
             {
                 Date = date.Date,
-                TransactionCount = reader.GetInt32(0),
-                TotalRevenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : reader.GetInt64(1)),
-                TotalTax = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : reader.GetInt64(2)),
-                CashTotal = MoneyUtils.FromCents(reader.IsDBNull(3) ? 0 : reader.GetInt64(3)),
-                CardTotal = MoneyUtils.FromCents(reader.IsDBNull(4) ? 0 : reader.GetInt64(4))
+                TransactionCount = Convert.ToInt32(reader.GetValue(0)),
+                TotalRevenue = MoneyUtils.FromCents(reader.IsDBNull(1) ? 0 : Convert.ToInt64(reader.GetValue(1))),
+                TotalTax = MoneyUtils.FromCents(reader.IsDBNull(2) ? 0 : Convert.ToInt64(reader.GetValue(2))),
+                CashTotal = MoneyUtils.FromCents(reader.IsDBNull(3) ? 0 : Convert.ToInt64(reader.GetValue(3))),
+                CardTotal = MoneyUtils.FromCents(reader.IsDBNull(4) ? 0 : Convert.ToInt64(reader.GetValue(4)))
             };
         }
 
@@ -777,13 +892,13 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
     {
         var sale = new Sale
         {
-            Id = reader.GetInt64(reader.GetOrdinal("id")),
-            ReceiptNumber = reader.GetInt64(reader.GetOrdinal("receipt_number")),
-            Subtotal = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("subtotal_cents"))),
-            Tax = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("tax_cents"))),
-            Total = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("total_cents"))),
-            Tendered = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("tendered_cents"))),
-            Change = MoneyUtils.FromCents(reader.GetInt64(reader.GetOrdinal("change_cents"))),
+            Id = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("id"))),
+            ReceiptNumber = Convert.ToInt64(reader.GetValue(reader.GetOrdinal("receipt_number"))),
+            Subtotal = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(reader.GetOrdinal("subtotal_cents")))),
+            Tax = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(reader.GetOrdinal("tax_cents")))),
+            Total = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(reader.GetOrdinal("total_cents")))),
+            Tendered = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(reader.GetOrdinal("tendered_cents")))),
+            Change = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(reader.GetOrdinal("change_cents")))),
             PaymentType = reader.GetString(reader.GetOrdinal("payment_type")),
             CashierName = reader.IsDBNull(reader.GetOrdinal("cashier_name")) ? string.Empty : reader.GetString(reader.GetOrdinal("cashier_name")),
             CreatedAt = DateTime.Parse(reader.GetString(reader.GetOrdinal("created_at"))).ToLocalTime()
@@ -792,13 +907,13 @@ VALUES (@sale_id, @product_id, @name, @barcode, @price_cents, @item_cost_cents, 
         var registerSessionIdOrdinal = TryGetOrdinal(reader, "register_session_id");
         if (registerSessionIdOrdinal >= 0 && !reader.IsDBNull(registerSessionIdOrdinal))
         {
-            sale.RegisterSessionId = reader.GetInt64(registerSessionIdOrdinal);
+            sale.RegisterSessionId = Convert.ToInt64(reader.GetValue(registerSessionIdOrdinal));
         }
 
         var cashierUserIdOrdinal = TryGetOrdinal(reader, "cashier_user_id");
         if (cashierUserIdOrdinal >= 0 && !reader.IsDBNull(cashierUserIdOrdinal))
         {
-            sale.CashierUserId = reader.GetInt64(cashierUserIdOrdinal);
+            sale.CashierUserId = Convert.ToInt64(reader.GetValue(cashierUserIdOrdinal));
         }
 
         return sale;

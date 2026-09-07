@@ -1,0 +1,12 @@
+<Window
+    x:Class="TestRunner.Settings.App.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:settings="using:RetailStorePOS.UI.Settings.Views">
+
+    <Grid>
+        <settings:SettingsPage ShowAllNavigationItems="True" />
+    </Grid>
+</Window>
+
+

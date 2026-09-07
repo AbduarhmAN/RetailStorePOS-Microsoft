@@ -52,9 +52,9 @@ def sync_resource(src_path, dest_path):
         tree = ET.ElementTree(new_root)
         tree.write(f, encoding='utf-8', xml_declaration=False)
 
-base_path = r'E:\Projects\Retail_Store\V\1.3.3\Nexill.RetailStorePOS\Strings'
+base_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Strings'))
 src = os.path.join(base_path, 'en-US', 'Resources.resw')
-targets = ['ar-SA', 'fr-FR']
+targets = ['ar-SA']
 
 for lang in targets:
     dest = os.path.join(base_path, lang, 'Resources.resw')

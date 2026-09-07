@@ -4,15 +4,67 @@
     <Platform Name="x64" />
   </Configurations>
   <Project Path="Nexill.RetailStorePOS/Nexill.RetailStorePOS.csproj">
+    <BuildDependency Project="RetailStorePOS.Contracts/RetailStorePOS.Contracts.csproj" />
+    <BuildDependency Project="RetailStorePOS.UI.Common/RetailStorePOS.UI.Common.csproj" />
+    <BuildDependency Project="RetailStorePOS.UI.Tax/RetailStorePOS.UI.Tax.csproj" />
+    <BuildDependency Project="TestRunner.Login.App\TestRunner.Login.App.csproj" />
+    <BuildDependency Project="TestRunner.Products.App\TestRunner.Products.App.csproj" />
+    <BuildDependency Project="TestRunner.Sales.App\TestRunner.Sales.App.csproj" />
     <Platform Solution="*|x64" Project="x64" />
     <Platform Solution="Debug|Any CPU" Project="x64" />
+    <Deploy Solution="*|x64" />
+  </Project>
+  <Project Path="RetailStorePOS.Contracts/RetailStorePOS.Contracts.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.Data/RetailStorePOS.Data.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Common/RetailStorePOS.UI.Common.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Login\RetailStorePOS.UI.Login.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Platform/RetailStorePOS.UI.Platform.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Products/RetailStorePOS.UI.Products.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Reporting/RetailStorePOS.UI.Reporting.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Sales/RetailStorePOS.UI.Sales.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Settings/RetailStorePOS.UI.Settings.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="RetailStorePOS.UI.Tax/RetailStorePOS.UI.Tax.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="TestRunner.Login.App\TestRunner.Login.App.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+  <Project Path="TestRunner.Products.App\TestRunner.Products.App.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Deploy Solution="*|x64" />
+  </Project>
+  <Project Path="TestRunner.Reporting.App\TestRunner.Reporting.App.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Deploy Solution="*|x64" />
+  </Project>
+  <Project Path="TestRunner.Sales.App\TestRunner.Sales.App.csproj">
+    <Platform Solution="*|x64" Project="x64" />
+    <Deploy Solution="*|x64" />
+  </Project>
+  <Project Path="TestRunner.Settings.App\TestRunner.Settings.App.csproj">
+    <Platform Solution="*|x64" Project="x64" />
     <Deploy Solution="*|x64" />
   </Project>
   <Project Path="Tests/DeviceIdentityTests/DeviceIdentityTests.csproj">
     <Platform Solution="*|x64" Project="x64" />
     <Platform Solution="Debug|Any CPU" Project="x64" />
-  </Project>
-  <Project Path="RetailStorePOS.Data/RetailStorePOS.Data.csproj">
-    <Platform Solution="*|x64" Project="x64" />
   </Project>
 </Solution>

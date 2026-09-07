@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RetailStorePOS": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": false
+    }
+  }
+}

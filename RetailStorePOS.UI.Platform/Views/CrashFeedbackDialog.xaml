@@ -1,0 +1,43 @@
+<ContentDialog
+    x:Class="RetailStorePOS.UI.Platform.Views.CrashFeedbackDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    DefaultButton="Primary"
+    RequestedTheme="Default"
+    CornerRadius="8"
+    FlowDirection="{x:Bind Loc.FlowDirection, Mode=OneTime}"
+    PrimaryButtonText="{x:Bind CrashFeedbackDialog_PrimaryButtonText, Mode=OneTime}"
+    SecondaryButtonText="{x:Bind CrashFeedbackDialog_SecondaryButtonText, Mode=OneTime}">
+
+    <ContentDialog.Title>
+        <TextBlock Text="{x:Bind CrashFeedbackDialog_Title, Mode=OneTime}" />
+    </ContentDialog.Title>
+
+    <StackPanel Spacing="16" Width="400">
+        <TextBlock Text="{x:Bind CrashFeedbackDialog_IntroText, Mode=OneTime}" 
+                   TextWrapping="Wrap" />
+
+        <RadioButtons x:Name="IssueCategoryRadioGroup" SelectedIndex="0">
+            <RadioButton Content="{x:Bind CrashFeedbackDialog_Checkout, Mode=OneTime}" Tag="checkout" />
+            <RadioButton Content="{x:Bind CrashFeedbackDialog_Products, Mode=OneTime}" Tag="products" />
+            <RadioButton Content="{x:Bind CrashFeedbackDialog_Reports, Mode=OneTime}" Tag="reports" />
+            <RadioButton Content="{x:Bind CrashFeedbackDialog_Settings, Mode=OneTime}" Tag="settings" />
+            <RadioButton Content="{x:Bind CrashFeedbackDialog_Startup, Mode=OneTime}" Tag="startup" />
+            <RadioButton Content="{x:Bind CrashFeedbackDialog_Other, Mode=OneTime}" Tag="other" />
+        </RadioButtons>
+
+        <TextBox x:Name="DetailsTextBox" 
+                 Header="{x:Bind CrashFeedbackDialog_DetailsTextBoxHeader, Mode=OneTime}" 
+                 PlaceholderText="{x:Bind CrashFeedbackDialog_DetailsTextBoxPlaceholder, Mode=OneTime}" 
+                 AcceptsReturn="True" 
+                 TextWrapping="Wrap"
+                 Height="80" />
+
+        <CheckBox x:Name="SuppressPromptCheckBox" 
+                  Content="{x:Bind CrashFeedbackDialog_SuppressPromptCheckBox, Mode=OneTime}" 
+                  Margin="0,8,0,0"/>
+    </StackPanel>
+</ContentDialog>

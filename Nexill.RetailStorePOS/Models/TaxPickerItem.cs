@@ -5,7 +5,7 @@ namespace RetailStorePOS.WinUiLogin.Models;
 
 public enum TaxPickerKind { Header, Rule, Profile }
 
-public class TaxPickerItem
+public partial class TaxPickerItem
 {
     public TaxPickerKind Kind { get; set; }
     public string DisplayName { get; set; } = string.Empty;

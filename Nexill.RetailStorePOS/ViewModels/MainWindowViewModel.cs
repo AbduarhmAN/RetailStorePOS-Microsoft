@@ -113,7 +113,10 @@ public partial class MainWindowViewModel : ObservableObject
             var packageDisplayName = Package.Current.DisplayName;
             if (!string.IsNullOrWhiteSpace(packageDisplayName)) return packageDisplayName;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"MainWindowViewModel package display name lookup failed: {ex}");
+        }
 
         // 3. Try Assembly Title
         var title = Assembly.GetExecutingAssembly()

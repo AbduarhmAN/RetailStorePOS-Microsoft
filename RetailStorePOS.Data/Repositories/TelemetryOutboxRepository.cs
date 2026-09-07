@@ -76,12 +76,12 @@ LIMIT @limit;";
         {
             results.Add(new TelemetryOutboxRecord
             {
-                Id = reader.GetInt64(0),
+                Id = Convert.ToInt64(reader.GetValue(0)),
                 CreatedAt = DateTime.Parse(reader.GetString(1), null, DateTimeStyles.RoundtripKind),
                 Endpoint = reader.GetString(2),
                 PayloadJson = reader.GetString(3),
-                MergeDuplicates = reader.GetInt64(4) != 0,
-                AttemptCount = reader.GetInt32(5),
+                MergeDuplicates = Convert.ToInt64(reader.GetValue(4)) != 0,
+                AttemptCount = Convert.ToInt32(reader.GetValue(5)),
                 LastAttemptAt = reader.IsDBNull(6) ? null : DateTime.Parse(reader.GetString(6), null, DateTimeStyles.RoundtripKind),
                 LastError = reader.IsDBNull(7) ? null : reader.GetString(7),
                 SentAt = reader.IsDBNull(8) ? null : DateTime.Parse(reader.GetString(8), null, DateTimeStyles.RoundtripKind)

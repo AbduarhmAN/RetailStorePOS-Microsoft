@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace RetailStorePOS.Data.Modules.Reporting;
 
@@ -29,12 +29,6 @@ public abstract class SignedSnapshotStore<TSnapshot>
     private const string JsonExtension = ".json";
     private const string SignatureExtension = ".sig";
 
-    protected static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
     private readonly SnapshotSigningService _signing;
 
     protected SignedSnapshotStore(SnapshotSigningService signing)
@@ -47,6 +41,9 @@ public abstract class SignedSnapshotStore<TSnapshot>
 
     /// <summary>The schema version supported by the current app build.</summary>
     protected abstract int CurrentSchemaVersion { get; }
+
+    /// <summary>Source-generated JSON metadata for this snapshot payload.</summary>
+    protected abstract JsonTypeInfo<TSnapshot> SnapshotJsonTypeInfo { get; }
 
     /// <summary>
     /// Persists a snapshot atomically and writes its detached HMAC signature.
@@ -61,7 +58,7 @@ public abstract class SignedSnapshotStore<TSnapshot>
         var sigPath = GetSignaturePath(safeKey);
         EnsureDirectory(jsonPath);
 
-        var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(snapshot, JsonOptions);
+        var jsonBytes = JsonSerializer.SerializeToUtf8Bytes(snapshot, SnapshotJsonTypeInfo);
         var signature = _signing.Sign(jsonBytes);
 
         WriteAtomic(jsonPath, jsonBytes);
@@ -96,7 +93,7 @@ public abstract class SignedSnapshotStore<TSnapshot>
                 return null;
             }
 
-            var snapshot = JsonSerializer.Deserialize<TSnapshot>(jsonBytes, JsonOptions);
+            var snapshot = JsonSerializer.Deserialize(jsonBytes, SnapshotJsonTypeInfo);
             if (snapshot is null) return null;
             if (snapshot.SchemaVersion != CurrentSchemaVersion) return null;
             return snapshot;

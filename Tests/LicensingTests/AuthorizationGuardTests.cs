@@ -1,5 +1,4 @@
-using RetailStorePOS.App.Services;
-using RetailStorePOS.App.Services.Licensing;
+using RetailStorePOS.UI.Common.Services;
 using RetailStorePOS.Data;
 using RetailStorePOS.Data.Models;
 using RetailStorePOS.Data.Modules.Migrations;
@@ -110,8 +109,21 @@ public sealed class AuthorizationGuardTests
     public void RequireFeature_WhenFeatureAccessAllows_DoesNotThrow()
     {
         SignInAdmin();
-        // FeatureAccessService default policy allows AdvancedReports in
-        // pre-release mode without a snapshot.
+        var now = DateTimeOffset.UtcNow;
+        var snapshot = new LicenseActivationSnapshot(
+            CertificateId: "cert-1",
+            LicenseId: "license-1",
+            ActivationId: "activation-1",
+            InstallId: "INSTALL-1",
+            ProductCode: "RETAILSTOREPOS",
+            PermissionGroup: "PREMIUM",
+            Features: new[] { FeatureAccessService.Features.AdvancedReports },
+            LicenseStatus: "active",
+            ActivationStatus: "active",
+            IssuedAtUtc: now.AddMinutes(-1),
+            NotBeforeUtc: now.AddMinutes(-1),
+            ExpiresAtUtc: now.AddDays(1));
+        _features = new FeatureAccessService(_settings, () => snapshot, () => now);
         var guard = new AuthorizationGuard(_auth, _features);
         guard.RequireFeature(FeatureAccessService.Features.AdvancedReports);
     }

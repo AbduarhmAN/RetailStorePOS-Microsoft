@@ -1,4 +1,4 @@
-using RetailStorePOS.App.Services.Licensing;
+using RetailStorePOS.UI.Common.Services;
 using RetailStorePOS.Data;
 using RetailStorePOS.Data.Modules.Migrations;
 using RetailStorePOS.Data.Modules.Settings;
@@ -78,10 +78,10 @@ public sealed class FeatureAccessServiceTests
     }
 
     [TestMethod]
-    public void NoSnapshot_FallsBackToPreReleasePolicy_AdvancedReportsAllowed()
+    public void NoSnapshot_DeniesAdvancedReports()
     {
         var service = BuildService(snapshot: null);
-        Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+        Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
         Assert.IsFalse(service.IsLicenseEnforcementActive);
     }
 
@@ -118,12 +118,9 @@ public sealed class FeatureAccessServiceTests
     }
 
     [TestMethod]
-    public void Snapshot_MissingFeature_DeniesEvenIfDefaultPolicyWouldAllow()
+    public void Snapshot_MissingFeature_Denies()
     {
-        // Snapshot exists but does not list AdvancedReports — the snapshot wins
-        // over the pre-release "allow known keys" default. This is the central
-        // behaviour change of Task 2: an activated lower-tier license cannot
-        // accidentally see Premium UI.
+        // An activated lower-tier license cannot accidentally see Premium UI.
         var snapshot = BuildSnapshot(features: Array.Empty<string>());
         var service = BuildService(snapshot);
         Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
@@ -131,29 +128,24 @@ public sealed class FeatureAccessServiceTests
     }
 
     [TestMethod]
-    public void Snapshot_Expired_FallsBackToPreReleaseDefault()
+    public void Snapshot_Expired_DeniesPaidFeatures()
     {
-        // An expired certificate should not enforce restrictions; the user
-        // should still be able to use known features (pending re-activation).
-        // Tomorrow's hardening will flip this fallback to "deny" once licensing
-        // is mandatory.
         var snapshot = BuildSnapshot(
             features: Array.Empty<string>(),
             expiresAt: new DateTimeOffset(2026, 5, 19, 8, 0, 0, TimeSpan.Zero));
         var service = BuildService(snapshot);
-        Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+        Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
         Assert.IsFalse(service.IsLicenseEnforcementActive);
     }
 
     [TestMethod]
-    public void Snapshot_RevokedStatus_FallsBackToPreReleaseDefault()
+    public void Snapshot_RevokedStatus_DeniesPaidFeatures()
     {
         var snapshot = BuildSnapshot(
             features: new[] { FeatureAccessService.Features.AdvancedReports },
             licenseStatus: "revoked");
         var service = BuildService(snapshot);
-        // Snapshot is not "currently valid" so the default policy applies.
-        Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+        Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
         Assert.IsFalse(service.IsLicenseEnforcementActive);
     }
 
@@ -172,7 +164,11 @@ public sealed class FeatureAccessServiceTests
         var snapshot = BuildSnapshot(features: Array.Empty<string>());
         var service = BuildService(snapshot);
         service.SetDeveloperOverride(FeatureAccessService.Features.AdvancedReports, true);
+#if DEBUG
         Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+#else
+        Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+#endif
     }
 
     [TestMethod]
@@ -181,7 +177,11 @@ public sealed class FeatureAccessServiceTests
         var snapshot = BuildSnapshot();
         var service = BuildService(snapshot);
         service.SetDeveloperOverride(FeatureAccessService.Features.AdvancedReports, false);
+#if DEBUG
         Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+#else
+        Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+#endif
     }
 
     [TestMethod]
@@ -202,8 +202,7 @@ public sealed class FeatureAccessServiceTests
             snapshotAccessor: () => throw new InvalidOperationException("boom"),
             clock: () => DateTimeOffset.UtcNow);
 
-        // Falls back to pre-release default rather than crashing the caller.
-        Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+        Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
         Assert.IsFalse(service.IsLicenseEnforcementActive);
     }
 
@@ -233,10 +232,7 @@ public sealed class FeatureAccessServiceTests
             clock: () => clockNow);
 
         Assert.IsFalse(service.IsLicenseEnforcementActive);
-        // Falls back to the pre-release default, which still allows known
-        // paid features. The point of this test is to lock down that the
-        // snapshot itself is treated as not-yet-active when notBefore is
-        // in the future.
-        Assert.IsTrue(service.CanUse(FeatureAccessService.Features.AdvancedReports));
+        // A not-yet-valid certificate cannot grant paid features.
+        Assert.IsFalse(service.CanUse(FeatureAccessService.Features.AdvancedReports));
     }
 }

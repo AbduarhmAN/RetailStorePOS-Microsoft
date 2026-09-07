@@ -33,10 +33,10 @@ public static class InventoryStockRules
 
     public static void ApplyOwnedProductColumns(Product product, SqliteDataReader reader, int qtyStoreIdx, int qtyWarehouseIdx, int minStoreIdx, int minWarehouseIdx, int purchasedAtIdx, int lastSaleAtIdx)
     {
-        product.QuantityStore = reader.IsDBNull(qtyStoreIdx) ? 0 : (decimal)reader.GetDouble(qtyStoreIdx);
-        product.QuantityWarehouse = reader.IsDBNull(qtyWarehouseIdx) ? 0 : (decimal)reader.GetDouble(qtyWarehouseIdx);
-        product.MinThresholdStore = reader.IsDBNull(minStoreIdx) ? 5 : (decimal)reader.GetDouble(minStoreIdx);
-        product.MinThresholdWarehouse = reader.IsDBNull(minWarehouseIdx) ? 10 : (decimal)reader.GetDouble(minWarehouseIdx);
+        product.QuantityStore = reader.IsDBNull(qtyStoreIdx) ? 0 : (decimal)Convert.ToDouble(reader.GetValue(qtyStoreIdx));
+        product.QuantityWarehouse = reader.IsDBNull(qtyWarehouseIdx) ? 0 : (decimal)Convert.ToDouble(reader.GetValue(qtyWarehouseIdx));
+        product.MinThresholdStore = reader.IsDBNull(minStoreIdx) ? 5 : (decimal)Convert.ToDouble(reader.GetValue(minStoreIdx));
+        product.MinThresholdWarehouse = reader.IsDBNull(minWarehouseIdx) ? 10 : (decimal)Convert.ToDouble(reader.GetValue(minWarehouseIdx));
         product.PurchasedAt = reader.IsDBNull(purchasedAtIdx) ? null : DateTime.Parse(reader.GetString(purchasedAtIdx));
         product.LastSaleAt = reader.IsDBNull(lastSaleAtIdx) ? null : DateTime.Parse(reader.GetString(lastSaleAtIdx));
     }

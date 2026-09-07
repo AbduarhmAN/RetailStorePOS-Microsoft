@@ -64,9 +64,9 @@ public class ReadinessService
             {
                 var factory = new global::RetailStorePOS.Data.SqliteConnectionFactory(profile.WorkingDatabasePath);
                 var auditRepo = new global::RetailStorePOS.Data.Repositories.AuditLogRepository(factory);
-                var auditSvc = new global::RetailStorePOS.App.Services.AuditLogService(auditRepo);
+                var auditSvc = new global::RetailStorePOS.UI.Common.Services.AuditLogService(auditRepo);
                 var userRepo = new global::RetailStorePOS.Data.Modules.UsersAuth.UserRepository(factory);
-                var authSvc = new global::RetailStorePOS.App.Services.AuthService(userRepo, auditSvc);
+                var authSvc = new global::RetailStorePOS.UI.Common.Services.AuthService(userRepo, auditSvc);
                 
                 // If it's the representative profile, there should be an admin user
                 if (userRepo.UsersExist())
@@ -145,10 +145,10 @@ public class ReadinessService
                 var settingsRepo = new global::RetailStorePOS.Data.Modules.Settings.SettingsRepository(factory);
                 var auditRepo = new global::RetailStorePOS.Data.Repositories.AuditLogRepository(factory);
                 var userRepo = new global::RetailStorePOS.Data.Modules.UsersAuth.UserRepository(factory);
-                var auditSvc = new global::RetailStorePOS.App.Services.AuditLogService(auditRepo);
-                var authSvc = new global::RetailStorePOS.App.Services.AuthService(userRepo, auditSvc);
-                var searchSvc = new global::RetailStorePOS.App.Modules.Products.ProductSearchService(productRepo);
-                var prefs = new global::RetailStorePOS.App.Services.LocalPreferencesService();
+                var auditSvc = new global::RetailStorePOS.UI.Common.Services.AuditLogService(auditRepo);
+                var authSvc = new global::RetailStorePOS.UI.Common.Services.AuthService(userRepo, auditSvc);
+                var searchSvc = new global::RetailStorePOS.Data.Modules.Products.ProductSearchService(productRepo);
+                var prefs = new global::RetailStorePOS.UI.Common.Services.LocalPreferencesService();
                 
                 // The VM here is only used to verify DI wires up. Wrap in
                 // `using` so its subscription to LoginRuntime.ProductsUpdated
@@ -156,7 +156,7 @@ public class ReadinessService
                 // and, when the readiness pass runs from a worker thread, the
                 // captured null DispatcherQueue causes an NRE on the next real
                 // product update.
-                using var vm = new global::RetailStorePOS.WinUiLogin.ViewModels.CheckoutViewModel(
+                using var vm = new global::RetailStorePOS.UI.Sales.ViewModels.CheckoutViewModel(
                     saleRepo, settingsRepo, searchSvc, productRepo, auditSvc, prefs, authSvc,
                     Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());
 
@@ -257,7 +257,7 @@ public class ReadinessService
             {
                 var factory = new global::RetailStorePOS.Data.SqliteConnectionFactory(profile.WorkingDatabasePath);
                 var productRepo = new ProductRepository(factory);
-                var imageSvc = new global::RetailStorePOS.App.Services.ProductImageService();
+                var imageSvc = new global::RetailStorePOS.UI.Common.Services.ProductImageService();
                 
                 var productsWithImages = productRepo.GetAll().Where(p => !string.IsNullOrWhiteSpace(p.ThumbnailPath)).ToList();
                 if (productsWithImages.Count == 0)
@@ -336,14 +336,19 @@ public class ReadinessService
         // T020: Persist summary to telemetry for remote tracking
         if (LoginRuntime.Telemetry != null)
         {
-            _ = LoginRuntime.Telemetry.LogGenericEventAsync("readiness_run_completed", new
+            try
             {
-                run_id = run.RunId,
-                status = run.OverallStatus.ToString(),
-                blocking_failures = run.BlockingFailureCount,
-                observations = run.ObservationCount,
-                profile = run.DatasetProfileKey
-            });
+                await LoginRuntime.Telemetry.LogReadinessRunCompletedAsync(
+                    run.RunId,
+                    run.OverallStatus.ToString(),
+                    run.BlockingFailureCount,
+                    run.ObservationCount,
+                    run.DatasetProfileKey);
+            }
+            catch (Exception ex)
+            {
+                LoginRuntime.ReportException(ex, "ReadinessService.Telemetry.ReadinessRunCompleted");
+            }
         }
 
         return run;

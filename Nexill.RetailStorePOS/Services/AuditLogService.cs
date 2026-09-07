@@ -34,12 +34,6 @@ public sealed class AuditLogService
     private const string OutboxFolderName = "audit_outbox";
     private const int MaxOutboxFiles = 500;
 
-    private static readonly JsonSerializerOptions OutboxSerializerOptions = new()
-    {
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
-
     private readonly Action<AuditLog> _writer;
     private readonly Action<Exception, string>? _exceptionReporter;
 
@@ -178,20 +172,22 @@ public sealed class AuditLogService
 
         var path = Path.Combine(folder, fileName);
 
-        var record = new
+        var record = new AuditOutboxRecord
         {
-            createdAt = log.CreatedAt,
-            action = log.Action,
-            details = log.Details,
-            userId = log.UserId,
-            error = new
+            CreatedAt = log.CreatedAt,
+            Action = log.Action,
+            Details = log.Details,
+            UserId = log.UserId,
+            Error = new AuditOutboxError
             {
-                type = ex.GetType().FullName,
-                message = ex.Message,
+                Type = ex.GetType().FullName,
+                Message = ex.Message,
             },
         };
 
-        File.WriteAllText(path, JsonSerializer.Serialize(record, OutboxSerializerOptions));
+        File.WriteAllText(
+            path,
+            JsonSerializer.Serialize(record, AuditLogJsonContext.Default.AuditOutboxRecord));
     }
 
     private static void TrimOutbox(string folder, int maxFiles)
@@ -226,3 +222,27 @@ public sealed record AuditWriteFailure(
     string Action,
     string ExceptionType,
     string ExceptionMessage);
+
+internal sealed class AuditOutboxRecord
+{
+    public DateTime CreatedAt { get; set; }
+    public string Action { get; set; } = string.Empty;
+    public string? Details { get; set; }
+    public long? UserId { get; set; }
+    public AuditOutboxError Error { get; set; } = new();
+}
+
+internal sealed class AuditOutboxError
+{
+    public string? Type { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+[JsonSourceGenerationOptions(
+    WriteIndented = false,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(AuditOutboxRecord), TypeInfoPropertyName = nameof(AuditOutboxRecord))]
+internal sealed partial class AuditLogJsonContext : JsonSerializerContext
+{
+}

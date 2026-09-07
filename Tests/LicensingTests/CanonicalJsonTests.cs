@@ -1,5 +1,5 @@
 using System.Text.Json;
-using RetailStorePOS.App.Services.Licensing;
+using RetailStorePOS.UI.Common.Services;
 
 namespace LicensingTests;
 
@@ -42,6 +42,25 @@ public sealed class CanonicalJsonTests
     {
         var element = JsonDocument.Parse("\"hello\"").RootElement;
         Assert.AreEqual("\"hello\"", CanonicalJson.Serialize(element));
+    }
+
+    [TestMethod]
+    public void String_EscapingMatchesJavaScriptForUnicodeAndHtmlSensitiveText()
+    {
+        const string value = "\u062a\u0631\u062e\u064a\u0635 + <premium> & 'store' / \u2028\u2029\ud83d\ude00";
+        using var doc = JsonDocument.Parse(JsonSerializer.Serialize(new { value }));
+
+        Assert.AreEqual("{\"value\":\"" + value + "\"}", CanonicalJson.Serialize(doc.RootElement));
+    }
+
+    [TestMethod]
+    public void String_UsesShortControlEscapesAndLowercaseUnicodeEscapes()
+    {
+        const string value = "\"\\\b\f\n\r\t\u0000\u001a";
+        using var doc = JsonDocument.Parse(JsonSerializer.Serialize(new { value }));
+
+        Assert.AreEqual("{\"value\":\"\\\"\\\\\\b\\f\\n\\r\\t\\u0000\\u001a\"}",
+            CanonicalJson.Serialize(doc.RootElement));
     }
 
     [TestMethod]

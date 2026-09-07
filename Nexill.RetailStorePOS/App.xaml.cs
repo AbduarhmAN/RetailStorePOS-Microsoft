@@ -134,7 +134,7 @@ public partial class App : Application
     {
         WriteCrashLog("UnhandledException", e.Exception);
         LoginRuntime.ReportException(e.Exception, "WinUiLogin.UnhandledException");
-        e.Handled = true;
+        e.Handled = e.Exception is not Microsoft.UI.Xaml.Markup.XamlParseException;
     }
 
     private void CurrentDomain_UnhandledException(object sender, System.UnhandledExceptionEventArgs e)
@@ -164,7 +164,7 @@ public partial class App : Application
         e.SetObserved();
     }
 
-    private static void WriteCrashLog(string phase, Exception ex)
+    internal static void WriteCrashLog(string phase, Exception ex)
     {
         try
         {

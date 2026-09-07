@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Security.Cryptography;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
@@ -7,14 +8,17 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
-using RetailStorePOS.App.Services;
+using RetailStorePOS.UI.Common.Services;
 using RetailStorePOS.WinUiLogin.Common;
-using RetailStorePOS.WinUiLogin.Views;
+using RetailStorePOS.UI.Login.Views;
 using Windows.Graphics;
 using Windows.Globalization;
 using WinRT.Interop;
-
 using RetailStorePOS.WinUiLogin.ViewModels;
+using RetailStorePOS.UI.Sales.Views;
+using RetailStorePOS.UI.Settings.Views;
+using RetailStorePOS.WinUiLogin.Views;
+using XamlEllipse = Microsoft.UI.Xaml.Shapes.Ellipse;
 
 namespace RetailStorePOS.WinUiLogin;
 
@@ -48,6 +52,28 @@ public sealed partial class MainWindow : Window
     private TutorialStep[]? _firstRunTutorialSteps;
     private bool _isRuntimeBootstrapInProgress;
     private bool _isRuntimeBootstrapComplete;
+    private double _splashProgressValue;
+    private Grid _shellRootGrid = null!;
+    private Border _appTitleBar = null!;
+    private Border _titleBarDragRegion = null!;
+    private Button _paneToggleButton = null!;
+    private TextBlock _brandTitleText = null!;
+    private TextBlock _shellContextText = null!;
+    private Button _userBadge = null!;
+    private TextBlock _userPictureInitials = null!;
+    private XamlEllipse _registerStatusDot = null!;
+    private TextBlock _userNameText = null!;
+    private TextBlock _registerStatusText = null!;
+    private Frame _rootFrame = null!;
+    private Border _splashOverlay = null!;
+    private Border _splashProgressTrack = null!;
+    private Border _splashProgressFill = null!;
+    private TextBlock _splashVersionText = null!;
+    private TextBlock _splashCopyrightText = null!;
+    private TextBlock _splashStatusTitle = null!;
+    private TextBlock _splashStatusDetail = null!;
+    private TextBlock _splashTitleText = null!;
+    private TextBlock _splashSubtitleText = null!;
     private readonly DispatcherQueueTimer _sessionIdleTimer;
     private TimeSpan _sessionIdleTimeout = TimeSpan.FromMinutes(30);
     private string? _lockedRouteTag;
@@ -57,6 +83,11 @@ public sealed partial class MainWindow : Window
     private DateTimeOffset _lastRegisterStatusRefreshAt = DateTimeOffset.MinValue;
     private CashInOutDialog? _activeCashInOutDialog;
     private CloseRegisterDialog? _activeCloseRegisterDialog;
+    private MenuFlyout _userMenuFlyout = null!;
+    private MenuFlyoutItem _cashInOutMenuItem = null!;
+    private MenuFlyoutItem _closeRegisterMenuItem = null!;
+    private MenuFlyoutItem _logoutMenuItem = null!;
+    private TeachingTip _firstRunTutorialTip = null!;
     private static readonly TimeSpan RegisterStatusRefreshInterval = TimeSpan.FromSeconds(2);
     private readonly System.Threading.CancellationTokenSource _verificationCts = new();
 
@@ -64,7 +95,31 @@ public sealed partial class MainWindow : Window
     {
         StartupTrace.Write("MainWindow.ctor:start");
         Current = this;
-        InitializeComponent();
+        try
+        {
+            StartupTrace.Write("MainWindow.ctor:before InitializeComponent");
+            InitializeComponent();
+            StartupTrace.Write("MainWindow.ctor:after InitializeComponent");
+        }
+        catch (Exception ex)
+        {
+            StartupTrace.Write($"MainWindow.InitializeComponent failed: {ex}");
+            App.WriteCrashLog("MainWindow.InitializeComponent", ex);
+            throw;
+        }
+
+        _shellRootGrid = new Grid
+        {
+            Background = Brush(255, 45, 27, 105),
+            RequestedTheme = ElementTheme.Dark
+        };
+        Content = _shellRootGrid;
+
+        BuildShellUi();
+        InitializeUserMenuFlyout();
+        InitializeFirstRunTutorialTip();
+        ApplyShellLocalization();
+        _splashProgressTrack.SizeChanged += (_, _) => UpdateSplashProgressFill();
         ConfigureWindow();
 
         _sessionIdleTimer = DispatcherQueue.CreateTimer();
@@ -72,11 +127,11 @@ public sealed partial class MainWindow : Window
         _sessionIdleTimer.IsRepeating = true;
         _sessionIdleTimer.Tick += SessionIdleTimer_Tick;
 
-        RootFrame.Navigated += RootFrame_Navigated;
-        RootGrid.Loaded += MainWindow_Loaded;
+        _rootFrame.Navigated += RootFrame_Navigated;
+        _shellRootGrid.Loaded += MainWindow_Loaded;
         Closed += MainWindow_Closed;
-        RootGrid.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootGrid_PointerPressed), true);
-        RootGrid.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(RootGrid_KeyDown), true);
+        _shellRootGrid.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(ShellRootGrid_PointerPressed), true);
+        _shellRootGrid.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(ShellRootGrid_KeyDown), true);
 
         StartupTrace.Write("MainWindow.ctor:end");
     }
@@ -84,15 +139,428 @@ public sealed partial class MainWindow : Window
     private static readonly SizeInt32 SplashSize = new(580, 380);
     private static readonly SizeInt32 AppSize = new(1365, 768);
 
+    private static SolidColorBrush Brush(byte a, byte r, byte g, byte b)
+    {
+        return new SolidColorBrush(ColorHelper.FromArgb(a, r, g, b));
+    }
+
+    private void BuildShellUi()
+    {
+        _shellRootGrid.Children.Clear();
+        _shellRootGrid.RowDefinitions.Clear();
+        _shellRootGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(48) });
+        _shellRootGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+
+        _appTitleBar = new Border
+        {
+            Background = Brush(255, 249, 251, 253),
+            BorderBrush = Brush(255, 226, 232, 240),
+            BorderThickness = new Thickness(0, 0, 0, 1)
+        };
+        Grid.SetRow(_appTitleBar, 0);
+        _shellRootGrid.Children.Add(_appTitleBar);
+
+        var titleBarGrid = new Grid { FlowDirection = FlowDirection.LeftToRight };
+        _appTitleBar.Child = titleBarGrid;
+
+        _titleBarDragRegion = new Border { Background = Brush(255, 249, 251, 253) };
+        titleBarGrid.Children.Add(_titleBarDragRegion);
+
+        var titleContentGrid = new Grid
+        {
+            ColumnSpacing = 12,
+            Margin = new Thickness(10, 0, 128, 0)
+        };
+        titleContentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        titleContentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Auto) });
+        titleBarGrid.Children.Add(titleContentGrid);
+
+        var brandRow = new StackPanel
+        {
+            Orientation = Orientation.Horizontal,
+            Spacing = 12,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        titleContentGrid.Children.Add(brandRow);
+
+        _paneToggleButton = new Button
+        {
+            Width = 32,
+            Height = 32,
+            CornerRadius = new CornerRadius(8),
+            Background = Brush(255, 45, 27, 105),
+            BorderBrush = Brush(0, 0, 0, 0),
+            Visibility = Visibility.Collapsed,
+            Content = new TextBlock
+            {
+                Text = "Menu",
+                FontSize = 11,
+                Foreground = Brush(255, 75, 85, 99),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            }
+        };
+        _paneToggleButton.Click += PaneToggleButton_Click;
+        brandRow.Children.Add(_paneToggleButton);
+
+        brandRow.Children.Add(new Border
+        {
+            Width = 32,
+            Height = 32,
+            Padding = new Thickness(0),
+            CornerRadius = new CornerRadius(3),
+            Background = Brush(255, 246, 250, 253),
+            BorderBrush = Brush(255, 215, 225, 234),
+            BorderThickness = new Thickness(0.3),
+            Child = new TextBlock
+            {
+                Text = "N",
+                FontSize = 16,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Foreground = Brush(255, 45, 27, 105),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            }
+        });
+
+        var brandText = new StackPanel
+        {
+            Spacing = 0,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        _brandTitleText = new TextBlock
+        {
+            Text = "Retail Store POS",
+            FontSize = 13,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = Brush(255, 36, 49, 66)
+        };
+        _shellContextText = new TextBlock
+        {
+            Text = "Reports workspace",
+            FontSize = 11,
+            Foreground = Brush(255, 112, 128, 149)
+        };
+        brandText.Children.Add(_brandTitleText);
+        brandText.Children.Add(_shellContextText);
+        brandRow.Children.Add(brandText);
+
+        _userBadge = new Button
+        {
+            Visibility = Visibility.Collapsed,
+            Padding = new Thickness(12, 6, 12, 6),
+            CornerRadius = new CornerRadius(6),
+            Margin = new Thickness(1, 1, 50, 1),
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetColumn(_userBadge, 1);
+        titleContentGrid.Children.Add(_userBadge);
+
+        var userGrid = new Grid { ColumnSpacing = 10 };
+        userGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Auto) });
+        userGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        _userBadge.Content = userGrid;
+
+        var avatarGrid = new Grid
+        {
+            Width = 32,
+            Height = 32
+        };
+        userGrid.Children.Add(avatarGrid);
+
+        _userPictureInitials = new TextBlock
+        {
+            Text = string.Empty,
+            FontSize = 12,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = Brush(255, 36, 49, 66),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        avatarGrid.Children.Add(new Border
+        {
+            Width = 32,
+            Height = 32,
+            CornerRadius = new CornerRadius(16),
+            Background = Brush(255, 229, 231, 235),
+            Child = _userPictureInitials
+        });
+
+        _registerStatusDot = new XamlEllipse
+        {
+            Width = 10,
+            Height = 10,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Fill = Brush(255, 148, 163, 184),
+            Stroke = Brush(255, 249, 251, 253),
+            StrokeThickness = 2
+        };
+        avatarGrid.Children.Add(_registerStatusDot);
+
+        var userText = new StackPanel
+        {
+            Spacing = 0,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        Grid.SetColumn(userText, 1);
+        _userNameText = new TextBlock
+        {
+            FontSize = 13,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = Brush(255, 36, 49, 66),
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        _registerStatusText = new TextBlock
+        {
+            Text = "No active register",
+            FontSize = 11,
+            Foreground = Brush(255, 112, 128, 149),
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        userText.Children.Add(_userNameText);
+        userText.Children.Add(_registerStatusText);
+        userGrid.Children.Add(userText);
+
+        _rootFrame = new Frame();
+        Grid.SetRow(_rootFrame, 1);
+        _shellRootGrid.Children.Add(_rootFrame);
+
+        _splashOverlay = BuildSplashOverlay();
+        Grid.SetRowSpan(_splashOverlay, 2);
+        _shellRootGrid.Children.Add(_splashOverlay);
+    }
+
+    private Border BuildSplashOverlay()
+    {
+        var overlay = new Border
+        {
+            CornerRadius = new CornerRadius(4),
+            Background = new LinearGradientBrush
+            {
+                StartPoint = new Windows.Foundation.Point(0, 0),
+                EndPoint = new Windows.Foundation.Point(1, 1),
+                GradientStops =
+                {
+                    new GradientStop { Color = ColorHelper.FromArgb(255, 45, 27, 105), Offset = 0.0 },
+                    new GradientStop { Color = ColorHelper.FromArgb(255, 67, 56, 202), Offset = 0.45 },
+                    new GradientStop { Color = ColorHelper.FromArgb(255, 124, 58, 237), Offset = 0.75 },
+                    new GradientStop { Color = ColorHelper.FromArgb(255, 109, 40, 217), Offset = 1.0 }
+                }
+            }
+        };
+
+        var overlayGrid = new Grid();
+        overlay.Child = overlayGrid;
+
+        overlayGrid.Children.Add(new XamlEllipse
+        {
+            Width = 600,
+            Height = 600,
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, -200, -150, 0),
+            Fill = Brush(24, 255, 255, 255)
+        });
+        overlayGrid.Children.Add(new XamlEllipse
+        {
+            Width = 400,
+            Height = 400,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Margin = new Thickness(-120, 0, 0, -120),
+            Fill = Brush(16, 0, 0, 128)
+        });
+
+        var splashBrand = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Center,
+            Spacing = 18
+        };
+        overlayGrid.Children.Add(splashBrand);
+
+        splashBrand.Children.Add(new Border
+        {
+            Width = 72,
+            Height = 72,
+            CornerRadius = new CornerRadius(10),
+            Background = Brush(32, 255, 255, 255),
+            Padding = new Thickness(12),
+            HorizontalAlignment = HorizontalAlignment.Center,
+            Child = new TextBlock
+            {
+                Text = "N",
+                FontSize = 34,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Foreground = Brush(255, 255, 255, 255),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            }
+        });
+
+        _splashTitleText = new TextBlock
+        {
+            Text = "Retail Store POS",
+            FontSize = 30,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = Brush(255, 255, 255, 255),
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        _splashSubtitleText = new TextBlock
+        {
+            Text = "Preparing workspace",
+            FontSize = 13,
+            Foreground = Brush(255, 196, 181, 253),
+            HorizontalAlignment = HorizontalAlignment.Center
+        };
+        splashBrand.Children.Add(_splashTitleText);
+        splashBrand.Children.Add(_splashSubtitleText);
+
+        var bottomGrid = new Grid
+        {
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Margin = new Thickness(32, 0, 32, 28)
+        };
+        bottomGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0, GridUnitType.Auto) });
+        bottomGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(10) });
+        bottomGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0, GridUnitType.Auto) });
+        overlayGrid.Children.Add(bottomGrid);
+
+        var statusGrid = new Grid();
+        Grid.SetRow(statusGrid, 0);
+        bottomGrid.Children.Add(statusGrid);
+
+        var statusText = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Spacing = 2
+        };
+        _splashStatusTitle = new TextBlock
+        {
+            Text = "Starting",
+            FontSize = 11,
+            FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+            Foreground = Brush(255, 233, 213, 255)
+        };
+        _splashStatusDetail = new TextBlock
+        {
+            Text = "Loading services",
+            FontSize = 10,
+            Foreground = Brush(255, 167, 139, 250)
+        };
+        statusText.Children.Add(_splashStatusTitle);
+        statusText.Children.Add(_splashStatusDetail);
+        statusGrid.Children.Add(statusText);
+
+        var versionText = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Spacing = 2
+        };
+        _splashVersionText = new TextBlock
+        {
+            Text = "vX.X.X",
+            FontSize = 18,
+            FontWeight = Microsoft.UI.Text.FontWeights.Light,
+            Foreground = Brush(255, 229, 231, 235),
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
+        _splashCopyrightText = new TextBlock
+        {
+            Text = "© XXXX",
+            FontSize = 10,
+            Foreground = Brush(255, 167, 139, 250),
+            HorizontalAlignment = HorizontalAlignment.Right
+        };
+        versionText.Children.Add(_splashVersionText);
+        versionText.Children.Add(_splashCopyrightText);
+        statusGrid.Children.Add(versionText);
+
+        _splashProgressTrack = new Border
+        {
+            Height = 6,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            Background = Brush(255, 67, 56, 202)
+        };
+        Grid.SetRow(_splashProgressTrack, 2);
+        _splashProgressFill = new Border
+        {
+            Width = 0,
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Background = Brush(255, 233, 213, 255)
+        };
+        _splashProgressTrack.Child = _splashProgressFill;
+        bottomGrid.Children.Add(_splashProgressTrack);
+
+        return overlay;
+    }
+
+    private void SetSplashProgress(double value)
+    {
+        _splashProgressValue = Math.Clamp(value, 0, 100);
+        UpdateSplashProgressFill();
+    }
+
+    private void UpdateSplashProgressFill()
+    {
+        _splashProgressFill.Width = _splashProgressTrack.ActualWidth * (_splashProgressValue / 100d);
+    }
+
+    private void InitializeFirstRunTutorialTip()
+    {
+        _firstRunTutorialTip = new TeachingTip
+        {
+            Title = "Quick setup",
+            Subtitle = "Review the settings sections to finish setup.",
+            CloseButtonContent = "Close",
+            IsLightDismissEnabled = false,
+            PreferredPlacement = TeachingTipPlacementMode.Right,
+            IsOpen = false
+        };
+
+        _firstRunTutorialTip.CloseButtonClick += FirstRunTutorialTip_CloseButtonClick;
+        Grid.SetRowSpan(_firstRunTutorialTip, 2);
+        Canvas.SetZIndex(_firstRunTutorialTip, 300);
+        _shellRootGrid.Children.Add(_firstRunTutorialTip);
+    }
+
+    private void InitializeUserMenuFlyout()
+    {
+        _cashInOutMenuItem = new MenuFlyoutItem { Text = "Cash in/out" };
+        _cashInOutMenuItem.Click += CashInOut_Click;
+
+        _closeRegisterMenuItem = new MenuFlyoutItem { Text = "Close register" };
+        _closeRegisterMenuItem.Click += CloseRegister_Click;
+
+        _logoutMenuItem = new MenuFlyoutItem { Text = "Log out" };
+        _logoutMenuItem.Click += Logout_Click;
+
+        _userMenuFlyout = new MenuFlyout
+        {
+            Placement = Microsoft.UI.Xaml.Controls.Primitives.FlyoutPlacementMode.BottomEdgeAlignedRight
+        };
+
+        _userMenuFlyout.Opening += UserMenuFlyout_Opening;
+        _userMenuFlyout.Items.Add(_cashInOutMenuItem);
+        _userMenuFlyout.Items.Add(_closeRegisterMenuItem);
+        _userMenuFlyout.Items.Add(new MenuFlyoutSeparator());
+        _userMenuFlyout.Items.Add(_logoutMenuItem);
+        _userBadge.Flyout = _userMenuFlyout;
+    }
+
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        try
+        {
         if (_isRuntimeBootstrapComplete || _isRuntimeBootstrapInProgress)
         {
             return;
         }
 
         _isRuntimeBootstrapInProgress = true;
-        RootGrid.Loaded -= MainWindow_Loaded;
+        _shellRootGrid.Loaded -= MainWindow_Loaded;
         DispatcherTimer? pbTimer = null;
 
         try
@@ -101,7 +569,10 @@ public sealed partial class MainWindow : Window
             pbTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(15) };
             pbTimer.Tick += (s, args) =>
             {
-                if (SplashProgressBar.Value < 95) SplashProgressBar.Value += 1.5;
+                if (_splashProgressValue < 95)
+                {
+                    SetSplashProgress(_splashProgressValue + 1.5);
+                }
             };
             pbTimer.Start();
 
@@ -111,14 +582,14 @@ public sealed partial class MainWindow : Window
 
             // Snap progress bar to 100% immediately so startup is not artificially delayed.
             pbTimer.Stop();
-            SplashProgressBar.Value = 100;
+            SetSplashProgress(100);
 
             // Hide the window completely so resizing doesn't flash on screen
             _appWindow?.Hide();
 
             // Prepare the main app UI invisibly
-            RootGrid.RequestedTheme = ElementTheme.Light;
-            RootGrid.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+            _shellRootGrid.RequestedTheme = ElementTheme.Light;
+            _shellRootGrid.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                 Microsoft.UI.ColorHelper.FromArgb(255, 247, 250, 252));
             TransitionToAppWindow();
 
@@ -130,8 +601,8 @@ public sealed partial class MainWindow : Window
             UpdateNavigationAccess();
 
             // Prepare the frame to fade in
-            RootFrame.Opacity = 0.0;
-            RootFrame.Navigate(typeof(LoginPage));
+            _rootFrame.Opacity = 0.0;
+            _rootFrame.Navigate(typeof(LoginPage));
 
             // Pop the window back up on screen
             _appWindow?.Show();
@@ -146,12 +617,12 @@ public sealed partial class MainWindow : Window
             };
             var inStoryboard = new Microsoft.UI.Xaml.Media.Animation.Storyboard();
             inStoryboard.Children.Add(fadeInAnim);
-            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeInAnim, RootFrame);
+            Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTarget(fadeInAnim, _rootFrame);
             Microsoft.UI.Xaml.Media.Animation.Storyboard.SetTargetProperty(fadeInAnim, "Opacity");
             inStoryboard.Begin();
 
             // Clean up splash overlay
-            SplashOverlay.Visibility = Visibility.Collapsed;
+            _splashOverlay.Visibility = Visibility.Collapsed;
             _isRuntimeBootstrapComplete = true;
 
             // Start telemetry background sync and log app launch
@@ -159,11 +630,26 @@ public sealed partial class MainWindow : Window
             {
                 LoginRuntime.Telemetry?.StartBackgroundSync();
                 var runId = Guid.NewGuid().ToString("N");
-                _ = Task.Run(async () => await LoginRuntime.Telemetry.LogAppLaunchAsync(runId));
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        var telemetry = LoginRuntime.Telemetry;
+                        if (telemetry is not null)
+                        {
+                            await telemetry.LogAppLaunchAsync(runId);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        LoginRuntime.ReportException(ex, "WinUiLogin.Telemetry.AppLaunch");
+                    }
+                });
             }
             catch (Exception ex)
             {
                 StartupTrace.Write($"Telemetry startup failed: {ex.Message}");
+                LoginRuntime.ReportException(ex, "WinUiLogin.Telemetry.Startup");
             }
 
             // Trigger post-launch startup checks and license verification
@@ -175,13 +661,18 @@ public sealed partial class MainWindow : Window
             pbTimer?.Stop();
             StartupTrace.Write($"MainWindow.Loaded bootstrap failed: {ex}");
             LoginRuntime.ReportException(ex, "WinUiLogin.RuntimeBootstrap");
-            SplashStatusTitle.Text = LocalizationHelper.GetString("MainWindow_Status_StartupError");
-            SplashStatusDetail.Text = ex.Message;
+            _splashStatusTitle.Text = LocalizationHelper.GetString("MainWindow_Status_StartupError");
+            _splashStatusDetail.Text = ex.Message;
         }
         finally
         {
             pbTimer?.Stop();
             _isRuntimeBootstrapInProgress = false;
+        }
+        }
+        catch (System.Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Unhandled exception in async void handler: {ex.Message}");
         }
     }
 
@@ -191,22 +682,19 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            var timeValidation = new RetailStorePOS.App.Services.TimeValidationService(LoginRuntime.ConnectionFactory);
+            var timeValidation = new RetailStorePOS.UI.Common.Services.TimeValidationService(LoginRuntime.ConnectionFactory);
             var timeCheckPassed = await timeValidation.IsSystemTimeValidAsync();
 
             while (!timeCheckPassed)
             {
-                var dialog = new RetailStorePOS.WinUiLogin.Views.TimeSyncDialog { XamlRoot = RootGrid.XamlRoot };
+                var dialog = new RetailStorePOS.UI.Platform.Views.TimeSyncDialog { XamlRoot = _shellRootGrid.XamlRoot };
                 await dialog.ShowAsync();
 
-                if (dialog.Result == RetailStorePOS.WinUiLogin.Views.TimeSyncDialogResult.Continue)
+                if (dialog.Result == RetailStorePOS.UI.Platform.Views.TimeSyncDialogResult.Continue)
                 {
                     if (LoginRuntime.Telemetry is not null)
                     {
-                        await LoginRuntime.Telemetry.LogGenericEventAsync("time_warning_ignored", new
-                        {
-                            local_time = DateTime.UtcNow.ToString("O")
-                        });
+                        await LoginRuntime.Telemetry.LogTimeWarningIgnoredAsync(DateTime.UtcNow);
                     }
 
                     break;
@@ -226,16 +714,14 @@ public sealed partial class MainWindow : Window
                 return;
             }
 
-            var crashDialog = new CrashFeedbackDialog { XamlRoot = RootGrid.XamlRoot };
+            var crashDialog = new RetailStorePOS.UI.Platform.Views.CrashFeedbackDialog { XamlRoot = _shellRootGrid.XamlRoot };
             var result = await crashDialog.ShowAsync();
 
             if (result == ContentDialogResult.Primary && LoginRuntime.Telemetry is not null)
             {
-                await LoginRuntime.Telemetry.LogGenericEventAsync("crash_feedback", new
-                {
-                    category = crashDialog.SelectedCategory,
-                    details = crashDialog.FeedbackDetails
-                });
+                await LoginRuntime.Telemetry.LogCrashFeedbackAsync(
+                    crashDialog.SelectedCategory,
+                    crashDialog.FeedbackDetails);
             }
 
             if (crashDialog.SuppressFuturePrompts)
@@ -268,11 +754,11 @@ public sealed partial class MainWindow : Window
             // Delay 3 seconds before background verification, tied to window cancellation
             await Task.Delay(3000, token);
 
-            var secretKey = SecureStorageService.GetSecret("LicenseKey");
-            var storedLicenseKey = !string.IsNullOrWhiteSpace(secretKey)
-                ? secretKey
-                : LoginRuntime.Settings.GetSetting("license.key", string.Empty);
-            RetailStorePOS.App.Services.Licensing.LicenseActivationResult result;
+            // DPAPI and SQLite access are blocking operations. Keep them off
+            // the UI thread and migrate the legacy plaintext setting only
+            // after reading the protected value back successfully.
+            var storedLicenseKey = await Task.Run(ReadAndMigrateStoredLicenseKey, token);
+            RetailStorePOS.UI.Common.Services.LicenseActivationResult result;
 
             if (string.IsNullOrWhiteSpace(storedLicenseKey))
             {
@@ -289,13 +775,11 @@ public sealed partial class MainWindow : Window
 
             if (LoginRuntime.Telemetry is not null)
             {
-                await LoginRuntime.Telemetry.LogGenericEventAsync("license_verification", new
-                {
-                    outcome = result.Outcome.ToString(),
-                    error_code = result.ErrorCode ?? string.Empty
-                });
+                await LoginRuntime.Telemetry.LogLicenseVerificationAsync(
+                    result.Outcome.ToString(),
+                    result.ErrorCode);
 
-                if (result.Outcome == RetailStorePOS.App.Services.Licensing.LicenseActivationOutcome.SignatureInvalid)
+                if (result.Outcome == RetailStorePOS.UI.Common.Services.LicenseActivationOutcome.SignatureInvalid)
                 {
                     await LoginRuntime.Telemetry.LogErrorAsync(
                         new System.Security.Cryptography.CryptographicException("Local signature verification failed during background check."),
@@ -312,6 +796,38 @@ public sealed partial class MainWindow : Window
             StartupTrace.Write($"MainWindow.RunPostLaunchLicenseVerificationAsync failed: {ex.Message}");
             LoginRuntime.ReportException(ex, "WinUiLogin.License.PostLaunchVerification");
         }
+    }
+
+    private static string ReadAndMigrateStoredLicenseKey()
+    {
+        var protectedKey = SecureStorageService.GetSecret("LicenseKey");
+        if (!string.IsNullOrWhiteSpace(protectedKey))
+        {
+            return protectedKey.Trim();
+        }
+
+        var legacyKey = LoginRuntime.Settings.GetSetting("license.key", string.Empty).Trim();
+        if (legacyKey.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            SecureStorageService.StoreSecret("LicenseKey", legacyKey);
+            var persistedKey = SecureStorageService.GetSecret("LicenseKey");
+            if (string.Equals(persistedKey, legacyKey, StringComparison.Ordinal))
+            {
+                LoginRuntime.Settings.SetSetting("license.key", string.Empty);
+            }
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException
+            or CryptographicException or System.Text.Json.JsonException or Microsoft.Data.Sqlite.SqliteException)
+        {
+            LoginRuntime.ReportException(ex, "License.LegacyKeyMigration");
+        }
+
+        return legacyKey;
     }
 
     private void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -356,8 +872,8 @@ public sealed partial class MainWindow : Window
         DwmSetWindowAttribute(WindowNative.GetWindowHandle(this), DWMWA_WINDOW_CORNER_PREFERENCE, ref doRound, sizeof(int));
 
         ExtendsContentIntoTitleBar = true;
-        SetTitleBar(TitleBarDragRegion);
-        AppTitleBar.Visibility = Visibility.Visible;
+        SetTitleBar(_titleBarDragRegion);
+        _appTitleBar.Visibility = Visibility.Visible;
 
         // Resize and center to full app size
         var hwnd = WindowNative.GetWindowHandle(this);
@@ -395,7 +911,7 @@ public sealed partial class MainWindow : Window
         }
 
         // Hide the app title bar during splash
-        AppTitleBar.Visibility = Visibility.Collapsed;
+        _appTitleBar.Visibility = Visibility.Collapsed;
 
         // Size the window to exactly the splash card dimensions
         _appWindow.Resize(SplashSize);
@@ -412,7 +928,7 @@ public sealed partial class MainWindow : Window
 
         if (LocalizationHelper.IsRtl)
         {
-            RootGrid.FlowDirection = FlowDirection.RightToLeft;
+            _shellRootGrid.FlowDirection = FlowDirection.RightToLeft;
         }
 
         // Bind Splash screen text to MSBuild properties compiled into Assembly metadata
@@ -421,8 +937,8 @@ public sealed partial class MainWindow : Window
         var copyright = assembly?.GetCustomAttribute<System.Reflection.AssemblyCopyrightAttribute>()?.Copyright;
 
         var cleanVersion = string.IsNullOrWhiteSpace(version) ? "1.0.0" : version.Split('+')[0];
-        SplashVersionText.Text = string.Format(LocalizationHelper.GetString("Splash_Version_Format"), cleanVersion);
-        SplashCopyrightText.Text = string.IsNullOrWhiteSpace(copyright) ? LocalizationHelper.GetString("Splash_Copyright_Default") : copyright;
+        _splashVersionText.Text = string.Format(LocalizationHelper.GetString("Splash_Version_Format"), cleanVersion);
+        _splashCopyrightText.Text = string.IsNullOrWhiteSpace(copyright) ? LocalizationHelper.GetString("Splash_Copyright_Default") : copyright;
     }
 
     private void TrySetWindowIcon()
@@ -434,8 +950,8 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            var iconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "app_icon.ico");
-            if (!File.Exists(iconPath))
+            var iconPath = System.IO.Path.Combine(AppContext.BaseDirectory, "Assets", "app_icon.ico");
+            if (!System.IO.File.Exists(iconPath))
             {
                 StartupTrace.Write($"MainWindow.TrySetWindowIcon missing icon: {iconPath}");
                 return;
@@ -498,20 +1014,20 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void RootGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
+    private void ShellRootGrid_PointerPressed(object sender, PointerRoutedEventArgs e)
     {
         RecordUserActivity();
 
         if (!_isFirstRunTutorialRunning ||
             _firstRunTutorialStepIndex != 0 ||
-            RootFrame.CurrentSourcePageType != typeof(SettingsPage))
+            _rootFrame.CurrentSourcePageType != typeof(SettingsPage))
         {
             return;
         }
 
         var source = e.OriginalSource as DependencyObject;
-        if (IsDescendantOf(source, PaneToggleButton) ||
-            IsDescendantOf(source, FirstRunTutorialTip))
+        if (IsDescendantOf(source, _paneToggleButton) ||
+            IsDescendantOf(source, _firstRunTutorialTip))
         {
             return;
         }
@@ -519,7 +1035,7 @@ public sealed partial class MainWindow : Window
         QueueFirstRunTutorialSubNavigationStep();
     }
 
-    private void RootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
+    private void ShellRootGrid_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         RecordUserActivity();
     }
@@ -529,14 +1045,14 @@ public sealed partial class MainWindow : Window
         if (e.SourcePageType == typeof(LoginPage))
         {
             ResetFirstRunTutorialSession();
-            RootFrame.Tag = null;
+            _rootFrame.Tag = null;
             UpdateShellChrome();
             return;
         }
 
         UpdateShellChrome();
 
-        if (_isFirstRunTutorialRunning && RootFrame.CurrentSourcePageType != typeof(SettingsPage))
+        if (_isFirstRunTutorialRunning && _rootFrame.CurrentSourcePageType != typeof(SettingsPage))
         {
             PauseFirstRunTutorial();
         }
@@ -558,23 +1074,23 @@ public sealed partial class MainWindow : Window
                 {
                     HideActiveSensitiveDialogs();
 
-                    if (RootFrame.CurrentSourcePageType != typeof(LoginPage))
+                    if (_rootFrame.CurrentSourcePageType != typeof(LoginPage))
                     {
                         StartupTrace.Write("MainWindow.Auth_LoginStateChanged:navigate-locked-login");
-                        _lockedRouteTag ??= RootFrame.Tag as string;
-                        RootFrame.Navigate(typeof(LoginPage));
+                        _lockedRouteTag ??= _rootFrame.Tag as string;
+                        _rootFrame.Navigate(typeof(LoginPage));
                     }
 
                     return;
                 }
 
-                if (LoginRuntime.Auth.CurrentUser is null && RootFrame.CurrentSourcePageType != typeof(LoginPage))
+                if (LoginRuntime.Auth.CurrentUser is null && _rootFrame.CurrentSourcePageType != typeof(LoginPage))
                 {
                     QueueRegisterCashierAssignmentCloseIfAny();
                     StartupTrace.Write("MainWindow.Auth_LoginStateChanged:navigate-login");
                     _lockedRouteTag = null;
-                    RootFrame.Tag = null;
-                    RootFrame.Navigate(typeof(LoginPage));
+                    _rootFrame.Tag = null;
+                    _rootFrame.Navigate(typeof(LoginPage));
                     return;
                 }
 
@@ -591,7 +1107,7 @@ public sealed partial class MainWindow : Window
                     QueueRegisterCashierAssignmentSync();
                 }
 
-                if (LoginRuntime.Auth.CurrentUser is not null && RootFrame.CurrentSourcePageType == typeof(LoginPage))
+                if (LoginRuntime.Auth.CurrentUser is not null && _rootFrame.CurrentSourcePageType == typeof(LoginPage))
                 {
                     if (!string.IsNullOrWhiteSpace(_lockedRouteTag))
                     {
@@ -620,11 +1136,13 @@ public sealed partial class MainWindow : Window
 
     private async void MaybeStartFirstRunTutorial()
     {
+        try
+        {
         if (_isFirstRunTutorialCompletedThisSession ||
             LoginRuntime.Auth.CurrentUser is null ||
-            RootFrame.CurrentSourcePageType != typeof(SettingsPage) ||
+            _rootFrame.CurrentSourcePageType != typeof(SettingsPage) ||
             LoginRuntime.Settings.IsFirstRunTutorialCleared() ||
-            GetCurrentSettingsPage() is not SettingsPage settingsPage)
+            GetCurrentSettingsPage() is null)
         {
             return;
         }
@@ -639,7 +1157,7 @@ public sealed partial class MainWindow : Window
 
             if (LoginRuntime.Auth.CurrentUser is null ||
                 _isFirstRunTutorialCompletedThisSession ||
-                RootFrame.CurrentSourcePageType != typeof(SettingsPage) ||
+                _rootFrame.CurrentSourcePageType != typeof(SettingsPage) ||
                 LoginRuntime.Settings.IsFirstRunTutorialCleared() ||
                 currentSettingsPage is null)
             {
@@ -655,6 +1173,11 @@ public sealed partial class MainWindow : Window
         finally
         {
             _isFirstRunTutorialQueued = false;
+        }
+        }
+        catch (System.Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Unhandled exception in async void handler: {ex.Message}");
         }
     }
 
@@ -674,25 +1197,25 @@ public sealed partial class MainWindow : Window
         {
             _isFirstRunTutorialPaused = true;
             _isFirstRunTutorialRunning = false;
-            FirstRunTutorialTip.IsOpen = false;
+            _firstRunTutorialTip.IsOpen = false;
             return;
         }
 
         step.Target.UpdateLayout();
 
-        FirstRunTutorialTip.IsOpen = false;
-        FirstRunTutorialTip.Target = step.Target;
-        FirstRunTutorialTip.Title = step.Title;
-        FirstRunTutorialTip.Subtitle = step.Subtitle;
-        FirstRunTutorialTip.ActionButtonContent = null;
-        FirstRunTutorialTip.CloseButtonContent = LocalizationHelper.GetString("MainWindow_Tutorial_CloseButton.Content");
-        FirstRunTutorialTip.PreferredPlacement = step.PreferredPlacement;
-        FirstRunTutorialTip.IsOpen = true;
+        _firstRunTutorialTip.IsOpen = false;
+        _firstRunTutorialTip.Target = step.Target;
+        _firstRunTutorialTip.Title = step.Title;
+        _firstRunTutorialTip.Subtitle = step.Subtitle;
+        _firstRunTutorialTip.ActionButtonContent = null;
+        _firstRunTutorialTip.CloseButtonContent = LocalizationHelper.GetString("MainWindow_Tutorial_CloseButton.Content");
+        _firstRunTutorialTip.PreferredPlacement = step.PreferredPlacement;
+        _firstRunTutorialTip.IsOpen = true;
     }
 
     private void CompleteFirstRunTutorial()
     {
-        FirstRunTutorialTip.IsOpen = false;
+        _firstRunTutorialTip.IsOpen = false;
         _isFirstRunTutorialRunning = false;
         _isFirstRunTutorialPaused = false;
         _isFirstRunTutorialQueued = false;
@@ -706,7 +1229,7 @@ public sealed partial class MainWindow : Window
         return
         [
             new TutorialStep(
-                PaneToggleButton,
+                _paneToggleButton,
                 LocalizationHelper.GetString("MainWindow_Tutorial_Step0_Title"),
                 LocalizationHelper.GetString("MainWindow_Tutorial_Step0_Subtitle"),
                 TeachingTipPlacementMode.Bottom)
@@ -727,7 +1250,7 @@ public sealed partial class MainWindow : Window
 
         _isFirstRunTutorialPaused = true;
         _isFirstRunTutorialRunning = false;
-        FirstRunTutorialTip.IsOpen = false;
+        _firstRunTutorialTip.IsOpen = false;
     }
 
     private void ResumeFirstRunTutorial()
@@ -757,7 +1280,7 @@ public sealed partial class MainWindow : Window
 
     private void QueueFirstRunTutorialSubNavigationStep()
     {
-        FirstRunTutorialTip.IsOpen = false;
+        _firstRunTutorialTip.IsOpen = false;
         _isFirstRunTutorialRunning = false;
         _isFirstRunTutorialPaused = false;
         _isFirstRunTutorialQueued = false;
@@ -769,7 +1292,7 @@ public sealed partial class MainWindow : Window
 
     private SettingsPage? GetCurrentSettingsPage()
     {
-        return RootFrame.Content as SettingsPage;
+        return _rootFrame.Content as SettingsPage;
     }
 
     private void ResetFirstRunTutorialSession()
@@ -781,7 +1304,7 @@ public sealed partial class MainWindow : Window
         _isSettingsSubNavigationTipArmed = false;
         _firstRunTutorialStepIndex = -1;
         _firstRunTutorialSteps = null;
-        FirstRunTutorialTip.IsOpen = false;
+        _firstRunTutorialTip.IsOpen = false;
     }
 
     private static bool IsDescendantOf(DependencyObject? node, DependencyObject ancestor)
@@ -833,7 +1356,7 @@ public sealed partial class MainWindow : Window
             ShowBootstrapPasswordChangeRequiredDialog();
         }
 
-        RootFrame.Tag = tag;
+        _rootFrame.Tag = tag;
 
         if (GetCurrentSettingsPage() is SettingsPage settingsPage)
         {
@@ -844,7 +1367,7 @@ public sealed partial class MainWindow : Window
 
         try
         {
-            RootFrame.Navigate(typeof(SettingsPage), tag);
+            _rootFrame.Navigate(typeof(SettingsPage), tag);
         }
         catch (Exception ex)
         {
@@ -855,8 +1378,8 @@ public sealed partial class MainWindow : Window
 
     private void UpdateShellChrome()
     {
-        ViewModel.IsLoginPage = RootFrame.CurrentSourcePageType == typeof(LoginPage);
-        ViewModel.CurrentTag = RootFrame.Tag as string;
+        ViewModel.IsLoginPage = _rootFrame.CurrentSourcePageType == typeof(LoginPage);
+        ViewModel.CurrentTag = _rootFrame.Tag as string;
 
         ApplyShellLocalization();
 
@@ -864,34 +1387,34 @@ public sealed partial class MainWindow : Window
         {
             _cachedHasActiveRegisterSession = null;
             _lastRegisterStatusRefreshAt = DateTimeOffset.MinValue;
-            UserMenuFlyout.Hide();
-            PaneToggleButton.Visibility = Visibility.Collapsed;
-            UserBadge.Visibility = Visibility.Collapsed;
-            UserBadge.IsEnabled = false;
-            CashInOutMenuItem.IsEnabled = false;
-            CloseRegisterMenuItem.IsEnabled = false;
-            LogoutMenuItem.IsEnabled = false;
-            UserNameText.Text = string.Empty;
-            RegisterStatusText.Text = string.Empty;
-            RegisterStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 148, 163, 184));
-            UserPicture.Initials = string.Empty;
+            _userMenuFlyout.Hide();
+            _paneToggleButton.Visibility = Visibility.Collapsed;
+            _userBadge.Visibility = Visibility.Collapsed;
+            _userBadge.IsEnabled = false;
+            _cashInOutMenuItem.IsEnabled = false;
+            _closeRegisterMenuItem.IsEnabled = false;
+            _logoutMenuItem.IsEnabled = false;
+            _userNameText.Text = string.Empty;
+            _registerStatusText.Text = string.Empty;
+            _registerStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 148, 163, 184));
+            _userPictureInitials.Text = string.Empty;
             return;
         }
 
-        PaneToggleButton.Visibility = Visibility.Collapsed;
-        UserBadge.Visibility = Visibility.Visible;
-        UserBadge.IsEnabled = true;
-        LogoutMenuItem.IsEnabled = true;
+        _paneToggleButton.Visibility = Visibility.Collapsed;
+        _userBadge.Visibility = Visibility.Visible;
+        _userBadge.IsEnabled = true;
+        _logoutMenuItem.IsEnabled = true;
 
         var displayName = string.IsNullOrWhiteSpace(user.DisplayName)
             ? user.Username
             : user.DisplayName;
-        UserNameText.Text = displayName;
-        UserPicture.Initials = BuildInitials(displayName);
+        _userNameText.Text = displayName;
+        _userPictureInitials.Text = BuildInitials(displayName);
         UpdateCloseRegisterMenuState();
     }
 
-    private void UserMenuFlyout_Opening(object sender, object e)
+    private void UserMenuFlyout_Opening(object? sender, object e)
     {
         if (!LoginRuntime.Auth.IsLoggedIn)
         {
@@ -925,11 +1448,11 @@ public sealed partial class MainWindow : Window
 
     private void ApplyRegisterSessionState(bool hasActiveSession)
     {
-        CashInOutMenuItem.IsEnabled = hasActiveSession;
-        CloseRegisterMenuItem.IsEnabled = hasActiveSession;
+        _cashInOutMenuItem.IsEnabled = hasActiveSession;
+        _closeRegisterMenuItem.IsEnabled = hasActiveSession;
         ViewModel.IsRegisterActive = hasActiveSession;
-        RegisterStatusText.Text = ViewModel.RegisterStatus;
-        RegisterStatusDot.Fill = new SolidColorBrush(
+        _registerStatusText.Text = ViewModel.RegisterStatus;
+        _registerStatusDot.Fill = new SolidColorBrush(
             hasActiveSession
                 ? ColorHelper.FromArgb(255, 22, 163, 74)
                 : ColorHelper.FromArgb(255, 148, 163, 184));
@@ -937,11 +1460,11 @@ public sealed partial class MainWindow : Window
 
     private void ApplyRegisterSessionUnavailableState()
     {
-        CashInOutMenuItem.IsEnabled = false;
-        CloseRegisterMenuItem.IsEnabled = false;
+        _cashInOutMenuItem.IsEnabled = false;
+        _closeRegisterMenuItem.IsEnabled = false;
         ViewModel.IsRegisterActive = false;
-        RegisterStatusText.Text = LocalizationHelper.GetString("MainWindow_Status_RegisterUnavailable");
-        RegisterStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 239, 68, 68));
+        _registerStatusText.Text = LocalizationHelper.GetString("MainWindow_Status_RegisterUnavailable");
+        _registerStatusDot.Fill = new SolidColorBrush(ColorHelper.FromArgb(255, 239, 68, 68));
     }
 
     private void QueueRegisterCashierAssignmentSync()
@@ -1058,7 +1581,20 @@ public sealed partial class MainWindow : Window
     private void ApplyShellLocalization()
     {
         Title = LocalizationHelper.GetString("MainWindow_Title");
-        RootGrid.FlowDirection = LocalizationHelper.IsRtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        _shellRootGrid.FlowDirection = LocalizationHelper.IsRtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+        _brandTitleText.Text = ViewModel.BrandTitle;
+        _shellContextText.Text = ViewModel.ShellContext;
+        _registerStatusText.Text = ViewModel.RegisterStatus;
+        _cashInOutMenuItem.Text = ViewModel.MainWindow_CashInOut_Text;
+        _closeRegisterMenuItem.Text = ViewModel.MainWindow_CloseRegister_Text;
+        _logoutMenuItem.Text = ViewModel.MainWindow_Logout_Text;
+        _firstRunTutorialTip.Title = ViewModel.MainWindow_Tutorial_Title;
+        _firstRunTutorialTip.Subtitle = ViewModel.MainWindow_Tutorial_Subtitle;
+        _firstRunTutorialTip.CloseButtonContent = ViewModel.MainWindow_Tutorial_CloseButtonContent;
+        _splashTitleText.Text = ViewModel.SplashTitle;
+        _splashSubtitleText.Text = ViewModel.SplashSubtitle;
+        _splashStatusTitle.Text = ViewModel.SplashStatusTitle;
+        _splashStatusDetail.Text = ViewModel.SplashStatusDetail;
     }
 
     private void HideActiveSensitiveDialogs()
@@ -1108,6 +1644,8 @@ public sealed partial class MainWindow : Window
 
     private async void CloseRegister_Click(object sender, RoutedEventArgs e)
     {
+        try
+        {
         static (bool HadMinWidth, object? MinWidth, bool HadMaxWidth, object? MaxWidth) PushContentDialogWidth(double width)
         {
             var resources = Application.Current.Resources;
@@ -1155,13 +1693,13 @@ public sealed partial class MainWindow : Window
 
             var dialog = new CloseRegisterDialog(summary)
             {
-                XamlRoot = this.RootGrid.XamlRoot
+                XamlRoot = this._shellRootGrid.XamlRoot
             };
 
             while (true)
             {
                 LoginRuntime.Authorization.RequireAuthenticated();
-                var dialogWidthSnapshot = PushContentDialogWidth(Math.Max(520d, this.RootGrid.XamlRoot.Size.Width * 0.5));
+                var dialogWidthSnapshot = PushContentDialogWidth(Math.Max(520d, this._shellRootGrid.XamlRoot.Size.Width * 0.5));
                 try
                 {
                     _activeCloseRegisterDialog = dialog;
@@ -1191,7 +1729,7 @@ public sealed partial class MainWindow : Window
 
                         dialog = new CloseRegisterDialog(summary, dialog.CountedCashText, dialog.Note)
                         {
-                            XamlRoot = this.RootGrid.XamlRoot
+                            XamlRoot = this._shellRootGrid.XamlRoot
                         };
                     }
 
@@ -1235,13 +1773,18 @@ public sealed partial class MainWindow : Window
         {
             LoginRuntime.ReportException(ex, "MainWindow.CloseRegister_Click");
         }
+        }
+        catch (System.Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Unhandled exception in async void handler: {ex.Message}");
+        }
     }
 
     private async Task<bool> ShowCashInOutDialogAsync(long sessionId)
     {
         var cashDialog = new CashInOutDialog
         {
-            XamlRoot = this.RootGrid.XamlRoot
+            XamlRoot = this._shellRootGrid.XamlRoot
         };
 
         while (true)
@@ -1312,12 +1855,12 @@ public sealed partial class MainWindow : Window
 
     private string GetShellContextText()
     {
-        if (RootFrame.CurrentSourcePageType == typeof(LoginPage))
+        if (_rootFrame.CurrentSourcePageType == typeof(LoginPage))
         {
             return LocalizationHelper.GetString("MainWindow_Context_SecureSignIn");
         }
 
-        return (RootFrame.Tag as string) switch
+        return (_rootFrame.Tag as string) switch
         {
             "checkout" => LocalizationHelper.GetString("MainWindow_Context_Checkout"),
             "products" => LocalizationHelper.GetString("MainWindow_Context_Products"),
@@ -1344,6 +1887,8 @@ public sealed partial class MainWindow : Window
 
     private async void ShowBootstrapPasswordChangeRequiredDialog()
     {
+        try
+        {
         if (_isBootstrapPasswordChangeDialogOpen ||
             !IsBootstrapPasswordChangeRequired() ||
             Content.XamlRoot is null)
@@ -1366,9 +1911,18 @@ public sealed partial class MainWindow : Window
 
             await dialog.ShowAsync();
         }
+        catch (Exception ex)
+        {
+            LoginRuntime.ReportException(ex, "MainWindow.ShowBootstrapPasswordChangeRequiredDialog");
+        }
         finally
         {
             _isBootstrapPasswordChangeDialogOpen = false;
+        }
+        }
+        catch (System.Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Unhandled exception in async void handler: {ex.Message}");
         }
     }
 
@@ -1419,7 +1973,7 @@ public sealed partial class MainWindow : Window
 
     public void SetCurrentRouteTag(string? tag)
     {
-        RootFrame.Tag = tag;
+        _rootFrame.Tag = tag;
         UpdateShellChrome();
     }
 
@@ -1459,24 +2013,24 @@ public sealed partial class MainWindow : Window
     private void ReloadCurrentRouteForLanguage()
     {
         // Force page re-creation: WinUI Frame won't recreate if same type is current
-        RootFrame.Content = null;
-        RootFrame.BackStack.Clear();
+        _rootFrame.Content = null;
+        _rootFrame.BackStack.Clear();
 
-        if (RootFrame.CurrentSourcePageType == typeof(LoginPage) || LoginRuntime.Auth.CurrentUser is null)
+        if (_rootFrame.CurrentSourcePageType == typeof(LoginPage) || LoginRuntime.Auth.CurrentUser is null)
         {
-            RootFrame.Tag = null;
-            RootFrame.Navigate(typeof(LoginPage));
+            _rootFrame.Tag = null;
+            _rootFrame.Navigate(typeof(LoginPage));
             return;
         }
 
-        var currentTag = RootFrame.Tag as string;
+        var currentTag = _rootFrame.Tag as string;
         if (string.IsNullOrWhiteSpace(currentTag))
         {
             currentTag = GetFirstAvailableTag();
         }
 
-        RootFrame.Tag = currentTag;
-        RootFrame.Navigate(typeof(SettingsPage), currentTag);
+        _rootFrame.Tag = currentTag;
+        _rootFrame.Navigate(typeof(SettingsPage), currentTag);
     }
 
     private static string BuildInitials(string displayName)
@@ -1510,7 +2064,7 @@ public sealed partial class MainWindow : Window
 
         if (LoginRuntime.Auth.IsSessionIdleTimeoutExceeded(_sessionIdleTimeout, DateTime.UtcNow))
         {
-            _lockedRouteTag ??= RootFrame.Tag as string;
+            _lockedRouteTag ??= _rootFrame.Tag as string;
             LoginRuntime.Auth.Lock();
         }
     }

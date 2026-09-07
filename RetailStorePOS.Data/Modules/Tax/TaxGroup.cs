@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace RetailStorePOS.Data.Modules.Tax;
 
-public class TaxGroup
+public partial class TaxGroup
 {
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;

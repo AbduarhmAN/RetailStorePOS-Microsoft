@@ -1,5 +1,0 @@
--- RETIRED / OBSOLETE
--- This seed file has been retired in favor of the environment-safe template version:
--- activate_E65E5823_premium_license.template.sql
---
--- DO NOT RUN OR DEPLOY THIS FILE.

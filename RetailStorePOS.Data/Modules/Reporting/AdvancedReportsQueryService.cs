@@ -60,9 +60,9 @@ ORDER BY day ASC;";
         while (reader.Read())
         {
             var day = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
-            var revenue = reader.IsDBNull(1) ? 0L : reader.GetInt64(1);
-            var cost = reader.IsDBNull(2) ? 0L : reader.GetInt64(2);
-            var invoices = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+            var revenue = reader.IsDBNull(1) ? 0L : Convert.ToInt64(reader.GetValue(1));
+            var cost = reader.IsDBNull(2) ? 0L : Convert.ToInt64(reader.GetValue(2));
+            var invoices = reader.IsDBNull(3) ? 0 : Convert.ToInt32(reader.GetValue(3));
 
             points.Add(new DailyRevenuePoint(
                 day,
@@ -130,17 +130,17 @@ LIMIT @limit;";
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            var productId = reader.IsDBNull(0) ? 0L : reader.GetInt64(0);
+            var productId = reader.IsDBNull(0) ? 0L : Convert.ToInt64(reader.GetValue(0));
             var name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
             // revenue_cents and profit_cents come back as REAL because of the
             // proportional allocation. Round to integer cents on the way out.
             var revenueCents = reader.IsDBNull(2)
                 ? 0L
-                : (long)Math.Round(reader.GetDouble(2));
-            var units = reader.IsDBNull(3) ? 0d : reader.GetDouble(3);
+                : (long)Math.Round(Convert.ToDouble(reader.GetValue(2)));
+            var units = reader.IsDBNull(3) ? 0d : Convert.ToDouble(reader.GetValue(3));
             var profitCents = reader.IsDBNull(4)
                 ? 0L
-                : (long)Math.Round(reader.GetDouble(4));
+                : (long)Math.Round(Convert.ToDouble(reader.GetValue(4)));
 
             rows.Add(new TopProductRow(
                 productId,
@@ -186,8 +186,8 @@ LIMIT 1;";
             using var reader = hourCmd.ExecuteReader();
             if (reader.Read() && !reader.IsDBNull(0))
             {
-                hour = reader.GetInt32(0);
-                hourCount = reader.GetInt32(1);
+                hour = Convert.ToInt32(reader.GetValue(0));
+                hourCount = Convert.ToInt32(reader.GetValue(1));
             }
         }
 
@@ -206,8 +206,8 @@ LIMIT 1;";
             using var reader = dowCmd.ExecuteReader();
             if (reader.Read() && !reader.IsDBNull(0))
             {
-                dow = reader.GetInt32(0);
-                dowCount = reader.GetInt32(1);
+                dow = Convert.ToInt32(reader.GetValue(0));
+                dowCount = Convert.ToInt32(reader.GetValue(1));
             }
         }
 
@@ -242,8 +242,8 @@ WHERE created_at >= @start AND created_at < @end;";
             using var reader = headerCmd.ExecuteReader();
             if (reader.Read() && !reader.IsDBNull(0))
             {
-                revenue = MoneyUtils.FromCents(reader.GetInt64(0));
-                transactions = reader.GetInt32(1);
+                revenue = MoneyUtils.FromCents(Convert.ToInt64(reader.GetValue(0)));
+                transactions = Convert.ToInt32(reader.GetValue(1));
             }
         }
 
@@ -328,12 +328,12 @@ ORDER BY p.name;";
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            var productId = reader.GetInt64(0);
+            var productId = Convert.ToInt64(reader.GetValue(0));
             var name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
             var barcode = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
-            var unitsSold = reader.IsDBNull(3) ? 0d : reader.GetDouble(3);
-            var revenueRaw = reader.IsDBNull(4) ? 0d : reader.GetDouble(4);
-            var profitRaw = reader.IsDBNull(5) ? 0d : reader.GetDouble(5);
+            var unitsSold = reader.IsDBNull(3) ? 0d : Convert.ToDouble(reader.GetValue(3));
+            var revenueRaw = reader.IsDBNull(4) ? 0d : Convert.ToDouble(reader.GetValue(4));
+            var profitRaw = reader.IsDBNull(5) ? 0d : Convert.ToDouble(reader.GetValue(5));
             DateTime? lastSale = null;
             if (!reader.IsDBNull(6))
             {
@@ -344,7 +344,7 @@ ORDER BY p.name;";
                     lastSale = parsed;
                 }
             }
-            var stock = reader.IsDBNull(7) ? 0d : reader.GetDouble(7);
+            var stock = reader.IsDBNull(7) ? 0d : Convert.ToDouble(reader.GetValue(7));
 
             var revenueCents = (long)Math.Round(revenueRaw);
             var profitCents = (long)Math.Round(profitRaw);
@@ -401,10 +401,10 @@ GROUP BY dow, hour;";
         using var reader = cmd.ExecuteReader();
         while (reader.Read())
         {
-            var dow = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
-            var hour = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
-            var txCount = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
-            var revenueCents = reader.IsDBNull(3) ? 0L : reader.GetInt64(3);
+            var dow = reader.IsDBNull(0) ? 0 : Convert.ToInt32(reader.GetValue(0));
+            var hour = reader.IsDBNull(1) ? 0 : Convert.ToInt32(reader.GetValue(1));
+            var txCount = reader.IsDBNull(2) ? 0 : Convert.ToInt32(reader.GetValue(2));
+            var revenueCents = reader.IsDBNull(3) ? 0L : Convert.ToInt64(reader.GetValue(3));
             cells.Add(new HourDayCell(dow, hour, txCount, MoneyUtils.FromCents(revenueCents)));
         }
         return cells;
@@ -448,8 +448,8 @@ ORDER BY revenue_cents DESC;";
             while (reader.Read())
             {
                 var name = reader.GetString(0);
-                var count = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
-                var revenueCents = reader.IsDBNull(2) ? 0L : reader.GetInt64(2);
+                var count = reader.IsDBNull(1) ? 0 : Convert.ToInt32(reader.GetValue(1));
+                var revenueCents = reader.IsDBNull(2) ? 0L : Convert.ToInt64(reader.GetValue(2));
                 byName[name] = (count, MoneyUtils.FromCents(revenueCents));
             }
         }
@@ -475,7 +475,7 @@ GROUP BY cashier;";
             while (reader.Read())
             {
                 var name = reader.GetString(0);
-                var units = reader.IsDBNull(1) ? 0d : reader.GetDouble(1);
+                var units = reader.IsDBNull(1) ? 0d : Convert.ToDouble(reader.GetValue(1));
                 itemsByName[name] = units;
             }
         }
@@ -557,11 +557,11 @@ ORDER BY revenue_cents DESC;";
             using var reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                var id = reader.GetInt64(0);
+                var id = Convert.ToInt64(reader.GetValue(0));
                 var name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
                 var barcode = reader.IsDBNull(2) ? string.Empty : reader.GetString(2);
-                var units = reader.IsDBNull(3) ? 0d : reader.GetDouble(3);
-                var revenueRaw = reader.IsDBNull(4) ? 0d : reader.GetDouble(4);
+                var units = reader.IsDBNull(3) ? 0d : Convert.ToDouble(reader.GetValue(3));
+                var revenueRaw = reader.IsDBNull(4) ? 0d : Convert.ToDouble(reader.GetValue(4));
                 var revenueCents = (long)Math.Round(revenueRaw);
                 products[id] = new AbcXyzAccumulator
                 {
@@ -596,9 +596,9 @@ GROUP BY si.product_id, yearweek;";
             using var reader = weeklyCmd.ExecuteReader();
             while (reader.Read())
             {
-                var pid = reader.GetInt64(0);
+                var pid = Convert.ToInt64(reader.GetValue(0));
                 if (!products.TryGetValue(pid, out var acc)) continue;
-                var units = reader.IsDBNull(2) ? 0d : reader.GetDouble(2);
+                var units = reader.IsDBNull(2) ? 0d : Convert.ToDouble(reader.GetValue(2));
                 acc.WeeklyUnits.Add(units);
             }
         }
@@ -734,9 +734,9 @@ GROUP BY si.product_id;";
             using var reader = productCmd.ExecuteReader();
             while (reader.Read())
             {
-                var id = reader.GetInt64(0);
+                var id = Convert.ToInt64(reader.GetValue(0));
                 var name = reader.IsDBNull(1) ? string.Empty : reader.GetString(1);
-                var count = reader.IsDBNull(2) ? 0L : reader.GetInt64(2);
+                var count = reader.IsDBNull(2) ? 0L : Convert.ToInt64(reader.GetValue(2));
                 productTxCount[id] = count;
                 productName[id] = name;
             }
@@ -770,9 +770,9 @@ HAVING pair_count >= @minPair;";
             using var reader = pairCmd.ExecuteReader();
             while (reader.Read())
             {
-                var aId = reader.GetInt64(0);
-                var bId = reader.GetInt64(1);
-                var pairCount = reader.IsDBNull(2) ? 0L : reader.GetInt64(2);
+                var aId = Convert.ToInt64(reader.GetValue(0));
+                var bId = Convert.ToInt64(reader.GetValue(1));
+                var pairCount = reader.IsDBNull(2) ? 0L : Convert.ToInt64(reader.GetValue(2));
                 if (pairCount <= 0) continue;
 
                 productTxCount.TryGetValue(aId, out var aCount);

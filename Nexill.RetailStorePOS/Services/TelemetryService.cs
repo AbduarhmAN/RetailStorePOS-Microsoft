@@ -4,11 +4,14 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Nexill.RetailStorePOS.Services.DeviceIdentity;
 using RetailStorePOS.Data;
 using RetailStorePOS.Data.Modules.Contracts;
 using RetailStorePOS.Data.Modules.Settings;
 using RetailStorePOS.Data.Modules.Telemetry;
+using RetailStorePOS.WinUiLogin.Common;
 
 namespace RetailStorePOS.App.Services;
 
@@ -149,9 +152,10 @@ public class TelemetryService
         }
 
         _syncCancellation = new CancellationTokenSource();
+        var cancellationToken = _syncCancellation.Token;
         NetworkChange.NetworkAvailabilityChanged += NetworkChange_NetworkAvailabilityChanged;
-        _syncLoopTask = Task.Run(() => RunBackgroundSyncLoopAsync(_syncCancellation.Token));
-        _ = Task.Run(() => FlushQueuedTelemetryAsync(_syncCancellation.Token));
+        _syncLoopTask = Task.Run(() => RunBackgroundSyncLoopAsync(cancellationToken));
+        QueueTelemetryFlush(cancellationToken);
     }
 
     public void StopBackgroundSync()
@@ -404,16 +408,17 @@ public class TelemetryService
             resolution.InstallId,
             InstallIdMigratedEventType,
             migratedAtUtc,
-            new
+            new TelemetryInstallIdMigratedPayload
             {
-                type = InstallIdMigratedEventType,
-                install_id = resolution.InstallId,
-                install_id_source = resolution.InstallIdSource,
-                previous_install_id = resolution.PreviousInstallId,
-                previous_install_id_source = resolution.PreviousInstallIdSource,
-                timestamp = migratedAtUtc.ToString("O"),
-                migration_reason = "hardware_identity_promoted"
-            });
+                Type = InstallIdMigratedEventType,
+                InstallId = resolution.InstallId,
+                InstallIdSource = resolution.InstallIdSource,
+                PreviousInstallId = resolution.PreviousInstallId,
+                PreviousInstallIdSource = resolution.PreviousInstallIdSource,
+                Timestamp = migratedAtUtc.ToString("O"),
+                MigrationReason = "hardware_identity_promoted"
+            },
+            TelemetryJsonContext.Default.TelemetryInstallIdMigratedPayload);
     }
 
     private static string? NormalizeInstallId(string? installId)
@@ -475,21 +480,23 @@ public class TelemetryService
                     trackingData.InstallId,
                     "setup_completed",
                     setupCompletedUtc,
-                    new
+                    new TelemetrySetupCompletedPayload
                     {
-                        setup_completed_at_utc = setupCompletedUtc.ToString("O"),
-                        source = "installer"
-                    });
+                        SetupCompletedAtUtc = setupCompletedUtc.ToString("O"),
+                        Source = "installer"
+                    },
+                    TelemetryJsonContext.Default.TelemetrySetupCompletedPayload);
             }
         }
     }
 
-    private async Task RecordInstallationEventAtomicAsync(
+    private async Task RecordInstallationEventAtomicAsync<TPayload>(
         string eventId,
         string installId,
         string eventType,
         DateTime occurredAtUtc,
-        object payload,
+        TPayload payload,
+        JsonTypeInfo<TPayload> payloadJsonTypeInfo,
         RetailStorePOS.Data.Models.TelemetryRuntimeState nextState,
         string? eventRunId = null,
         DateTime? eventLastActivityAt = null,
@@ -500,7 +507,7 @@ public class TelemetryService
             return;
         }
 
-        var payloadJson = JsonSerializer.Serialize(payload);
+        var payloadJson = SerializeTelemetryPayload(payload, payloadJsonTypeInfo);
 
         using var connection = _settingsRepository.OpenConnection();
         using var transaction = connection.BeginTransaction();
@@ -519,20 +526,27 @@ public class TelemetryService
                 lastActivityAt: eventLastActivityAt,
                 lastActivitySource: eventLastActivitySource);
 
-            var remotePayload = new
+            var remotePayload = new TelemetryInstallationEventUpsertPayload
             {
-                id = eventId,
-                install_id = installId,
-                event_type = eventType,
-                occurred_at = occurredAtUtc.ToString("O"),
-                payload_json = payloadJson,
-                created_at = DateTime.UtcNow.ToString("O"),
-                run_id = eventRunId,
-                last_activity_at = eventLastActivityAt?.ToString("O"),
-                last_activity_source = eventLastActivitySource
+                Id = eventId,
+                InstallId = installId,
+                EventType = eventType,
+                OccurredAt = occurredAtUtc.ToString("O"),
+                PayloadJson = payloadJson,
+                CreatedAt = DateTime.UtcNow.ToString("O"),
+                RunId = eventRunId,
+                LastActivityAt = eventLastActivityAt?.ToString("O"),
+                LastActivitySource = eventLastActivitySource
             };
 
-            _outboxRepository.Enqueue(connection, transaction, TelemetryPlatformContract.InstallationEventsUpsertPath, JsonSerializer.Serialize(remotePayload), true);
+            _outboxRepository.Enqueue(
+                connection,
+                transaction,
+                TelemetryPlatformContract.InstallationEventsUpsertPath,
+                SerializeTelemetryPayload(
+                    remotePayload,
+                    TelemetryJsonContext.Default.TelemetryInstallationEventUpsertPayload),
+                true);
 
             // Persist the NEXT state (usually cleared for close/unclean_exit)
             _settingsRepository.SetTelemetryState(connection, transaction, nextState);
@@ -550,13 +564,13 @@ public class TelemetryService
     {
         try
         {
-            var payload = new
+            var payload = new TelemetryAppClosePayload
             {
-                type = "app_close",
-                run_id = runId,
-                reason,
-                app_version = AppVersion,
-                timestamp = DateTime.UtcNow.ToString("O")
+                Type = "app_close",
+                RunId = runId,
+                Reason = reason,
+                AppVersion = AppVersion,
+                Timestamp = DateTime.UtcNow.ToString("O")
             };
 
             var trackingData = await GetTrackingDataAsync(countLaunch: false);
@@ -568,6 +582,7 @@ public class TelemetryService
                 "app_close",
                 DateTime.UtcNow,
                 payload,
+                TelemetryJsonContext.Default.TelemetryAppClosePayload,
                 nextState: new RetailStorePOS.Data.Models.TelemetryRuntimeState(),
                 eventRunId: runId);
         }
@@ -582,15 +597,15 @@ public class TelemetryService
         try
         {
             var trackingData = await GetTrackingDataAsync(countLaunch: false);
-            var payload = new
+            var payload = new TelemetryUncleanExitPayload
             {
-                type = "unclean_exit",
-                run_id = runId,
-                app_version = AppVersion,
-                timestamp = DateTime.UtcNow.ToString("O"),
-                started_at = startedAt?.ToString("O"),
-                last_activity_at = lastActivityAt?.ToString("O"),
-                last_activity_source = lastActivitySource
+                Type = "unclean_exit",
+                RunId = runId,
+                AppVersion = AppVersion,
+                Timestamp = DateTime.UtcNow.ToString("O"),
+                StartedAt = startedAt?.ToString("O"),
+                LastActivityAt = lastActivityAt?.ToString("O"),
+                LastActivitySource = lastActivitySource
             };
 
             // Record unclean exit for the PRIOR run, passing prior activity data for estimation
@@ -600,6 +615,7 @@ public class TelemetryService
                 "unclean_exit",
                 DateTime.UtcNow,
                 payload,
+                TelemetryJsonContext.Default.TelemetryUncleanExitPayload,
                 nextState: new RetailStorePOS.Data.Models.TelemetryRuntimeState(),
                 eventRunId: runId,
                 eventLastActivityAt: lastActivityAt,
@@ -626,14 +642,14 @@ public class TelemetryService
                 LastActivityAt = occurredAtUtc,
                 LastActivitySource = "app_launch"
             };
-            var initialPayload = new
+            var initialPayload = new TelemetryAppLaunchInitialPayload
             {
-                type = "app_launch",
-                install_id = trackingData.InstallId,
-                run_id = runId,
-                app_version = AppVersion,
-                timestamp = occurredAtUtc.ToString("O"),
-                app_launched_count = trackingData.LaunchCount
+                Type = "app_launch",
+                InstallId = trackingData.InstallId,
+                RunId = runId,
+                AppVersion = AppVersion,
+                Timestamp = occurredAtUtc.ToString("O"),
+                AppLaunchedCount = trackingData.LaunchCount
             };
 
             await RecordInstallationEventAtomicAsync(
@@ -642,54 +658,81 @@ public class TelemetryService
                 "app_launch",
                 occurredAtUtc,
                 initialPayload,
+                TelemetryJsonContext.Default.TelemetryAppLaunchInitialPayload,
                 nextState,
                 eventRunId: runId);
 
             // 2. Trigger an immediate flush to push the queued event to the server
-            _ = Task.Run(() => FlushQueuedTelemetryAsync());
+            QueueTelemetryFlush();
 
             // 3. Optional network-dependent enrichment and status update
             string? country = null;
-            try { country = await GetConnectedCountryAsync(); } catch { }
+            try
+            {
+                country = await GetConnectedCountryAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[TELEMETRY] Country enrichment failed: {ex.Message}");
+            }
 
             string? currency = null;
-            try { currency = System.Globalization.RegionInfo.CurrentRegion.ISOCurrencySymbol; } catch { }
+            try
+            {
+                currency = System.Globalization.RegionInfo.CurrentRegion.ISOCurrencySymbol;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[TELEMETRY] Currency enrichment failed: {ex.Message}");
+            }
 
             bool? internet = null;
-            try { internet = NetworkInterface.GetIsNetworkAvailable(); } catch { }
-
-            var enrichedPayload = new
+            try
             {
-                type = "app_launch",
-                install_id = trackingData.InstallId,
-                run_id = runId,
-                app_version = AppVersion,
-                timestamp = occurredAtUtc.ToString("O"),
-                windows_version = GetWindowsVersion(),
-                os_architecture = RuntimeInformation.OSArchitecture.ToString(),
-                dotnet_runtime_version = RuntimeInformation.FrameworkDescription,
-                ram_bucket = GetRamBucket(),
-                cpu_core_bucket = GetCpuCoreBucket(),
-                screen_resolution_bucket = GetScreenResolutionBucket(),
+                internet = NetworkInterface.GetIsNetworkAvailable();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[TELEMETRY] Network enrichment failed: {ex.Message}");
+            }
 
-                build_number = "1200",
-                release_channel = "production",
-                first_run_at = trackingData.FirstRunAt?.ToString("O"),
-                last_seen_at = occurredAtUtc.ToString("O"),
-                days_since_install = trackingData.DaysSinceInstall,
-                days_since_last_seen = occurredAtUtc.ToString("O"),
-                country_setting = country,
-                currency_setting = currency,
-                startup_time_bucket_ms = "1000-2000",
-                feature_flags = new[] { "new_checkout", "tax_inclusive" },
-                last_update_prompt_at = trackingData.LastUpdatePromptAt?.ToString("O"),
-                last_update_installed_at = trackingData.LastUpdateInstalledAt?.ToString("O"),
-                crash_count = trackingData.CrashCount,
-                internet_status = internet,
-                app_launched_count = trackingData.LaunchCount
+            var enrichedPayload = new TelemetryAppLaunchEnrichedPayload
+            {
+                Type = "app_launch",
+                InstallId = trackingData.InstallId,
+                RunId = runId,
+                AppVersion = AppVersion,
+                Timestamp = occurredAtUtc.ToString("O"),
+                WindowsVersion = GetWindowsVersion(),
+                OsArchitecture = RuntimeInformation.OSArchitecture.ToString(),
+                DotnetRuntimeVersion = RuntimeInformation.FrameworkDescription,
+                RamBucket = GetRamBucket(),
+                CpuCoreBucket = GetCpuCoreBucket(),
+                ScreenResolutionBucket = GetScreenResolutionBucket(),
+                BuildNumber = "1200",
+                ReleaseChannel = "production",
+                FirstRunAt = trackingData.FirstRunAt?.ToString("O"),
+                LastSeenAt = occurredAtUtc.ToString("O"),
+                DaysSinceInstall = trackingData.DaysSinceInstall,
+                DaysSinceLastSeen = occurredAtUtc.ToString("O"),
+                CountrySetting = country,
+                CurrencySetting = currency,
+                StartupTimeBucketMs = "1000-2000",
+                FeatureFlags = new[] { "new_checkout", "tax_inclusive" },
+                LastUpdatePromptAt = trackingData.LastUpdatePromptAt?.ToString("O"),
+                LastUpdateInstalledAt = trackingData.LastUpdateInstalledAt?.ToString("O"),
+                CrashCount = trackingData.CrashCount,
+                InternetStatus = internet,
+                AppLaunchedCount = trackingData.LaunchCount
             };
 
-            await SendOrQueueAsync(TelemetryPlatformContract.InstallationsUpsertPath, JsonSerializer.Serialize(enrichedPayload), mergeDuplicates: true, operationName: "app_launch");
+            await SendOrQueueAsync(
+                TelemetryPlatformContract.InstallationsUpsertPath,
+                SerializeTelemetryPayload(
+                    enrichedPayload,
+                    TelemetryJsonContext.Default.TelemetryAppLaunchEnrichedPayload),
+                mergeDuplicates: true,
+                operationName: "app_launch");
         }
         catch (Exception ex)
         {
@@ -697,7 +740,65 @@ public class TelemetryService
         }
     }
 
-    public async Task LogGenericEventAsync(string eventType, object payload)
+    public Task LogTimeWarningIgnoredAsync(DateTime localTimeUtc)
+    {
+        return LogKnownEventAsync(
+            "time_warning_ignored",
+            new TelemetryTimeWarningIgnoredPayload
+            {
+                LocalTime = localTimeUtc.ToString("O")
+            },
+            TelemetryJsonContext.Default.TelemetryTimeWarningIgnoredPayload);
+    }
+
+    public Task LogCrashFeedbackAsync(string? category, string? details)
+    {
+        return LogKnownEventAsync(
+            "crash_feedback",
+            new TelemetryCrashFeedbackPayload
+            {
+                Category = category,
+                Details = details
+            },
+            TelemetryJsonContext.Default.TelemetryCrashFeedbackPayload);
+    }
+
+    public Task LogLicenseVerificationAsync(string outcome, string? errorCode)
+    {
+        return LogKnownEventAsync(
+            "license_verification",
+            new TelemetryLicenseVerificationPayload
+            {
+                Outcome = outcome,
+                ErrorCode = errorCode ?? string.Empty
+            },
+            TelemetryJsonContext.Default.TelemetryLicenseVerificationPayload);
+    }
+
+    public Task LogReadinessRunCompletedAsync(
+        string runId,
+        string status,
+        int blockingFailures,
+        int observations,
+        string? profile)
+    {
+        return LogKnownEventAsync(
+            "readiness_run_completed",
+            new TelemetryReadinessRunCompletedPayload
+            {
+                RunId = runId,
+                Status = status,
+                BlockingFailures = blockingFailures,
+                Observations = observations,
+                Profile = profile
+            },
+            TelemetryJsonContext.Default.TelemetryReadinessRunCompletedPayload);
+    }
+
+    private async Task LogKnownEventAsync<TPayload>(
+        string eventType,
+        TPayload payload,
+        JsonTypeInfo<TPayload> payloadJsonTypeInfo)
     {
         try
         {
@@ -707,7 +808,8 @@ public class TelemetryService
                 trackingData.InstallId,
                 eventType,
                 DateTime.UtcNow,
-                payload);
+                payload,
+                payloadJsonTypeInfo);
         }
         catch (Exception ex)
         {
@@ -725,20 +827,22 @@ public class TelemetryService
 
             var trackingData = await GetTrackingDataAsync(countLaunch: false);
             var occurredAtUtc = DateTime.UtcNow;
-            var localPayload = new
+            var localPayload = new TelemetryErrorLocalPayload
             {
-                type = "error",
-                install_id = trackingData.InstallId,
-                app_version = AppVersion,
-                timestamp = occurredAtUtc.ToString("O"),
-                error_category = error.GetType().Name,
-                error_message = error.Message,
-                error_details = error.ToString(),
-                operation_name = operationName,
-                crash_count = prefs.CrashCount
+                Type = "error",
+                InstallId = trackingData.InstallId,
+                AppVersion = AppVersion,
+                Timestamp = occurredAtUtc.ToString("O"),
+                ErrorCategory = error.GetType().Name,
+                ErrorMessage = error.Message,
+                ErrorDetails = error.ToString(),
+                OperationName = operationName,
+                CrashCount = prefs.CrashCount
             };
 
-            var localJson = JsonSerializer.Serialize(localPayload);
+            var localJson = SerializeTelemetryPayload(
+                localPayload,
+                TelemetryJsonContext.Default.TelemetryErrorLocalPayload);
             TryRecordLocalEvent(
                 Guid.NewGuid().ToString(),
                 trackingData.InstallId,
@@ -746,21 +850,23 @@ public class TelemetryService
                 occurredAtUtc,
                 localJson);
 
-            var remotePayload = new
+            var remotePayload = new TelemetryErrorRemotePayload
             {
-                type = "error",
-                install_id = trackingData.InstallId,
-                app_version = AppVersion,
-                timestamp = occurredAtUtc.ToString("O"),
-                error_category = error.GetType().Name,
-                error_message = error.ToString(),
-                operation_name = operationName,
-                crash_count = prefs.CrashCount
+                Type = "error",
+                InstallId = trackingData.InstallId,
+                AppVersion = AppVersion,
+                Timestamp = occurredAtUtc.ToString("O"),
+                ErrorCategory = error.GetType().Name,
+                ErrorMessage = error.ToString(),
+                OperationName = operationName,
+                CrashCount = prefs.CrashCount
             };
 
             await SendOrQueueAsync(
                 TelemetryPlatformContract.ErrorLogsInsertPath,
-                JsonSerializer.Serialize(remotePayload),
+                SerializeTelemetryPayload(
+                    remotePayload,
+                    TelemetryJsonContext.Default.TelemetryErrorRemotePayload),
                 mergeDuplicates: false,
                 operationName: operationName);
         }
@@ -786,31 +892,46 @@ public class TelemetryService
         return eventId;
     }
 
-    private async Task RecordInstallationEventAsync(string eventId, string installId, string eventType, DateTime occurredAtUtc, object payload)
+    private Task RecordInstallationEventAsync<TPayload>(
+        string eventId,
+        string installId,
+        string eventType,
+        DateTime occurredAtUtc,
+        TPayload payload,
+        JsonTypeInfo<TPayload> payloadJsonTypeInfo)
+    {
+        var payloadJson = SerializeTelemetryPayload(payload, payloadJsonTypeInfo);
+        return RecordInstallationEventJsonAsync(eventId, installId, eventType, occurredAtUtc, payloadJson);
+    }
+
+    private async Task RecordInstallationEventJsonAsync(string eventId, string installId, string eventType, DateTime occurredAtUtc, string payloadJson)
     {
         if (_installationEventRepository is null || string.IsNullOrWhiteSpace(installId))
         {
             return;
         }
 
-        var payloadJson = JsonSerializer.Serialize(payload);
         var inserted = TryRecordLocalEvent(eventId, installId, eventType, occurredAtUtc, payloadJson);
         if (!inserted)
         {
             return;
         }
 
+        var remotePayload = new TelemetryInstallationEventUpsertPayload
+        {
+            Id = eventId,
+            InstallId = installId,
+            EventType = eventType,
+            OccurredAt = occurredAtUtc.ToString("O"),
+            PayloadJson = payloadJson,
+            CreatedAt = DateTime.UtcNow.ToString("O")
+        };
+
         await SendOrQueueAsync(
             TelemetryPlatformContract.InstallationEventsUpsertPath,
-            JsonSerializer.Serialize(new
-            {
-                id = eventId,
-                install_id = installId,
-                event_type = eventType,
-                occurred_at = occurredAtUtc.ToString("O"),
-                payload_json = payloadJson,
-                created_at = DateTime.UtcNow.ToString("O")
-            }),
+            SerializeTelemetryPayload(
+                remotePayload,
+                TelemetryJsonContext.Default.TelemetryInstallationEventUpsertPayload),
             mergeDuplicates: true,
             operationName: eventType);
     }
@@ -823,6 +944,13 @@ public class TelemetryService
         }
 
         return _installationEventRepository.TryInsert(eventId, installId, eventType, occurredAtUtc, payloadJson);
+    }
+
+    private static string SerializeTelemetryPayload<TPayload>(
+        TPayload payload,
+        JsonTypeInfo<TPayload> payloadJsonTypeInfo)
+    {
+        return JsonSerializer.Serialize(payload, payloadJsonTypeInfo);
     }
 
     private static DateTime NormalizeInstallerTimestamp(DateTime value)
@@ -948,12 +1076,43 @@ public class TelemetryService
 
     private void NetworkChange_NetworkAvailabilityChanged(object? sender, NetworkAvailabilityEventArgs e)
     {
-        if (!e.IsAvailable || _syncCancellation is null || !CanAttemptRemoteTelemetry())
+        var syncCancellation = _syncCancellation;
+        if (!e.IsAvailable || syncCancellation is null || !CanAttemptRemoteTelemetry())
         {
             return;
         }
 
-        _ = Task.Run(() => FlushQueuedTelemetryAsync(_syncCancellation.Token));
+        CancellationToken cancellationToken;
+        try
+        {
+            cancellationToken = syncCancellation.Token;
+        }
+        catch (ObjectDisposedException)
+        {
+            return;
+        }
+
+        QueueTelemetryFlush(cancellationToken);
+    }
+
+    private void QueueTelemetryFlush(CancellationToken cancellationToken = default)
+    {
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await FlushQueuedTelemetryAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                // Expected during shutdown.
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Telemetry queued flush failed: {ex.Message}");
+                StartupTrace.Write($"Telemetry queued flush failed: {ex}");
+            }
+        }, CancellationToken.None);
     }
 
     private async Task RunBackgroundSyncLoopAsync(CancellationToken cancellationToken)
@@ -1073,4 +1232,165 @@ public class TelemetryService
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int nIndex);
+}
+
+internal sealed class TelemetrySetupCompletedPayload
+{
+    public string SetupCompletedAtUtc { get; set; } = string.Empty;
+    public string Source { get; set; } = string.Empty;
+}
+
+internal sealed class TelemetryInstallIdMigratedPayload
+{
+    public string Type { get; set; } = string.Empty;
+    public string InstallId { get; set; } = string.Empty;
+    public string InstallIdSource { get; set; } = string.Empty;
+    public string? PreviousInstallId { get; set; }
+    public string? PreviousInstallIdSource { get; set; }
+    public string Timestamp { get; set; } = string.Empty;
+    public string MigrationReason { get; set; } = string.Empty;
+}
+
+internal sealed class TelemetryAppClosePayload
+{
+    public string Type { get; set; } = string.Empty;
+    public string RunId { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+    public string AppVersion { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+}
+
+internal sealed class TelemetryUncleanExitPayload
+{
+    public string Type { get; set; } = string.Empty;
+    public string RunId { get; set; } = string.Empty;
+    public string AppVersion { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+    public string? StartedAt { get; set; }
+    public string? LastActivityAt { get; set; }
+    public string? LastActivitySource { get; set; }
+}
+
+internal sealed class TelemetryAppLaunchInitialPayload
+{
+    public string Type { get; set; } = string.Empty;
+    public string InstallId { get; set; } = string.Empty;
+    public string RunId { get; set; } = string.Empty;
+    public string AppVersion { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+    public int AppLaunchedCount { get; set; }
+}
+
+internal sealed class TelemetryAppLaunchEnrichedPayload
+{
+    public string Type { get; set; } = string.Empty;
+    public string InstallId { get; set; } = string.Empty;
+    public string RunId { get; set; } = string.Empty;
+    public string AppVersion { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+    public string WindowsVersion { get; set; } = string.Empty;
+    public string OsArchitecture { get; set; } = string.Empty;
+    public string DotnetRuntimeVersion { get; set; } = string.Empty;
+    public string RamBucket { get; set; } = string.Empty;
+    public string CpuCoreBucket { get; set; } = string.Empty;
+    public string ScreenResolutionBucket { get; set; } = string.Empty;
+    public string BuildNumber { get; set; } = string.Empty;
+    public string ReleaseChannel { get; set; } = string.Empty;
+    public string? FirstRunAt { get; set; }
+    public string LastSeenAt { get; set; } = string.Empty;
+    public string DaysSinceInstall { get; set; } = string.Empty;
+    public string DaysSinceLastSeen { get; set; } = string.Empty;
+    public string? CountrySetting { get; set; }
+    public string? CurrencySetting { get; set; }
+    public string StartupTimeBucketMs { get; set; } = string.Empty;
+    public string[] FeatureFlags { get; set; } = [];
+    public string? LastUpdatePromptAt { get; set; }
+    public string? LastUpdateInstalledAt { get; set; }
+    public int CrashCount { get; set; }
+    public bool? InternetStatus { get; set; }
+    public int AppLaunchedCount { get; set; }
+}
+
+internal sealed class TelemetryErrorLocalPayload
+{
+    public string Type { get; set; } = string.Empty;
+    public string InstallId { get; set; } = string.Empty;
+    public string AppVersion { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+    public string ErrorCategory { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
+    public string ErrorDetails { get; set; } = string.Empty;
+    public string OperationName { get; set; } = string.Empty;
+    public int CrashCount { get; set; }
+}
+
+internal sealed class TelemetryErrorRemotePayload
+{
+    public string Type { get; set; } = string.Empty;
+    public string InstallId { get; set; } = string.Empty;
+    public string AppVersion { get; set; } = string.Empty;
+    public string Timestamp { get; set; } = string.Empty;
+    public string ErrorCategory { get; set; } = string.Empty;
+    public string ErrorMessage { get; set; } = string.Empty;
+    public string OperationName { get; set; } = string.Empty;
+    public int CrashCount { get; set; }
+}
+
+internal sealed class TelemetryTimeWarningIgnoredPayload
+{
+    public string LocalTime { get; set; } = string.Empty;
+}
+
+internal sealed class TelemetryCrashFeedbackPayload
+{
+    public string? Category { get; set; }
+    public string? Details { get; set; }
+}
+
+internal sealed class TelemetryLicenseVerificationPayload
+{
+    public string Outcome { get; set; } = string.Empty;
+    public string ErrorCode { get; set; } = string.Empty;
+}
+
+internal sealed class TelemetryReadinessRunCompletedPayload
+{
+    public string RunId { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public int BlockingFailures { get; set; }
+    public int Observations { get; set; }
+    public string? Profile { get; set; }
+}
+
+internal sealed class TelemetryInstallationEventUpsertPayload
+{
+    public string Id { get; set; } = string.Empty;
+    public string InstallId { get; set; } = string.Empty;
+    public string EventType { get; set; } = string.Empty;
+    public string OccurredAt { get; set; } = string.Empty;
+    public string PayloadJson { get; set; } = string.Empty;
+    public string CreatedAt { get; set; } = string.Empty;
+    public string? RunId { get; set; }
+    public string? LastActivityAt { get; set; }
+    public string? LastActivitySource { get; set; }
+}
+
+[JsonSourceGenerationOptions(
+    WriteIndented = false,
+    PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
+[JsonSerializable(typeof(TelemetrySetupCompletedPayload), TypeInfoPropertyName = nameof(TelemetrySetupCompletedPayload))]
+[JsonSerializable(typeof(TelemetryInstallIdMigratedPayload), TypeInfoPropertyName = nameof(TelemetryInstallIdMigratedPayload))]
+[JsonSerializable(typeof(TelemetryAppClosePayload), TypeInfoPropertyName = nameof(TelemetryAppClosePayload))]
+[JsonSerializable(typeof(TelemetryUncleanExitPayload), TypeInfoPropertyName = nameof(TelemetryUncleanExitPayload))]
+[JsonSerializable(typeof(TelemetryAppLaunchInitialPayload), TypeInfoPropertyName = nameof(TelemetryAppLaunchInitialPayload))]
+[JsonSerializable(typeof(TelemetryAppLaunchEnrichedPayload), TypeInfoPropertyName = nameof(TelemetryAppLaunchEnrichedPayload))]
+[JsonSerializable(typeof(TelemetryErrorLocalPayload), TypeInfoPropertyName = nameof(TelemetryErrorLocalPayload))]
+[JsonSerializable(typeof(TelemetryErrorRemotePayload), TypeInfoPropertyName = nameof(TelemetryErrorRemotePayload))]
+[JsonSerializable(typeof(TelemetryTimeWarningIgnoredPayload), TypeInfoPropertyName = nameof(TelemetryTimeWarningIgnoredPayload))]
+[JsonSerializable(typeof(TelemetryCrashFeedbackPayload), TypeInfoPropertyName = nameof(TelemetryCrashFeedbackPayload))]
+[JsonSerializable(typeof(TelemetryLicenseVerificationPayload), TypeInfoPropertyName = nameof(TelemetryLicenseVerificationPayload))]
+[JsonSerializable(typeof(TelemetryReadinessRunCompletedPayload), TypeInfoPropertyName = nameof(TelemetryReadinessRunCompletedPayload))]
+[JsonSerializable(typeof(TelemetryInstallationEventUpsertPayload), TypeInfoPropertyName = nameof(TelemetryInstallationEventUpsertPayload))]
+internal sealed partial class TelemetryJsonContext : JsonSerializerContext
+{
 }
